@@ -3,10 +3,10 @@
 // ВЕРСІЯ ФАЙЛУ: 2026-09-07 — вихід з акаунту веде на екран входу PWA, не на лендінг (п.11)
 // ═══════════════════════════════════════════════════════════
 
-const API_BASE = 'https://primary-production-4b93e.up.railway.app/webhook';
+const API_BASE = 'https://primary-production-3872.up.railway.app/webhook';
 // VAPID public key (той самой пары, что сгенерирована для проекта) — публичный, безопасно
 // держать прямо в клиентском коде, приватный остаётся только в n8n
-const VAPID_PUBLIC_KEY = 'BNnz-jdGhB2nz3Meh4yN4A6-VageQqYiQFX_BLpSBjhWxFCrOQ4Sq491vMVVp8qbUTXNHoF4AnfW6L9dJCmSjgE';
+const VAPID_PUBLIC_KEY = 'BBLFlfV0HpUwOnc3Er0dqEymcIsxCTn6WMuhBlLTHMNZ-FCBb2N0SXli5brsg0Q5KpA-cf4iBRH48bUQprjNXW0';
 const APP_VERSION = 'v19'; // bump this on every real code change — visible on screen bottom-right,
 // so it's possible to confirm at a glance whether a new deploy actually reached the device,
 // instead of asking "did you upload it?" every time.
