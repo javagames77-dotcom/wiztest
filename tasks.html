@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<!-- ВЕРСІЯ ФАЙЛУ: 2026-09-11 — виправлено баг: "Кінозал" (cinema_hall) губився через аліас на "Зал", тепер показується окремим пунктом (п.1, продовження) -->
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizoria — Завдання</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+:root{
+  --accent:#8C64C9; --accent-hover:#a07ed8; --accent-light:rgba(140,100,201,.13); --accent-border:rgba(140,100,201,.3);
+  --bg:#f4f4f7; --bg2:#ffffff; --bg3:#f0f0f4; --border:#e0e0e8; --border2:#ccccda;
+  --text:#1a1a20; --muted:#6b6b80; --muted2:#aaaabc; --black:#0a0a12;
+  --success:#16a34a; --success-bg:#f0fff4; --success-border:#bbf7d0;
+  --danger:#c0392b; --danger-bg:#fff0f0; --danger-border:#ffd0d0;
+  --warn-text:#92400e; --warn-bg:#fffbeb; --warn-border:#fde68a;
+  --card-shadow:0 1px 3px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-size:13px}
+
+.top-bar{position:sticky;top:0;height:52px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;z-index:60;backdrop-filter:blur(16px);gap:14px}
+.wizoria-logo{height:19px;width:auto;flex-shrink:0}
+.brand-sub{font-size:13px;color:var(--muted);white-space:nowrap;font-weight:500}
+.nav-sep{flex:1}
+
+.layout{display:flex;min-height:calc(100vh - 52px)}
+.sidebar{width:190px;min-width:190px;background:var(--bg3);border-right:1px solid var(--border);padding:14px 0;flex-shrink:0}
+.sb-label{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);padding:0 14px;margin-bottom:8px}
+.sb-item{padding:9px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:9px;text-decoration:none;cursor:pointer}
+.sb-item i{font-size:15px}
+.sb-item:hover{color:var(--text)}
+.sb-item.active{color:var(--accent);background:var(--accent-light);border-left:2px solid var(--accent);padding-left:12px}
+
+.main{flex:1;min-width:0;padding:24px 28px 60px}
+
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.page-title{font-size:20px;font-weight:600;color:var(--black);letter-spacing:-.01em}
+.page-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.btn-primary{background:var(--accent);border:none;border-radius:7px;height:32px;padding:0 13px;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#fff;cursor:pointer}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:disabled{opacity:.55;cursor:default}
+.btn-outline{border:1px solid var(--border);border-radius:7px;height:32px;padding:0 13px;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer;background:var(--bg2)}
+.btn-outline:hover{background:var(--bg3)}
+
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat-card{background:var(--bg3);border-radius:8px;padding:11px 13px}
+.stat-value{font-size:20px;font-weight:600;margin-bottom:2px;line-height:1.1;color:var(--accent)}
+.stat-value.warn{color:var(--warn-text)}
+.stat-value.success{color:var(--success)}
+.stat-label{font-size:11px;color:var(--muted)}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:var(--card-shadow);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+th{text-align:left;padding:8px;font-weight:500;font-size:10px;color:var(--muted2);border-bottom:1px solid var(--border)}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--text)}
+th.sortable .sort-arrow{display:inline-block;margin-left:3px;font-size:9px;opacity:.35}
+th.sortable.sort-active .sort-arrow{opacity:1;color:var(--accent)}
+td{padding:10px 8px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.obj-name{font-weight:500;color:var(--black)}
+.obj-caption{font-size:10px;color:var(--muted)}
+.req-icons{display:flex;gap:5px;align-items:center;padding-top:2px}
+.req-icons i{font-size:14px}
+.status-badge{font-size:10px;border-radius:4px;padding:2px 7px;font-weight:500;display:inline-block}
+.status-badge.assigned, .status-badge.in_progress{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-border)}
+.status-badge.submitted{background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-border)}
+.status-badge.approved{background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.status-badge.rejected, .status-badge.needs_revision{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+.open-btn{border:1px solid var(--border);border-radius:5px;height:26px;padding:0 9px;display:inline-flex;align-items:center;font-size:10px;color:var(--muted);gap:4px;cursor:pointer;background:var(--bg2)}
+.client-name{font-size:10px;color:var(--muted)}
+
+/* --- Пошук та навігація по клітинках стрілками --- */
+.list-toolbar{display:flex;align-items:center;margin-bottom:12px}
+.search-wrap{position:relative;max-width:280px;width:100%}
+.search-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted2)}
+.search-input{width:100%;height:34px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);padding:0 10px 0 32px;font-size:12px;font-family:inherit;color:var(--text);outline:none}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+td[tabindex]{cursor:cell;outline:none}
+td[tabindex]:focus{box-shadow:inset 0 0 0 2px var(--accent);border-radius:3px}
+
+.empty-state{padding:32px 18px;text-align:center;color:var(--muted);font-size:12px}
+.empty-state i{font-size:24px;display:block;margin-bottom:9px;opacity:.4}
+
+/* --- Форма «Нове завдання» --- */
+.add-form{border:1px solid var(--accent-border);border-radius:10px;padding:16px;background:var(--accent-light);margin-bottom:16px}
+.add-form-title{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:2px}
+.add-form-sub{font-size:11px;color:var(--muted);margin-bottom:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-field label{font-size:10px;color:var(--muted);display:block;margin-bottom:4px}
+.form-field select,.form-field input{width:100%;height:32px;border:1px solid var(--accent);border-radius:6px;background:var(--bg2);padding:0 10px;font-size:12px;font-family:inherit;color:var(--text);outline:none}
+.form-field.optional select,.form-field.optional input{border-color:var(--border)}
+.field-err{font-size:10px;color:var(--danger);margin-top:3px;display:none}
+.field-err.show{display:block}
+
+.section-label{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px;margin-top:4px}
+.add-req-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.add-req-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--accent);border-radius:5px;font-size:11px;color:var(--accent);cursor:pointer;background:var(--accent-light)}
+.req-chip{display:flex;align-items:center;gap:7px;padding:6px 8px;border:1px solid var(--border);border-radius:5px;margin-bottom:5px;font-size:11px;color:var(--text);background:var(--bg3)}
+.req-chip i.type-icon{font-size:13px}
+.req-chip .chip-title{flex:1}
+.req-chip .chip-meta{font-size:10px;color:var(--muted)}
+.req-chip .chip-remove{font-size:12px;color:var(--muted);cursor:pointer}
+.req-chip[draggable="true"]{cursor:default}
+.req-chip .drag-handle{cursor:grab;font-size:14px}
+.req-chip.dragging{opacity:.4}
+.add-more-btn{height:26px;border:1px dashed var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;font-size:11px;color:var(--muted);background:transparent}
+
+.mini-form{border:1px solid var(--border);border-radius:7px;padding:10px;margin-bottom:8px;background:var(--bg2)}
+.mini-form .form-row{margin-bottom:8px}
+.mini-form-actions{display:flex;justify-content:flex-end;gap:6px}
+.btn-small{height:26px;padding:0 10px;font-size:11px;border-radius:5px;cursor:pointer}
+.alert{padding:9px 12px;border-radius:7px;font-size:12px;margin-bottom:10px;display:none}
+.alert.show{display:block}
+.alert.err{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+.alert.ok{background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+
+.auth-gate{max-width:420px;margin:80px auto;text-align:center;padding:0 20px}
+.auth-gate p{color:var(--muted);font-size:13px;margin:10px 0 18px;line-height:1.6}
+.auth-gate a{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:600}
+
+.rows-cards{display:none}
+.row-card{padding:12px 14px;border-bottom:1px solid var(--border)}
+.row-card:last-child{border-bottom:none}
+.row-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.row-card-meta{font-size:11px;color:var(--muted);line-height:1.7}
+
+@media (max-width: 720px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;min-width:0;display:flex;align-items:center;padding:8px 6px;overflow-x:auto;gap:2px;border-right:none;border-bottom:1px solid var(--border)}
+  .sb-label{display:none}
+  .sb-item{white-space:nowrap;border-left:none !important;border-radius:7px;padding:7px 11px !important}
+  .main{padding:16px 14px 40px}
+  .form-row{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:repeat(3,1fr)}
+  table{display:none}
+  .rows-cards{display:block}
+}
+
+/* --- Модалка (той самий патерн, що в objects.html) --- */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,18,.45);z-index:1000;align-items:center;justify-content:center;padding:20px}
+#modal-box{background:var(--bg2);border-radius:14px;box-shadow:var(--card-shadow);max-width:380px;width:100%;padding:22px}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <svg class="wizoria-logo" viewBox="0 0 3418 1015" xmlns="http://www.w3.org/2000/svg"><g fill="var(--black)"><path d="M709.68,159.25 L774.19,159.25 C781.22,159.25 786.75,164.79 786.75,171.82 L786.75,574.86 C786.75,581.88 781.22,587.42 774.19,587.42 L709.68,587.42 C702.66,587.42 697.12,581.88 697.12,574.86 L697.12,171.82 C697.12,164.79 702.66,159.25 709.68,159.25 Z"/><path d="M888.32,237.82 L888.32,173.1 C888.32,166.07 894.06,160.53 901.09,160.53 L1283.27,160.53 C1290.29,160.53 1296.04,166.07 1296.04,173.1 L1296.04,236.12 L1296.04,250.39 C1295.82,254.85 1294.34,258.05 1291.57,260.39 L1010.31,497.15 L901.51,586.78 L888.95,572.73 L888.73,493.75 C888.73,489.06 891.29,486.72 893.84,483.95 L1173.39,250.17 L901.08,250.17 C894.05,250.17 888.31,244.63 888.31,237.82 L888.32,237.82 Z"/><path d="M888.95,575.07 L888.95,510.35 C888.95,503.54 894.49,497.79 901.52,497.79 L1282.43,497.79 C1289.24,497.79 1294.99,503.54 1294.99,510.35 L1294.99,575.07 C1294.99,581.89 1289.24,587.64 1282.43,587.64 L901.52,587.64 C894.49,587.64 888.95,581.89 888.95,575.07 Z"/><path d="M2252.68,159.89 L2459.42,159.89 C2491.99,159.89 2548.83,162.87 2596.1,228.02 C2619.74,260.6 2622.51,312.56 2622.08,320.64 C2616.75,366.84 2597.38,407.51 2557.57,440.31 L2614.84,571.88 C2616.33,575.28 2616.12,579.54 2614.2,582.52 C2612.08,586.14 2608.24,588.27 2605.48,588.27 L2533.1,588.27 C2530.54,588.27 2527.77,588.48 2525.01,587.41 C2521.39,586.13 2517.77,583.15 2516.7,580.17 L2471.35,467.33 L2291.65,467.33 L2291.65,575.7 C2291.65,582.52 2285.91,588.27 2279.09,588.27 L2214.36,588.27 C2207.55,588.27 2201.8,582.52 2201.8,575.7 L2201.8,172.45 C2201.8,165.63 2207.55,159.89 2214.36,159.89 L2252.68,159.89 Z M2291.64,377.49 L2474.75,377.49 C2484.75,376.85 2501.15,372.38 2508.82,365.35 C2554.8,323.62 2530.11,248.46 2459.42,249.74 L2291.64,249.74 L2291.64,377.49 Z"/><path d="M2752.81,159.25 L2817.53,159.25 C2824.35,159.25 2830.1,165 2830.1,171.82 L2830.1,575.07 C2830.1,581.89 2824.35,587.64 2817.53,587.64 L2752.81,587.64 C2745.99,587.64 2740.25,581.89 2740.25,575.07 L2740.25,171.82 C2740.25,165 2745.99,159.25 2752.81,159.25 Z"/><path d="M3176.72,266.99 L3105.39,422.84 L3248.05,422.84 L3176.72,266.99 Z M3064.52,512.47 L3032.79,581.46 C3030.02,587.84 3022.99,588.28 3016.18,588.28 L2946.99,588.06 C2943.58,588.06 2939.75,585.72 2937.83,582.52 C2935.7,579.12 2935.7,574.64 2937.19,571.45 L3122.43,169.48 C3124.77,164.37 3130.51,160.11 3137.75,160.11 L3212.28,160.11 C3220.58,160.11 3227.61,161.81 3231.44,170.12 L3416.26,571.45 C3419.88,578.9 3414.34,588.06 3407.1,588.06 L3337.47,588.28 C3330.45,588.28 3323.42,587.85 3320.65,581.46 L3289.14,512.47 L3064.51,512.47 L3064.52,512.47 Z"/><path d="M609.4,160.1 L543.61,160.1 C536.58,160.1 529.98,163.08 528.06,169.9 L443.33,500.56 L366.68,172.03 C364.98,164.15 357.53,159.25 350.72,159.25 L274.28,159.25 C269.81,159.25 264.7,161.6 261.3,165.86 C259.59,168.2 258.53,170.96 257.67,174.38 L170.38,501.2 L88.62,169.91 C86.92,163.09 79.89,160.11 72.87,160.11 L10.7,160.11 C3.68,160.11 -1.22,168.63 0.27,175.44 L94.59,577.41 C96.08,583.38 101.62,587.42 107.58,587.21 L228.94,587.43 C237.25,587.43 241.93,580.19 244.06,572.1 L311.56,322.57 L370.74,572.52 C372.87,580.83 380.33,587 387.35,587.21 L496.36,587.43 C503.39,587.43 510.83,582.96 513.6,572.52 L619,175.45 C620.7,168.63 616.44,160.12 609.41,160.12 L609.4,160.1 Z"/></g><path fill="#8C64C9" d="M1736.99,649.38 C1813.22,649.38 1882.2,618.51 1932.23,568.47 C1982.27,518.65 2013.14,449.67 2013.14,373.45 C2013.14,297.22 1982.27,228.24 1932.23,178.2 C1882.2,128.38 1813.21,97.51 1736.99,97.51 C1660.98,97.51 1591.79,128.38 1541.96,178.2 C1491.93,228.24 1461.05,297.23 1461.05,373.45 C1461.05,449.67 1491.93,518.64 1541.96,568.47 C1591.78,618.51 1660.98,649.38 1736.99,649.38 Z M2001.22,637.46 C1933.51,704.95 1840.25,746.9 1736.99,746.9 C1633.94,746.9 1540.69,704.96 1472.99,637.46 C1405.49,569.97 1363.76,476.5 1363.76,373.45 C1363.76,270.41 1405.49,176.93 1472.99,109.44 C1540.69,41.73 1633.94,5.68434189e-14 1736.99,5.68434189e-14 C1840.25,5.68434189e-14 1933.51,41.73 2001.22,109.44 C2068.71,176.93 2110.44,270.41 2110.44,373.45 C2110.44,476.5 2068.71,569.97 2001.22,637.46 Z"/></svg>
+  <span class="brand-sub">— Завдання</span>
+  <div class="nav-sep"></div>
+  <div id="logout-btn" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;padding:6px 10px;border-radius:6px" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'"><i class="ti ti-logout" style="font-size:15px"></i>Вийти</div>
+</div>
+
+<div id="auth-gate" class="auth-gate" style="display:none">
+  <div style="font-size:32px;margin-bottom:6px">🔒</div>
+  <div style="font-size:16px;font-weight:600;color:var(--black)">Потрібен вхід</div>
+  <p>Розділ доступний лише авторизованим Admin.</p>
+  <a href="login.html">Перейти до входу</a>
+</div>
+
+<div id="page-body" class="layout" style="display:none">
+  <div class="sidebar">
+    <div class="sb-label">Меню</div>
+    <a class="sb-item" href="dashboard.html"><i class="ti ti-layout-dashboard"></i>Dashboard</a>
+    <a class="sb-item active" href="tasks.html"><i class="ti ti-clipboard-list"></i>Завдання</a>
+    <a class="sb-item" href="questionnaires.html"><i class="ti ti-list-check"></i>Анкети</a>
+    <a class="sb-item" href="shoppers.html"><i class="ti ti-users"></i>Покупці</a>
+    <a class="sb-item" href="objects.html"><i class="ti ti-building"></i>Об'єкти</a>
+    <a class="sb-item" href="ai-settings.html"><i class="ti ti-robot"></i>AI-налаштування</a>
+    <a class="sb-item" href="reports.html"><i class="ti ti-chart-bar"></i>Звіти</a>
+  </div>
+
+  <div class="main">
+    <div id="list-view">
+      <div class="page-head">
+        <div>
+          <div class="page-title">Завдання</div>
+          <div class="page-sub">Усі завдання системи</div>
+        </div>
+        <button class="btn-primary" id="new-task-btn"><i class="ti ti-plus"></i>Нове завдання</button>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-value" id="stat-active">—</div><div class="stat-label">Активних</div></div>
+        <div class="stat-card"><div class="stat-value warn" id="stat-pending">—</div><div class="stat-label">Очікує перевірки</div></div>
+        <div class="stat-card"><div class="stat-value success" id="stat-done">—</div><div class="stat-label">Завершено</div></div>
+      </div>
+
+      <div class="list-toolbar">
+        <div class="search-wrap">
+          <i class="ti ti-search"></i>
+          <input type="text" class="search-input" id="tasks-search" placeholder="Пошук: ім'я, телефон, № завдання">
+        </div>
+      </div>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" data-sort-key="object_name" style="width:15%">Об'єкт<span class="sort-arrow"></span></th>
+              <th class="sortable" data-sort-key="client_name" style="width:10%">Мережа<span class="sort-arrow"></span></th>
+              <th class="sortable" data-sort-key="shopper_name" style="width:12%">Покупець<span class="sort-arrow"></span></th>
+              <th style="width:8%">Завдання</th>
+              <th class="sortable" data-sort-key="created_at" style="width:9%">Призначено<span class="sort-arrow"></span></th>
+              <th class="sortable" data-sort-key="deadline" style="width:9%">Дедлайн<span class="sort-arrow"></span></th>
+              <th class="sortable" data-sort-key="submitted_at" style="width:10%">Здано<span class="sort-arrow"></span></th>
+              <th class="sortable" data-sort-key="status" style="width:14%">Статус<span class="sort-arrow"></span></th>
+              <th style="width:13%"></th>
+            </tr>
+          </thead>
+          <tbody id="tasks-tbody"></tbody>
+        </table>
+        <div class="rows-cards" id="tasks-cards"></div>
+        <div class="empty-state" id="tasks-empty" style="display:none">
+          <i class="ti ti-clipboard-off"></i>Завдань ще немає — створіть перше
+        </div>
+      </div>
+    </div>
+
+    <div id="form-view" style="display:none">
+      <div class="add-form">
+        <div class="page-head" style="margin-bottom:2px">
+          <div>
+            <div class="add-form-title">Нове завдання</div>
+            <div class="add-form-sub" id="form-object-label">—</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-outline" id="cancel-task-btn">Скасувати</button>
+            <button class="btn-outline" id="use-template-btn"><i class="ti ti-copy"></i>Створити з шаблону</button>
+            <button class="btn-primary" id="save-task-btn"><i class="ti ti-device-floppy"></i>Зберегти</button>
+          </div>
+        </div>
+
+        <div class="alert err" id="task-form-alert"></div>
+        <div class="alert ok" id="task-form-alert-ok"></div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Об'єкт</label>
+            <select id="f-object"></select>
+            <div class="field-err" id="err-object"></div>
+          </div>
+          <div class="form-field">
+            <label>Покупець</label>
+            <input type="text" id="f-shopper-search" placeholder="Пошук: ім'я, телефон, № анкети" style="margin-bottom:5px">
+            <select id="f-shopper"></select>
+            <div class="field-err" id="err-shopper"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Дедлайн</label>
+            <input type="date" id="f-deadline">
+            <div class="field-err" id="err-deadline"></div>
+          </div>
+          <div class="form-field optional">
+            <label>Supervisor об'єкту</label>
+            <input type="text" id="f-supervisor-display" disabled placeholder="Не призначено">
+          </div>
+        </div>
+
+        <div class="section-label">Додати завдання</div>
+        <div class="add-req-row">
+          <div class="add-req-btn" id="add-photo-btn"><i class="ti ti-camera"></i>Фото</div>
+          <div class="add-req-btn" id="add-audio-btn"><i class="ti ti-microphone"></i>Аудіо</div>
+          <div class="add-req-btn" id="add-questionnaire-btn"><i class="ti ti-clipboard-list"></i>Анкета</div>
+        </div>
+
+        <div id="mini-form-slot"></div>
+        <div id="req-chips"></div>
+
+        <div class="field-err" id="err-requirements" style="margin-bottom:8px"></div>
+      </div>
+    </div>
+
+    <div id="edit-view" style="display:none">
+      <div class="add-form">
+        <div class="page-head" style="margin-bottom:2px">
+          <div>
+            <div class="add-form-title">Завдання #<span id="edit-task-id"></span></div>
+            <div class="add-form-sub" id="edit-task-sub">—</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-outline" id="save-as-template-btn"><i class="ti ti-copy"></i>Зберегти як шаблон</button>
+            <button class="btn-outline" id="edit-back-btn">Закрити</button>
+          </div>
+        </div>
+        <div class="alert err" id="edit-form-alert"></div>
+        <div class="alert ok" id="edit-form-alert-ok"></div>
+
+        <div class="section-label">Об'єкт, покупець, дедлайн</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Об'єкт</label>
+            <select id="ef-object"></select>
+          </div>
+          <div class="form-field">
+            <label>Покупець</label>
+            <input type="text" id="ef-shopper-search" placeholder="Пошук: ім'я, телефон, № анкети" style="margin-bottom:5px">
+            <select id="ef-shopper"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Дедлайн</label>
+            <input type="date" id="ef-deadline">
+          </div>
+          <div class="form-field optional" style="display:flex;align-items:flex-end">
+            <button class="btn-primary" id="ef-save-btn"><i class="ti ti-device-floppy"></i>Зберегти зміни</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px" id="ef-note"></div>
+
+        <div class="section-label">Вимоги</div>
+        <div class="add-req-row">
+          <div class="add-req-btn" id="edit-add-photo-btn"><i class="ti ti-camera"></i>Фото</div>
+          <div class="add-req-btn" id="edit-add-audio-btn"><i class="ti ti-microphone"></i>Аудіо</div>
+          <div class="add-req-btn" id="edit-add-questionnaire-btn"><i class="ti ti-clipboard-list"></i>Анкета</div>
+        </div>
+        <div id="edit-mini-form-slot"></div>
+        <div id="edit-req-chips"></div>
+        <button class="btn-primary btn-small" id="edit-save-order-btn" style="display:none;margin-top:6px"><i class="ti ti-arrows-sort"></i>Зберегти новий порядок</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-overlay">
+  <div id="modal-box">
+    <div id="modal-icon" style="font-size:28px;margin-bottom:10px"></div>
+    <div id="modal-title" style="font-size:15px;font-weight:600;color:var(--black);margin-bottom:6px"></div>
+    <div id="modal-message" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px;white-space:pre-line"></div>
+    <div id="modal-actions" style="display:flex;justify-content:flex-end;gap:8px"></div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://primary-production-3872.up.railway.app/webhook';
+let token = null;
+function authHeaders() { return { 'Authorization': 'Bearer ' + token }; }
+
+function showModal({ icon = 'ℹ️', title, message, buttons }) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('modal-overlay');
+    document.getElementById('modal-icon').textContent = icon;
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-message').textContent = message;
+    const actions = document.getElementById('modal-actions');
+    actions.innerHTML = '';
+    buttons.forEach(b => {
+      const btn = document.createElement('button');
+      btn.textContent = b.label;
+      btn.className = b.variant === 'outline' ? 'btn-outline' : 'btn-primary';
+      if (b.variant === 'danger') btn.style.background = 'var(--danger)';
+      btn.addEventListener('click', () => { overlay.style.display = 'none'; resolve(b.value); });
+      actions.appendChild(btn);
+    });
+    overlay.style.display = 'flex';
+  });
+}
+function showAlertDialog(message, title = 'Повідомлення') {
+  return showModal({ icon: 'ℹ️', title, message, buttons: [{ label: 'Гаразд', value: true }] });
+}
+
+// Порядок секцій — за реальним маршрутом відвідувача кінотеатру (п.13 правок):
+// Вхід → Каса → Бар → Зал → Туалет → Вихід. Це базові 6 назв, лишаємо як є —
+// вони й далі задають фізичний порядок сортування для цих секцій.
+// П.1: раніше цей список був повністю захардкоджений і не знав про реальні
+// анкети з довільними section_key (напр. "kasa_cck", "bar_cocktail") — через
+// це вони показувались просто сирим ключем замість людської назви, і саме
+// це було коренем п.18 (AI не оцінював "Кіномаркет"). Тепер SECTION_NAMES —
+// змінний, і доповнюється реальними назвами анкет через loadSectionsFromQuestionnaires().
+let SECTION_NAMES = { vhid: 'Вхід', kasa: 'Каса', bar: 'Бар', zal: 'Зал', tualet: 'Туалет', vyhid: 'Вихід' };
+const SECTION_ORDER = Object.keys(SECTION_NAMES);
+const SECTION_ALIASES = { cinema_hall: 'zal' }; // деякі анкети використовують довільний ключ замість стандартного 'zal'
+// Список для випадаючого списку "Секція" у формах Фото/Аудіо — на відміну від
+// SECTION_NAMES (лише для показу назви), тут МАЄ бути точно те саме, що й у
+// списку "Анкета": лише реальні section_key з бази, без старих 6 базових значень
+// маршруту (їх як реальних анкет уже не існує, окрім випадкового збігу "bar").
+let REAL_SECTION_KEYS = [];
+function sectionRank(key) {
+  const normalized = SECTION_ALIASES[key] || key;
+  const i = SECTION_ORDER.indexOf(normalized);
+  return i === -1 ? SECTION_ORDER.length : i;
+}
+
+// Підтягує реальний список секцій з бази анкет — того самого ендпоінта, що вже
+// використовується для вибору "Анкета" в цій формі. Кожна анкета з section_key,
+// якого ще немає у базовому списку вище, додає свою людську назву (title анкети).
+// Викликається один раз при відкритті форми (loadFormLookups) — не змінює базові
+// 6 назв маршруту, тільки розширює список тим, чого там раніше не було.
+async function loadSectionsFromQuestionnaires() {
+  try {
+    const qRes = await fetch(`${API_BASE}/ga/admin/questionnaires`, { headers: authHeaders() });
+    const qData = await qRes.json();
+    (qData.questionnaires || []).forEach(q => {
+      // ВАЖЛИВО: перевіряємо саме сирий q.section_key, а не через SECTION_ALIASES.
+      // Аліас (напр. cinema_hall → zal) потрібен лише для сортування за маршрутом
+      // (sectionRank), а не для того, щоб ховати реальну анкету "Кінозал" під
+      // виглядом уже наявної "Зал" — інакше вибрати саме "Кінозал" неможливо,
+      // і фото/аудіо ніколи не зіллється з реальною анкетою (баг, знайдений клієнтом).
+      if (!SECTION_NAMES[q.section_key]) SECTION_NAMES[q.section_key] = q.title;
+      if (!REAL_SECTION_KEYS.some(s => s.key === q.section_key)) {
+        REAL_SECTION_KEYS.push({ key: q.section_key, name: q.title });
+      }
+    });
+  } catch (e) {
+    // не критично — просто лишаться базові 6 + сирі ключі як фолбек, як і раніше
+  }
+}
+let objectsList = [];
+let shoppersList = [];
+let supervisorMap = {};
+let photoReqs = [];
+let audioReqs = [];
+let questionnaireReqs = [];
+// Єдиний комбінований порядок чіпів у формі створення завдання (п.7 — ручне
+// впорядкування замість вгадування за назвою секції). Кожен запис — посилання
+// на елемент одного з трьох масивів вище по стабільному _localId (не по індексу
+// в масиві — індекс «з'їжджає» при видаленні, а localId завжди вказує на той
+// самий елемент, навіть після сплайсів).
+let chipOrder = [];
+let nextChipLocalId = 1;
+
+// ============ LIST VIEW ============
+let tasksSearchTimer = null;
+let currentTasksSearch = '';
+let allTasks = [];
+
+// --- Сортування таблиці завдань по кліку на заголовок колонки ---
+let tasksSortKey = null;
+let tasksSortDir = 'asc'; // 'asc' | 'desc'
+
+function tasksSortValue(t, key) {
+  switch (key) {
+    case 'object_name': return (t.object_name || '').toLowerCase();
+    case 'client_name': return (t.client_name || '').toLowerCase();
+    case 'shopper_name': return `${t.shopper_first_name || ''} ${t.shopper_last_name || ''}`.trim().toLowerCase();
+    case 'created_at': return t.created_at ? new Date(t.created_at).getTime() : 0;
+    case 'deadline': return t.deadline ? new Date(t.deadline).getTime() : 0;
+    case 'submitted_at': return t.submitted_at ? new Date(t.submitted_at).getTime() : 0;
+    case 'status': return (t.status || '').toLowerCase();
+    default: return '';
+  }
+}
+
+function applyTasksSort() {
+  if (!tasksSortKey) return;
+  const key = tasksSortKey;
+  const dir = tasksSortDir === 'desc' ? -1 : 1;
+  allTasks.sort((a, b) => {
+    const va = tasksSortValue(a, key);
+    const vb = tasksSortValue(b, key);
+    if (va < vb) return -1 * dir;
+    if (va > vb) return 1 * dir;
+    return 0;
+  });
+}
+
+function updateTasksSortHeaderUI() {
+  document.querySelectorAll('#list-view th.sortable').forEach(th => {
+    const active = th.dataset.sortKey === tasksSortKey;
+    th.classList.toggle('sort-active', active);
+    th.querySelector('.sort-arrow').textContent = active ? (tasksSortDir === 'desc' ? '▼' : '▲') : '';
+  });
+}
+
+document.querySelectorAll('#list-view th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.sortKey;
+    if (tasksSortKey === key) {
+      tasksSortDir = tasksSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      tasksSortKey = key;
+      tasksSortDir = 'asc';
+    }
+    applyTasksSort();
+    updateTasksSortHeaderUI();
+    renderTasksTable(currentTasksSearch);
+  });
+});
+
+async function loadTasks(search) {
+  const qs = search ? `?search=${encodeURIComponent(search)}` : '';
+  const res = await fetch(`${API_BASE}/ga/admin/tasks${qs}`, { headers: authHeaders() });
+  const data = await res.json();
+  allTasks = data.tasks || [];
+
+  const active = allTasks.filter(t => t.status === 'assigned' || t.status === 'in_progress').length;
+  const pending = allTasks.filter(t => t.status === 'submitted').length;
+  const done = allTasks.filter(t => t.status === 'approved').length;
+  document.getElementById('stat-active').textContent = active;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-done').textContent = done;
+
+  applyTasksSort();
+  renderTasksTable(search);
+}
+
+function renderTasksTable(search) {
+  const tasks = allTasks;
+  const tbody = document.getElementById('tasks-tbody');
+  const cards = document.getElementById('tasks-cards');
+  const empty = document.getElementById('tasks-empty');
+  tbody.innerHTML = ''; cards.innerHTML = '';
+
+  if (tasks.length === 0) { empty.style.display = 'block'; empty.textContent = search ? 'Нічого не знайдено' : ''; if (!search) empty.innerHTML = '<i class="ti ti-clipboard-off"></i>Завдань ще немає — створіть перше'; return; }
+  empty.style.display = 'none';
+
+  const statusLabels = { assigned: 'Призначено', in_progress: 'В процесі', submitted: 'Очікує', approved: 'Здано', rejected: 'Відхилено', needs_revision: 'На доопрацюванні' };
+  const STATUS_HINTS = {
+    assigned: 'Завдання призначено покупцю, він ще не почав',
+    in_progress: 'Покупець почав виконувати завдання',
+    submitted: 'Здано покупцем, очікує на перевірку супервайзером',
+    approved: 'Перевірено і схвалено супервайзером',
+    rejected: 'Відхилено супервайзером',
+    needs_revision: 'Повернено покупцю на доопрацювання'
+  };
+  const openLabel = { submitted: 'Переглянути', approved: 'Переглянути' };
+
+  tasks.forEach(t => {
+    const deadline = new Date(t.deadline);
+    const deadlineStr = deadline.toLocaleDateString('uk-UA');
+    const createdStr = t.created_at ? new Date(t.created_at).toLocaleDateString('uk-UA') : '—';
+    const submittedStr = t.submitted_at ? new Date(t.submitted_at).toLocaleString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+    const clientName = t.client_name || '—';
+    const statusText = statusLabels[t.status] || t.status;
+    const statusHint = STATUS_HINTS[t.status] || '';
+    const openText = openLabel[t.status] || 'Відкрити';
+
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td tabindex="0"><div class="obj-name">${t.object_name}</div><div class="obj-caption">Повна перевірка</div></td>
+        <td tabindex="0"><span class="client-name">${clientName}</span></td>
+        <td tabindex="0">${t.shopper_first_name} ${t.shopper_last_name}</td>
+        <td tabindex="0"><div class="req-icons"><i class="ti ti-camera" style="color:var(--accent)"></i><i class="ti ti-microphone" style="color:var(--warn-text)"></i><i class="ti ti-clipboard-list" style="color:var(--success)"></i></div></td>
+        <td tabindex="0">${createdStr}</td>
+        <td tabindex="0">${deadlineStr}</td>
+        <td tabindex="0">${submittedStr}</td>
+        <td tabindex="0"><span class="status-badge ${t.status}" title="${statusHint}">${statusText}</span></td>
+        <td style="text-align:right">
+          <span class="open-btn" data-task-id="${t.id}" data-action="open"><i class="ti ti-eye"></i>${openText}</span>
+          ${t.status === 'assigned' ? `<span class="open-btn" style="color:var(--danger);border-color:var(--danger-border);margin-left:5px" data-task-id="${t.id}" data-action="delete"><i class="ti ti-trash"></i>Видалити</span>` : ''}
+        </td>
+      </tr>
+    `);
+    cards.insertAdjacentHTML('beforeend', `
+      <div class="row-card">
+        <div class="row-card-top">
+          <span class="obj-name">${t.object_name}</span>
+          <span class="status-badge ${t.status}" title="${statusHint}">${statusText}</span>
+        </div>
+        <div class="row-card-meta">${t.shopper_first_name} ${t.shopper_last_name} · ${clientName}<br>Призначено: ${createdStr} · Дедлайн: ${deadlineStr} · Здано: ${submittedStr}</div>
+        <div style="margin-top:8px">
+          <span class="open-btn" data-task-id="${t.id}" data-action="open"><i class="ti ti-eye"></i>${openText}</span>
+          ${t.status === 'assigned' ? `<span class="open-btn" style="color:var(--danger);border-color:var(--danger-border);margin-left:5px" data-task-id="${t.id}" data-action="delete"><i class="ti ti-trash"></i>Видалити</span>` : ''}
+        </div>
+      </div>
+    `);
+  });
+
+  document.querySelectorAll('[data-action="open"]').forEach(el => {
+    el.addEventListener('click', () => openTaskDetail(Number(el.dataset.taskId)));
+  });
+  document.querySelectorAll('[data-action="delete"]').forEach(el => {
+    el.addEventListener('click', () => deleteTask(Number(el.dataset.taskId)));
+  });
+}
+
+// Пошук: невеликий дебаунс, щоб не смикати бекенд на кожну натиснуту клавішу
+document.getElementById('tasks-search').addEventListener('input', (e) => {
+  clearTimeout(tasksSearchTimer);
+  const value = e.target.value.trim();
+  currentTasksSearch = value;
+  tasksSearchTimer = setTimeout(() => loadTasks(value), 300);
+});
+
+// Навігація по клітинках таблиці стрілками (вгору/вниз/вліво/вправо), як у Excel
+document.getElementById('tasks-tbody').addEventListener('keydown', (e) => {
+  if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+  const cell = e.target.closest('td[tabindex]');
+  if (!cell) return;
+  const row = cell.parentElement;
+  const tbody = row.parentElement;
+  const cellIndex = cell.cellIndex;
+  const rowIndex = Array.prototype.indexOf.call(tbody.rows, row);
+  let target = null;
+
+  if (e.key === 'ArrowDown') target = tbody.rows[rowIndex + 1]?.cells[cellIndex];
+  if (e.key === 'ArrowUp') target = tbody.rows[rowIndex - 1]?.cells[cellIndex];
+  if (e.key === 'ArrowRight') target = row.cells[cellIndex + 1];
+  if (e.key === 'ArrowLeft') target = row.cells[cellIndex - 1];
+
+  if (target && target.hasAttribute('tabindex')) {
+    e.preventDefault();
+    target.focus();
+  }
+});
+
+let currentEditTaskId = null;
+let currentEditTaskData = null;
+// Порядок чіпів на екрані редагування. На відміну від форми створення, тут id —
+// справжні id рядків у БД (не localId) — вимоги вже існують, просто змінюємо
+// порядок. editOrderDirty — чи є непотрібні незбережені зміни порядку.
+let editChipOrder = [];
+let editOrderDirty = false;
+const STATUS_LABELS = { assigned: 'Призначено', in_progress: 'В процесі', submitted: 'Очікує', approved: 'Здано', rejected: 'Відхилено', needs_revision: 'На доопрацюванні' };
+
+async function openTaskDetail(taskId) {
+  currentEditTaskId = taskId;
+  document.getElementById('list-view').style.display = 'none';
+  document.getElementById('form-view').style.display = 'none';
+  document.getElementById('edit-view').style.display = 'block';
+  document.getElementById('edit-task-id').textContent = taskId;
+  document.getElementById('edit-form-alert').className = 'alert err';
+  // objectsList/shoppersList раніше наповнювались лише всередині loadFormLookups(),
+  // яку викликала тільки кнопка "Нове завдання" -- при прямому переході в редагування
+  // існуючого завдання списки лишались порожніми, звідки і "object_id має бути числом".
+  if (objectsList.length === 0 || shoppersList.length === 0) await loadFormLookups();
+  await reloadEditView();
+}
+
+async function reloadEditView() {
+  const res = await fetch(`${API_BASE}/ga/admin/tasks/detail?task_id=${currentEditTaskId}`, { headers: authHeaders() });
+  const data = await res.json();
+  if (!data.success) {
+    document.getElementById('edit-form-alert').textContent = data.error || 'Помилка завантаження';
+    document.getElementById('edit-form-alert').className = 'alert err show';
+    return;
+  }
+  currentEditTaskData = data;
+  const t = data.task;
+  const deadlineStr = new Date(t.deadline).toLocaleDateString('uk-UA');
+  document.getElementById('edit-task-sub').textContent = `${t.object_name} · ${t.shopper_first_name} ${t.shopper_last_name} · Дедлайн: ${deadlineStr} · ${STATUS_LABELS[t.status] || t.status}`;
+
+  // Об'єкт/покупець редагуємі лише поки завдання ще не почате (status='assigned') --
+  // той самий принцип, що й для видалення завдання. Дедлайн можна міняти завжди.
+  const objSel = document.getElementById('ef-object');
+  const shopSel = document.getElementById('ef-shopper');
+  objSel.innerHTML = objectsList.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+  shopSel.innerHTML = shoppersList.map(u => `<option value="${u.id}">${u.first_name} ${u.last_name} — ${u.phone || 'без телефону'} (#${u.id})</option>`).join('');
+  document.getElementById('ef-shopper-search').value = '';
+  objSel.value = t.object_id;
+  shopSel.value = t.shopper_id;
+  document.getElementById('ef-deadline').value = new Date(t.deadline).toISOString().slice(0, 10);
+
+  const isEditable = t.status === 'assigned';
+  objSel.disabled = !isEditable;
+  shopSel.disabled = !isEditable;
+  document.getElementById('ef-shopper-search').disabled = !isEditable;
+  document.getElementById('ef-note').textContent = isEditable
+    ? ''
+    : "Об'єкт і покупця можна змінити лише поки завдання в статусі «Призначено» — зараз доступний лише дедлайн.";
+
+  const orderOf = r => (r.order_index === null || r.order_index === undefined) ? Infinity : r.order_index;
+  editChipOrder = [
+    ...(data.photo_requirements || []).map(r => ({ kind: 'photo', id: r.id, title: r.title, meta: `${r.required_count} фото`, order_index: r.order_index })),
+    ...(data.audio_requirements || []).map(r => ({ kind: 'audio', id: r.id, title: r.title, meta: `мін. ${r.min_duration_sec} сек`, order_index: r.order_index })),
+    ...(data.questionnaires || []).map(r => ({ kind: 'questionnaire', id: r.id, title: r.title, meta: SECTION_NAMES[r.section_key] || r.section_key, order_index: r.order_index }))
+  ].sort((a, b) => orderOf(a) - orderOf(b));
+  editOrderDirty = false;
+  document.getElementById('edit-save-order-btn').style.display = 'none';
+  renderEditChips();
+}
+
+function renderEditChips() {
+  const wrap = document.getElementById('edit-req-chips');
+  wrap.innerHTML = '';
+  const icons = { photo: 'ti-camera', audio: 'ti-microphone', questionnaire: 'ti-clipboard-list' };
+  const colors = { photo: 'var(--accent)', audio: 'var(--warn-text)', questionnaire: 'var(--success)' };
+
+  editChipOrder.forEach((r, pos) => {
+    wrap.insertAdjacentHTML('beforeend', `
+      <div class="req-chip" draggable="true" data-pos="${pos}">
+        <i class="ti ti-grip-vertical drag-handle"></i>
+        <i class="ti ${icons[r.kind]} type-icon" style="color:${colors[r.kind]}"></i>
+        <span class="chip-title">${r.title}</span><span class="chip-meta">${r.meta}</span>
+        <span class="chip-remove" data-kind="${r.kind}" data-id="${r.id}"><i class="ti ti-x"></i></span></div>
+    `);
+  });
+
+  wrap.querySelectorAll('.chip-remove').forEach(el => {
+    el.addEventListener('click', () => removeExistingRequirement(el.dataset.kind, Number(el.dataset.id)));
+  });
+
+  let dragFromPos = null;
+  wrap.querySelectorAll('.req-chip').forEach(chip => {
+    chip.addEventListener('dragstart', () => { dragFromPos = Number(chip.dataset.pos); chip.classList.add('dragging'); });
+    chip.addEventListener('dragend', () => { chip.classList.remove('dragging'); dragFromPos = null; });
+    chip.addEventListener('dragover', (e) => { e.preventDefault(); });
+    chip.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const toPos = Number(chip.dataset.pos);
+      if (dragFromPos === null || dragFromPos === toPos) return;
+      const [moved] = editChipOrder.splice(dragFromPos, 1);
+      editChipOrder.splice(toPos, 0, moved);
+      editOrderDirty = true;
+      document.getElementById('edit-save-order-btn').style.display = 'inline-flex';
+      renderEditChips();
+    });
+  });
+}
+
+document.getElementById('edit-save-order-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('edit-save-order-btn');
+  btn.disabled = true; btn.textContent = 'Зберігаємо…';
+  try {
+    const order = editChipOrder.map((r, i) => ({
+      kind: r.kind === 'questionnaire' ? 'quest' : r.kind,
+      id: r.id,
+      order_index: i
+    }));
+    const res = await fetch(`${API_BASE}/ga/admin/tasks/requirements/reorder`, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task_id: currentEditTaskId, order })
+    });
+    const data = await res.json();
+    if (!data.success) { await showAlertDialog(data.error || 'Помилка', 'Помилка'); }
+    await reloadEditView();
+  } catch (err) {
+    await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-arrows-sort"></i>Зберегти новий порядок';
+  }
+});
+
+
+async function removeExistingRequirement(kind, requirementId) {
+  const ok = await showModal({
+    icon: '⚠️', title: 'Видалення вимоги', message: 'Видалити цю вимогу із завдання?',
+    buttons: [{ label: 'Скасувати', value: false, variant: 'outline' }, { label: 'Так, видалити', value: true, variant: 'danger' }]
+  });
+  if (!ok) return;
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/tasks/requirements/remove`, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kind, requirement_id: requirementId })
+    });
+    const data = await res.json();
+    if (!data.success) { await showAlertDialog(data.error || 'Помилка', 'Помилка'); return; }
+    await reloadEditView();
+  } catch (err) {
+    await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+  }
+}
+
+async function addRequirementToTask(kind, payload) {
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/tasks/requirements/add`, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task_id: currentEditTaskId, kind, ...payload })
+    });
+    const data = await res.json();
+    if (!data.success) { await showAlertDialog(data.error || 'Помилка', 'Помилка'); return; }
+    document.getElementById('edit-mini-form-slot').innerHTML = '';
+    await reloadEditView();
+  } catch (err) {
+    await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+  }
+}
+
+document.getElementById('edit-back-btn').addEventListener('click', () => {
+  document.getElementById('edit-view').style.display = 'none';
+  showListView();
+});
+
+document.getElementById('save-as-template-btn').addEventListener('click', async () => {
+  const data = currentEditTaskData;
+  if (!data) return;
+  const photos = data.photo_requirements || [];
+  const audios = data.audio_requirements || [];
+  const quests = data.questionnaires || [];
+  if (photos.length === 0 && audios.length === 0 && quests.length === 0) {
+    await showAlertDialog('У цього завдання ще немає жодної вимоги — нема чого зберігати як шаблон.', 'Порожньо');
+    return;
+  }
+  const name = (prompt("Назва шаблону (наприклад: «Стандартна перевірка кінотеатру»)") || '').trim();
+  if (!name) return;
+  try {
+    // Порядок береться саме з того, що зараз показано на екрані (editChipOrder,
+    // враховує перетягування), а не з сирої відповіді сервера, згрупованої по типу —
+    // інакше шаблон завжди зберігав би "фото, потім аудіо, потім анкети" незалежно
+    // від реального порядку (це і викликало скидання порядку при "Із шаблону").
+    const orderedPhotos = editChipOrder.filter(e => e.kind === 'photo').map(e => photos.find(p => p.id === e.id)).filter(Boolean);
+    const orderedAudios = editChipOrder.filter(e => e.kind === 'audio').map(e => audios.find(a => a.id === e.id)).filter(Boolean);
+    let photoIdx = 0, audioIdx = 0;
+    const requirementOrder = editChipOrder.map(e => {
+      if (e.kind === 'photo') return { kind: 'photo', ref: photoIdx++ };
+      if (e.kind === 'audio') return { kind: 'audio', ref: audioIdx++ };
+      const q = quests.find(x => x.id === e.id);
+      return { kind: 'quest', ref: q ? q.questionnaire_id : null };
+    });
+    const res = await fetch(`${API_BASE}/ga/admin/tasks/templates`, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        photo_requirements: orderedPhotos.map(p => ({ title: p.title, description: p.description, required_count: p.required_count, section_key: p.section_key })),
+        audio_requirements: orderedAudios.map(a => ({ title: a.title, instruction: a.instruction, section_key: a.section_key, min_duration_sec: a.min_duration_sec })),
+        questionnaire_ids: quests.map(q => q.questionnaire_id),
+        requirement_order: requirementOrder
+      })
+    });
+    const result = await res.json();
+    if (!result.success) { await showAlertDialog(result.error || 'Помилка', 'Помилка'); return; }
+    await showAlertDialog('Шаблон збережено — доступний при створенні нового завдання.', 'Готово');
+  } catch (err) {
+    await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+  }
+});
+
+document.getElementById('ef-save-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('ef-save-btn');
+  const okEl = document.getElementById('edit-form-alert-ok');
+  const errEl = document.getElementById('edit-form-alert');
+  okEl.className = 'alert ok'; errEl.className = 'alert err';
+  const objSel = document.getElementById('ef-object');
+  const shopSel = document.getElementById('ef-shopper');
+  const body = { task_id: currentEditTaskId, deadline: document.getElementById('ef-deadline').value };
+  if (!objSel.disabled) body.object_id = Number(objSel.value);
+  if (!shopSel.disabled) body.shopper_id = Number(shopSel.value);
+  btn.disabled = true; btn.textContent = 'Зберігаємо…';
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/tasks/update`, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!data.success) { errEl.textContent = data.error || 'Помилка'; errEl.className = 'alert err show'; return; }
+    okEl.textContent = 'Збережено.'; okEl.className = 'alert ok show';
+    await reloadEditView();
+  } catch (err) {
+    errEl.textContent = "Немає з'єднання з сервером"; errEl.className = 'alert err show';
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i>Зберегти зміни';
+  }
+});
+
+document.getElementById('edit-add-photo-btn').addEventListener('click', () => {
+  const emfPhotoOptions = REAL_SECTION_KEYS.map(({key, name}) => `<option value="${key}">${name}</option>`).join('');
+  document.getElementById('edit-mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="form-row">
+        <div class="form-field"><label>Назва</label><input type="text" id="emf-photo-title" placeholder="Фото туалету"></div>
+        <div class="form-field"><label>К-сть фото</label><input type="number" id="emf-photo-count" value="1" min="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Секція</label><select id="emf-photo-section">${emfPhotoOptions}</select></div>
+        <div class="form-field"><label>Опис (необов'язково)</label><input type="text" id="emf-photo-desc"></div>
+      </div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="emf-photo-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="emf-photo-add">Додати</button>
+      </div>
+    </div>`;
+  document.getElementById('emf-photo-cancel').addEventListener('click', () => { document.getElementById('edit-mini-form-slot').innerHTML = ''; });
+  document.getElementById('emf-photo-add').addEventListener('click', () => {
+    const title = document.getElementById('emf-photo-title').value.trim();
+    if (!title) return;
+    addRequirementToTask('photo', {
+      title, description: document.getElementById('emf-photo-desc').value.trim(),
+      required_count: Number(document.getElementById('emf-photo-count').value) || 1,
+      section_key: document.getElementById('emf-photo-section').value
+    });
+  });
+});
+
+document.getElementById('edit-add-audio-btn').addEventListener('click', () => {
+  const options = REAL_SECTION_KEYS.map(({key, name}) => `<option value="${key}">${name}</option>`).join('');
+  document.getElementById('edit-mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="form-row">
+        <div class="form-field"><label>Назва</label><input type="text" id="emf-audio-title" placeholder="Аудіозапис бару"></div>
+        <div class="form-field"><label>Секція</label><select id="emf-audio-section">${options}</select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Мін. тривалість (сек)</label><input type="number" id="emf-audio-duration" value="30" min="1"></div>
+        <div class="form-field"><label>Інструкція (необов'язково)</label><input type="text" id="emf-audio-instr"></div>
+      </div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="emf-audio-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="emf-audio-add">Додати</button>
+      </div>
+    </div>`;
+  document.getElementById('emf-audio-cancel').addEventListener('click', () => { document.getElementById('edit-mini-form-slot').innerHTML = ''; });
+  document.getElementById('emf-audio-add').addEventListener('click', () => {
+    const title = document.getElementById('emf-audio-title').value.trim();
+    if (!title) return;
+    addRequirementToTask('audio', {
+      title, section_key: document.getElementById('emf-audio-section').value,
+      min_duration_sec: Number(document.getElementById('emf-audio-duration').value) || 30,
+      instruction: document.getElementById('emf-audio-instr').value.trim()
+    });
+  });
+});
+
+document.getElementById('edit-add-questionnaire-btn').addEventListener('click', async () => {
+  // Анкети — загальна база, не прив'язана до об'єкту завдання
+  const qRes = await fetch(`${API_BASE}/ga/admin/questionnaires`, { headers: authHeaders() });
+  const qData = await qRes.json();
+  const list = qData.questionnaires || [];
+
+  if (list.length === 0) {
+    document.getElementById('edit-mini-form-slot').innerHTML = `<div class="mini-form"><div style="font-size:11px;color:var(--muted);margin-bottom:8px">У базі ще немає жодної анкети.</div><a href="questionnaires.html" class="btn-primary btn-small" style="text-decoration:none;display:inline-flex"><i class="ti ti-list-check"></i>Створити анкету</a> <button class="btn-outline btn-small" id="emf-q-cancel">Закрити</button></div>`;
+    document.getElementById('emf-q-cancel').addEventListener('click', () => { document.getElementById('edit-mini-form-slot').innerHTML = ''; });
+    return;
+  }
+  const options = list.map(q => `<option value="${q.id}">${q.title} (${SECTION_NAMES[q.section_key] || q.section_key})</option>`).join('');
+  document.getElementById('edit-mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="form-field" style="margin-bottom:8px"><label>Анкета</label><select id="emf-q-select">${options}</select></div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="emf-q-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="emf-q-add">Додати</button>
+      </div>
+    </div>`;
+  document.getElementById('emf-q-cancel').addEventListener('click', () => { document.getElementById('edit-mini-form-slot').innerHTML = ''; });
+  document.getElementById('emf-q-add').addEventListener('click', () => {
+    const qId = Number(document.getElementById('emf-q-select').value);
+    addRequirementToTask('questionnaire', { questionnaire_id: qId });
+  });
+});
+
+async function deleteTask(taskId) {
+  const ok = await showModal({
+    icon: '⚠️', title: 'Видалення завдання',
+    message: `Видалити завдання #${taskId}? Дія незворотна.`,
+    buttons: [{ label: 'Скасувати', value: false, variant: 'outline' }, { label: 'Так, видалити', value: true, variant: 'danger' }]
+  });
+  if (!ok) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/tasks/delete`, {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task_id: taskId })
+    });
+    const data = await res.json();
+    if (!data.success) { await showAlertDialog(data.error || 'Помилка видалення', 'Помилка'); return; }
+    await loadTasks(currentTasksSearch);
+  } catch (err) {
+    await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+  }
+}
+
+// ============ FORM VIEW ============
+async function loadFormLookups() {
+  await loadSectionsFromQuestionnaires();
+  const [objRes, shopRes] = await Promise.all([
+    fetch(`${API_BASE}/ga/admin/objects`, { headers: authHeaders() }),
+    fetch(`${API_BASE}/ga/admin/users?role=shopper`, { headers: authHeaders() })
+  ]);
+  const objData = await objRes.json();
+  const shopData = await shopRes.json();
+  objectsList = (objData.objects || []).filter(o => o.is_active);
+  shoppersList = shopData.users || [];
+
+  const supRes = await fetch(`${API_BASE}/ga/admin/supervisor-objects`, { headers: authHeaders() });
+  const supData = await supRes.json();
+  supervisorMap = {};
+  (supData.assignments || []).forEach(a => { supervisorMap[a.object_id] = `${a.first_name} ${a.last_name}`; });
+
+  const objSelect = document.getElementById('f-object');
+  objSelect.innerHTML = '';
+  objectsList.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o.id; opt.textContent = o.name;
+    objSelect.appendChild(opt);
+  });
+
+  const shopSelect = document.getElementById('f-shopper');
+  shopSelect.innerHTML = '';
+  shoppersList.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id; opt.textContent = `${u.first_name} ${u.last_name} — ${u.phone || 'без телефону'} (#${u.id})`;
+    shopSelect.appendChild(opt);
+  });
+
+  updateObjectLabel();
+  objSelect.addEventListener('change', updateObjectLabel);
+}
+
+function updateObjectLabel() {
+  const objId = Number(document.getElementById('f-object').value);
+  const obj = objectsList.find(o => o.id === objId);
+  document.getElementById('form-object-label').textContent = obj ? obj.name : '—';
+  document.getElementById('f-supervisor-display').value = supervisorMap[objId] || '';
+  document.getElementById('f-supervisor-display').placeholder = supervisorMap[objId] ? '' : 'Не призначено';
+}
+
+function filterShopperSelect(searchInputId, selectId, list) {
+  const term = document.getElementById(searchInputId).value.trim().toLowerCase();
+  const select = document.getElementById(selectId);
+  const prevValue = select.value;
+  const filtered = !term ? list : list.filter(u =>
+    `${u.first_name} ${u.last_name}`.toLowerCase().includes(term) ||
+    (u.phone || '').toLowerCase().includes(term) ||
+    String(u.id) === term
+  );
+  select.innerHTML = filtered.map(u =>
+    `<option value="${u.id}">${u.first_name} ${u.last_name} — ${u.phone || 'без телефону'} (#${u.id})</option>`
+  ).join('');
+  if (filtered.some(u => String(u.id) === prevValue)) select.value = prevValue;
+}
+
+document.getElementById('f-shopper-search').addEventListener('input', () => {
+  filterShopperSelect('f-shopper-search', 'f-shopper', shoppersList);
+});
+
+document.getElementById('ef-shopper-search').addEventListener('input', () => {
+  filterShopperSelect('ef-shopper-search', 'ef-shopper', shoppersList);
+});
+
+function resetTaskForm() {
+  photoReqs = []; audioReqs = []; questionnaireReqs = []; chipOrder = [];
+  renderChips();
+  document.getElementById('f-deadline').value = '';
+  document.getElementById('f-shopper-search').value = '';
+  filterShopperSelect('f-shopper-search', 'f-shopper', shoppersList);
+  document.getElementById('mini-form-slot').innerHTML = '';
+  document.getElementById('task-form-alert').className = 'alert err';
+  ['err-object','err-shopper','err-deadline','err-requirements'].forEach(id => {
+    document.getElementById(id).classList.remove('show');
+  });
+}
+
+function showListView() {
+  document.getElementById('list-view').style.display = 'block';
+  document.getElementById('form-view').style.display = 'none';
+  document.getElementById('edit-view').style.display = 'none';
+  loadTasks(currentTasksSearch);
+}
+async function showFormView() {
+  document.getElementById('list-view').style.display = 'none';
+  document.getElementById('form-view').style.display = 'block';
+  resetTaskForm();
+  await loadFormLookups();
+}
+
+document.getElementById('new-task-btn').addEventListener('click', showFormView);
+
+document.getElementById('cancel-task-btn').addEventListener('click', showListView);
+
+// --- Chips ---
+function renderChips() {
+  const wrap = document.getElementById('req-chips');
+  wrap.innerHTML = '';
+  const icons = { photo: 'ti-camera', audio: 'ti-microphone', questionnaire: 'ti-clipboard-list' };
+  const colors = { photo: 'var(--accent)', audio: 'var(--warn-text)', questionnaire: 'var(--success)' };
+
+  chipOrder.forEach((entry, pos) => {
+    const arr = entry.kind === 'photo' ? photoReqs : entry.kind === 'audio' ? audioReqs : questionnaireReqs;
+    const r = arr.find(x => x._localId === entry.localId);
+    if (!r) return; // захист: якщо раптом розсинхронізувалось — просто пропускаємо, не падаємо
+    const meta = entry.kind === 'photo' ? `${r.required_count} фото · ${SECTION_NAMES[r.section_key] || r.section_key}`
+      : entry.kind === 'audio' ? `мін. ${r.min_duration_sec} сек · ${SECTION_NAMES[r.section_key] || r.section_key}`
+      : `${r.criteria_count} питань`;
+    wrap.insertAdjacentHTML('beforeend', `
+      <div class="req-chip" draggable="true" data-pos="${pos}">
+        <i class="ti ti-grip-vertical drag-handle"></i>
+        <i class="ti ${icons[entry.kind]} type-icon" style="color:${colors[entry.kind]}"></i>
+        <span class="chip-title">${r.title}</span><span class="chip-meta">${meta}</span>
+        <span class="chip-remove" data-kind="${entry.kind}" data-local-id="${entry.localId}"><i class="ti ti-x"></i></span>
+      </div>
+    `);
+  });
+
+  wrap.querySelectorAll('.chip-remove').forEach(el => {
+    el.addEventListener('click', () => {
+      const kind = el.dataset.kind, localId = Number(el.dataset.localId);
+      const arr = kind === 'photo' ? photoReqs : kind === 'audio' ? audioReqs : questionnaireReqs;
+      const idx = arr.findIndex(x => x._localId === localId);
+      if (idx !== -1) arr.splice(idx, 1);
+      chipOrder = chipOrder.filter(e => !(e.kind === kind && e.localId === localId));
+      renderChips();
+    });
+  });
+
+  attachChipDragHandlers(wrap);
+}
+
+let dragFromPos = null;
+function attachChipDragHandlers(wrap) {
+  wrap.querySelectorAll('.req-chip').forEach(chip => {
+    chip.addEventListener('dragstart', () => {
+      dragFromPos = Number(chip.dataset.pos);
+      chip.classList.add('dragging');
+    });
+    chip.addEventListener('dragend', () => {
+      chip.classList.remove('dragging');
+      dragFromPos = null;
+    });
+    chip.addEventListener('dragover', (e) => { e.preventDefault(); });
+    chip.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const toPos = Number(chip.dataset.pos);
+      if (dragFromPos === null || dragFromPos === toPos) return;
+      const [moved] = chipOrder.splice(dragFromPos, 1);
+      chipOrder.splice(toPos, 0, moved);
+      renderChips();
+    });
+  });
+}
+
+// Будує requirement_order для відправки на бекенд: {kind, ref} у порядку чіпів.
+// kind тут навмисно 'quest' (не 'questionnaire') — саме такий рядок очікує
+// Build Requirements SQL на бекенді. ref для фото/аудіо — позиція в масиві,
+// який реально відправляється (рахуємо тут же, по ходу); для анкети — questionnaire_id
+// (стабільний, позиція не потрібна).
+function buildRequirementOrder() {
+  let photoIdx = 0, audioIdx = 0;
+  return chipOrder.map(entry => {
+    if (entry.kind === 'photo') return { kind: 'photo', ref: photoIdx++ };
+    if (entry.kind === 'audio') return { kind: 'audio', ref: audioIdx++ };
+    const item = questionnaireReqs.find(q => q._localId === entry.localId);
+    return { kind: 'quest', ref: item ? item.id : null };
+  });
+}
+
+function closeMiniForm() { document.getElementById('mini-form-slot').innerHTML = ''; }
+
+document.getElementById('add-photo-btn').addEventListener('click', () => {
+  const mfPhotoOptions = REAL_SECTION_KEYS.map(({key, name}) => `<option value="${key}">${name}</option>`).join('');
+  document.getElementById('mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="form-row">
+        <div class="form-field"><label>Назва</label><input type="text" id="mf-photo-title" placeholder="Фото туалету"></div>
+        <div class="form-field"><label>К-сть фото</label><input type="number" id="mf-photo-count" value="1" min="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Секція</label><select id="mf-photo-section">${mfPhotoOptions}</select></div>
+        <div class="form-field"><label>Опис (необов'язково)</label><input type="text" id="mf-photo-desc"></div>
+      </div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="mf-photo-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="mf-photo-add">Додати</button>
+      </div>
+    </div>`;
+  document.getElementById('mf-photo-cancel').addEventListener('click', closeMiniForm);
+  document.getElementById('mf-photo-add').addEventListener('click', () => {
+    const title = document.getElementById('mf-photo-title').value.trim();
+    if (!title) return;
+    const localId = nextChipLocalId++;
+    photoReqs.push({
+      _localId: localId,
+      title, description: document.getElementById('mf-photo-desc').value.trim(),
+      required_count: Number(document.getElementById('mf-photo-count').value) || 1,
+      section_key: document.getElementById('mf-photo-section').value
+    });
+    chipOrder.push({ kind: 'photo', localId });
+    closeMiniForm(); renderChips();
+  });
+});
+
+document.getElementById('add-audio-btn').addEventListener('click', () => {
+  const options = REAL_SECTION_KEYS.map(({key, name}) => `<option value="${key}">${name}</option>`).join('');
+  document.getElementById('mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="form-row">
+        <div class="form-field"><label>Назва</label><input type="text" id="mf-audio-title" placeholder="Аудіозапис бару"></div>
+        <div class="form-field"><label>Секція</label><select id="mf-audio-section">${options}</select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-field"><label>Мін. тривалість (сек)</label><input type="number" id="mf-audio-duration" value="30" min="1"></div>
+        <div class="form-field"><label>Інструкція (необов'язково)</label><input type="text" id="mf-audio-instr"></div>
+      </div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="mf-audio-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="mf-audio-add">Додати</button>
+      </div>
+    </div>`;
+  document.getElementById('mf-audio-cancel').addEventListener('click', closeMiniForm);
+  document.getElementById('mf-audio-add').addEventListener('click', () => {
+    const title = document.getElementById('mf-audio-title').value.trim();
+    if (!title) return;
+    const localId = nextChipLocalId++;
+    audioReqs.push({
+      _localId: localId,
+      title, section_key: document.getElementById('mf-audio-section').value,
+      min_duration_sec: Number(document.getElementById('mf-audio-duration').value) || 30,
+      instruction: document.getElementById('mf-audio-instr').value.trim()
+    });
+    chipOrder.push({ kind: 'audio', localId });
+    closeMiniForm(); renderChips();
+  });
+});
+
+document.getElementById('add-questionnaire-btn').addEventListener('click', async () => {
+  const res = await fetch(`${API_BASE}/ga/admin/questionnaires`, { headers: authHeaders() });
+  const data = await res.json();
+  const list = data.questionnaires || [];
+  const options = list.map(q => `<option value="${q.id}">${q.title} (${SECTION_NAMES[q.section_key] || q.section_key})</option>`).join('');
+
+  if (list.length === 0) {
+    document.getElementById('mini-form-slot').innerHTML = `<div class="mini-form"><div style="font-size:11px;color:var(--muted);margin-bottom:8px">У базі ще немає жодної анкети.</div><a href="questionnaires.html" class="btn-primary btn-small" style="text-decoration:none;display:inline-flex"><i class="ti ti-list-check"></i>Створити анкету</a> <button class="btn-outline btn-small" id="mf-q-cancel">Закрити</button></div>`;
+    document.getElementById('mf-q-cancel').addEventListener('click', closeMiniForm);
+    return;
+  }
+
+  document.getElementById('mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="form-field" style="margin-bottom:8px"><label>Анкета</label><select id="mf-q-select">${options}</select></div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="mf-q-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="mf-q-add">Додати</button>
+      </div>
+    </div>`;
+  document.getElementById('mf-q-cancel').addEventListener('click', closeMiniForm);
+  document.getElementById('mf-q-add').addEventListener('click', async () => {
+    const qId = Number(document.getElementById('mf-q-select').value);
+    const q = list.find(x => x.id === qId);
+    const critRes = await fetch(`${API_BASE}/ga/admin/criteria?questionnaire_id=${qId}`, { headers: authHeaders() });
+    const critData = await critRes.json();
+    const localId = nextChipLocalId++;
+    questionnaireReqs.push({ _localId: localId, id: qId, title: q.title, criteria_count: (critData.criteria || []).length, section_key: q.section_key });
+    chipOrder.push({ kind: 'questionnaire', localId });
+    closeMiniForm(); renderChips();
+  });
+});
+
+document.getElementById('save-task-btn').addEventListener('click', async () => {
+  document.getElementById('task-form-alert').className = 'alert err';
+  ['err-object','err-shopper','err-deadline','err-requirements'].forEach(id => document.getElementById(id).classList.remove('show'));
+
+  const objectId = document.getElementById('f-object').value;
+  const shopperId = document.getElementById('f-shopper').value;
+  const deadline = document.getElementById('f-deadline').value;
+
+  let hasError = false;
+  if (!deadline) { document.getElementById('err-deadline').textContent = "Дедлайн обов'язковий"; document.getElementById('err-deadline').classList.add('show'); hasError = true; }
+  if (photoReqs.length === 0 && audioReqs.length === 0 && questionnaireReqs.length === 0) {
+    document.getElementById('err-requirements').textContent = "Додайте хоча б одну вимогу (фото/аудіо/анкету)";
+    document.getElementById('err-requirements').classList.add('show'); hasError = true;
+  }
+  if (hasError) return;
+
+  const btn = document.getElementById('save-task-btn');
+  btn.disabled = true; btn.textContent = 'Зберігаємо…';
+
+  let saveResult = null;
+  let res = null;
+  try {
+    res = await fetch(`${API_BASE}/ga/admin/tasks`, {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        object_id: Number(objectId), shopper_id: Number(shopperId),
+        deadline: new Date(deadline + 'T18:00:00').toISOString(),
+        photo_requirements: chipOrder.filter(e => e.kind === 'photo').map(e => photoReqs.find(r => r._localId === e.localId)),
+        audio_requirements: chipOrder.filter(e => e.kind === 'audio').map(e => audioReqs.find(r => r._localId === e.localId)),
+        questionnaire_ids: questionnaireReqs.map(q => q.id),
+        requirement_order: buildRequirementOrder()
+      })
+    });
+  } catch (err) {
+    console.error('Task save network error:', err);
+    document.getElementById('task-form-alert').textContent = "Немає з'єднання з сервером";
+    document.getElementById('task-form-alert').className = 'alert err show';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-device-floppy"></i>Зберегти';
+    return;
+  }
+
+  try {
+    saveResult = await res.json();
+  } catch (parseErr) {
+    // Порожнє тіло при HTTP-статусі 200/201 — завдання фактично зберігається на бекенді,
+    // просто відповідь не долітає повністю. Трактуємо як успіх, а не як помилку.
+    console.warn('Порожня відповідь при status', res.status, '— вважаємо збереження успішним');
+    if (res.ok) {
+      saveResult = { success: true };
+    } else {
+      document.getElementById('task-form-alert').textContent = `Помилка сервера (HTTP ${res.status})`;
+      document.getElementById('task-form-alert').className = 'alert err show';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-device-floppy"></i>Зберегти';
+      return;
+    }
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-device-floppy"></i>Зберегти';
+
+  if (!saveResult || !saveResult.success) {
+    document.getElementById('task-form-alert').textContent = (saveResult && saveResult.error) || 'Помилка збереження';
+    document.getElementById('task-form-alert').className = 'alert err show';
+    return;
+  }
+
+  // Збереження точно успішне — далі йде лише UI-навігація, окремо від мережевої помилки
+  // Пуш тепер шлеться окремим незалежним запитом (не всередині ga-admin-tasks).
+  try {
+    let newTaskId = saveResult.task && saveResult.task.id;
+    if (!newTaskId) {
+      const qs = new URLSearchParams({ object_id: objectId, shopper_id: shopperId });
+      const listRes = await fetch(`${API_BASE}/ga/admin/tasks?${qs.toString()}`, { headers: authHeaders() });
+      const listData = await listRes.json();
+      const freshTasks = (listData.tasks || []).slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      newTaskId = freshTasks[0] && freshTasks[0].id;
+    }
+    if (newTaskId) {
+      await fetch(`${API_BASE}/ga/admin/send-task-push`, {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task_id: newTaskId })
+      });
+    }
+  } catch (pushErr) {
+    console.warn('Push-запит не вдався (не критично):', pushErr);
+  }
+
+  try {
+    await showAlertDialog('Завдання успішно створено.', 'Готово');
+    showListView();
+  } catch (err) {
+    console.error('Post-save UI error (завдання вже збережено):', err);
+  }
+});
+
+document.getElementById('use-template-btn').addEventListener('click', async () => {
+  const objectId = document.getElementById('f-object').value;
+  const shopperId = document.getElementById('f-shopper').value;
+  const deadline = document.getElementById('f-deadline').value;
+  const errEl = document.getElementById('task-form-alert');
+  const okEl = document.getElementById('task-form-alert-ok');
+  errEl.className = 'alert err'; okEl.className = 'alert ok';
+
+  if (!deadline) {
+    document.getElementById('err-deadline').textContent = "Дедлайн обов'язковий";
+    document.getElementById('err-deadline').classList.add('show');
+    return;
+  }
+
+  let templates = [];
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/tasks/templates`, { headers: authHeaders() });
+    const data = await res.json();
+    templates = data.templates || [];
+  } catch (err) {
+    errEl.textContent = "Немає з'єднання з сервером"; errEl.className = 'alert err show';
+    return;
+  }
+  if (templates.length === 0) {
+    errEl.textContent = 'Шаблонів ще немає — спочатку створіть хоча б один (кнопка "Зберегти як шаблон" у редагуванні завдання).';
+    errEl.className = 'alert err show';
+    return;
+  }
+
+  const options = templates.map(t => `<option value="${t.id}">${t.name} (${t.photo_count} фото, ${t.audio_count} аудіо, ${t.questionnaire_count} анкет)</option>`).join('');
+  document.getElementById('mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="mini-form-title">Створити з шаблону</div>
+      <div class="form-field" style="margin-bottom:8px"><label>Шаблон</label><select id="tf-template">${options}</select></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Об'єкт/покупець/дедлайн беруться з полів вище. Вимоги, додані вручну на цій сторінці, будуть проігноровані — застосується лише шаблон.</div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="tf-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="tf-apply">Створити</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('tf-cancel').addEventListener('click', () => { document.getElementById('mini-form-slot').innerHTML = ''; });
+  document.getElementById('tf-apply').addEventListener('click', async () => {
+    const btn = document.getElementById('tf-apply');
+    btn.disabled = true; btn.textContent = 'Створюємо…';
+    try {
+      const res = await fetch(`${API_BASE}/ga/admin/tasks/templates/apply`, {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          template_id: Number(document.getElementById('tf-template').value),
+          object_id: Number(objectId), shopper_id: Number(shopperId),
+          deadline: new Date(deadline + 'T18:00:00').toISOString()
+        })
+      });
+      const data = await res.json();
+      if (!data.success) { errEl.textContent = data.error || 'Помилка'; errEl.className = 'alert err show'; return; }
+
+      // Той самий пуш, що і при звичайному створенні (п. "Зберегти") — тут раніше
+      // взагалі не викликався, бо це окрема кнопка з окремим ендпоінтом створення.
+      let newTaskId = data.task && data.task.id;
+      if (!newTaskId) {
+        const qs = new URLSearchParams({ object_id: objectId, shopper_id: shopperId });
+        const listRes = await fetch(`${API_BASE}/ga/admin/tasks?${qs.toString()}`, { headers: authHeaders() });
+        const listData = await listRes.json();
+        const freshTasks = (listData.tasks || []).slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        newTaskId = freshTasks[0] && freshTasks[0].id;
+      }
+      if (newTaskId) {
+        await fetch(`${API_BASE}/ga/admin/send-task-push`, {
+          method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task_id: newTaskId })
+        });
+      }
+
+      document.getElementById('mini-form-slot').innerHTML = '';
+      await showAlertDialog('Завдання створено з шаблону.', 'Готово');
+      showListView();
+    } catch (err) {
+      errEl.textContent = "Немає з'єднання з сервером"; errEl.className = 'alert err show';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Створити';
+    }
+  });
+});
+
+async function init() {
+  token = localStorage.getItem('ga_token');
+  if (!token) { document.getElementById('auth-gate').style.display = 'block'; return; }
+  try {
+    await loadTasks(currentTasksSearch);
+    document.getElementById('page-body').style.display = 'flex';
+  } catch (err) {
+    document.getElementById('auth-gate').style.display = 'block';
+  }
+}
+document.getElementById('logout-btn').addEventListener('click', () => {
+  localStorage.removeItem('ga_token');
+  window.location.href = 'login.html';
+});
+
+init();
+</script>
+<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:var(--muted2);z-index:9999;pointer-events:none">v2026-09-21-sections</div>
+</body>
+</html>

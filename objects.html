@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizoria — Об'єкти</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --accent:#8C64C9; --accent-hover:#a07ed8; --accent-light:rgba(140,100,201,.13); --accent-border:rgba(140,100,201,.3);
+  --bg:#f4f4f7; --bg2:#ffffff; --bg3:#f0f0f4; --border:#e0e0e8; --border2:#ccccda;
+  --text:#1a1a20; --muted:#6b6b80; --muted2:#aaaabc; --black:#0a0a12;
+  --success:#16a34a; --success-bg:#f0fff4; --success-border:#bbf7d0;
+  --danger:#c0392b; --danger-bg:#fff0f0; --danger-border:#ffd0d0;
+  --warn-text:#92400e; --warn-bg:#fffbeb; --warn-border:#fde68a;
+  --card-shadow:0 1px 3px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-size:13px}
+
+.top-bar{position:sticky;top:0;height:52px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;z-index:60;backdrop-filter:blur(16px);gap:14px}
+.wizoria-logo{height:19px;width:auto;flex-shrink:0}
+.brand-sub{font-size:13px;color:var(--muted);white-space:nowrap;font-weight:500}
+.nav-sep{flex:1}
+
+.layout{display:flex;min-height:calc(100vh - 52px)}
+.sidebar{width:190px;min-width:190px;background:var(--bg3);border-right:1px solid var(--border);padding:14px 0;flex-shrink:0}
+.sb-label{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);padding:0 14px;margin-bottom:8px}
+.sb-item{padding:9px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:9px;text-decoration:none;cursor:pointer}
+.sb-item i{font-size:15px}
+.sb-item:hover{color:var(--text)}
+.sb-item.active{color:var(--accent);background:var(--accent-light);border-left:2px solid var(--accent);padding-left:12px}
+
+.main{flex:1;min-width:0;padding:24px 28px 60px}
+
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.page-title{font-size:20px;font-weight:600;color:var(--black);letter-spacing:-.01em}
+.page-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.btn-primary{background:var(--accent);border:none;border-radius:7px;height:32px;padding:0 13px;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#fff;cursor:pointer}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:disabled{opacity:.55;cursor:default}
+.btn-outline{border:1px solid var(--border);border-radius:7px;height:32px;padding:0 13px;display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer;background:var(--bg2)}
+.btn-outline:hover{background:var(--bg3)}
+
+/* --- Форма додавання --- */
+.add-form{border:1px solid var(--accent-border);border-radius:10px;padding:16px;background:var(--accent-light);margin-bottom:16px}
+.add-form-title{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-field label{font-size:10px;color:var(--muted);display:block;margin-bottom:4px}
+.form-field input, .form-field select{width:100%;height:32px;border:1px solid var(--accent);border-radius:6px;background:var(--bg2);padding:0 10px;font-size:12px;font-family:inherit;color:var(--text);outline:none}
+.form-field input:focus, .form-field select:focus{box-shadow:0 0 0 3px var(--accent-light)}
+.form-columns{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.form-col-fields{min-width:0}
+.form-col-map{min-width:0}
+#map{height:340px;border:1px solid var(--border);border-radius:7px;background:var(--bg3)}
+.suggestion-item{padding:8px 10px;font-size:11px;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border)}
+.suggestion-item:last-child{border-bottom:none}
+.suggestion-item:hover{background:var(--accent-light)}
+.range-row{display:flex;align-items:center;gap:8px}
+.range-row input[type=range]{flex:1;accent-color:var(--accent)}
+.range-val{font-size:11px;font-weight:600;color:var(--accent);min-width:40px}
+.form-actions{display:flex;justify-content:flex-end;gap:8px}
+.field-err{font-size:10px;color:var(--danger);margin-top:3px;display:none}
+.field-err.show{display:block}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:var(--card-shadow);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+th{text-align:left;padding:8px;font-weight:500;font-size:10px;color:var(--muted2);border-bottom:1px solid var(--border)}
+td{padding:10px 8px;border-bottom:1px solid var(--border);color:var(--muted)}
+tr:last-child td{border-bottom:none}
+.obj-name{font-weight:500;color:var(--black)}
+.status-badge{font-size:10px;background:var(--success-bg);color:var(--success);border:1px solid var(--success-border);border-radius:4px;padding:2px 7px;font-weight:500;display:inline-flex;align-items:center;gap:3px}
+.edit-btn{border:1px solid var(--border);border-radius:5px;height:24px;padding:0 9px;display:inline-flex;align-items:center;font-size:10px;color:var(--muted);gap:4px;cursor:pointer;background:var(--bg2)}
+.delete-btn{border:1px solid var(--danger-border);border-radius:5px;height:24px;padding:0 9px;display:inline-flex;align-items:center;font-size:10px;color:var(--danger);gap:4px;cursor:pointer;background:var(--bg2);margin-left:5px}
+.delete-btn:hover{background:var(--danger-bg)}
+
+.rows-cards{display:none}
+.row-card{padding:12px 14px;border-bottom:1px solid var(--border)}
+.row-card:last-child{border-bottom:none}
+.row-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.row-card-meta{font-size:11px;color:var(--muted);line-height:1.6}
+
+.empty-state{padding:32px 18px;text-align:center;color:var(--muted);font-size:12px}
+.empty-state i{font-size:24px;display:block;margin-bottom:9px;opacity:.4}
+.alert{padding:9px 12px;border-radius:7px;font-size:12px;margin-bottom:10px;display:none}
+.alert.show{display:block}
+.alert.err{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+
+.auth-gate{max-width:420px;margin:80px auto;text-align:center;padding:0 20px}
+.auth-gate p{color:var(--muted);font-size:13px;margin:10px 0 18px;line-height:1.6}
+.auth-gate a{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:600}
+
+@media (max-width: 720px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;min-width:0;display:flex;align-items:center;padding:8px 6px;overflow-x:auto;gap:2px;border-right:none;border-bottom:1px solid var(--border)}
+  .sb-label{display:none}
+  .sb-item{white-space:nowrap;border-left:none !important;border-radius:7px;padding:7px 11px !important}
+  .main{padding:16px 14px 40px}
+  .form-row{grid-template-columns:1fr}
+  .form-columns{grid-template-columns:1fr}
+  #map{height:220px}
+  table{display:none}
+  .rows-cards{display:block}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <svg class="wizoria-logo" viewBox="0 0 3418 1015" xmlns="http://www.w3.org/2000/svg"><g fill="var(--black)"><path d="M709.68,159.25 L774.19,159.25 C781.22,159.25 786.75,164.79 786.75,171.82 L786.75,574.86 C786.75,581.88 781.22,587.42 774.19,587.42 L709.68,587.42 C702.66,587.42 697.12,581.88 697.12,574.86 L697.12,171.82 C697.12,164.79 702.66,159.25 709.68,159.25 Z"/><path d="M888.32,237.82 L888.32,173.1 C888.32,166.07 894.06,160.53 901.09,160.53 L1283.27,160.53 C1290.29,160.53 1296.04,166.07 1296.04,173.1 L1296.04,236.12 L1296.04,250.39 C1295.82,254.85 1294.34,258.05 1291.57,260.39 L1010.31,497.15 L901.51,586.78 L888.95,572.73 L888.73,493.75 C888.73,489.06 891.29,486.72 893.84,483.95 L1173.39,250.17 L901.08,250.17 C894.05,250.17 888.31,244.63 888.31,237.82 L888.32,237.82 Z"/><path d="M888.95,575.07 L888.95,510.35 C888.95,503.54 894.49,497.79 901.52,497.79 L1282.43,497.79 C1289.24,497.79 1294.99,503.54 1294.99,510.35 L1294.99,575.07 C1294.99,581.89 1289.24,587.64 1282.43,587.64 L901.52,587.64 C894.49,587.64 888.95,581.89 888.95,575.07 Z"/><path d="M2252.68,159.89 L2459.42,159.89 C2491.99,159.89 2548.83,162.87 2596.1,228.02 C2619.74,260.6 2622.51,312.56 2622.08,320.64 C2616.75,366.84 2597.38,407.51 2557.57,440.31 L2614.84,571.88 C2616.33,575.28 2616.12,579.54 2614.2,582.52 C2612.08,586.14 2608.24,588.27 2605.48,588.27 L2533.1,588.27 C2530.54,588.27 2527.77,588.48 2525.01,587.41 C2521.39,586.13 2517.77,583.15 2516.7,580.17 L2471.35,467.33 L2291.65,467.33 L2291.65,575.7 C2291.65,582.52 2285.91,588.27 2279.09,588.27 L2214.36,588.27 C2207.55,588.27 2201.8,582.52 2201.8,575.7 L2201.8,172.45 C2201.8,165.63 2207.55,159.89 2214.36,159.89 L2252.68,159.89 Z M2291.64,377.49 L2474.75,377.49 C2484.75,376.85 2501.15,372.38 2508.82,365.35 C2554.8,323.62 2530.11,248.46 2459.42,249.74 L2291.64,249.74 L2291.64,377.49 Z"/><path d="M2752.81,159.25 L2817.53,159.25 C2824.35,159.25 2830.1,165 2830.1,171.82 L2830.1,575.07 C2830.1,581.89 2824.35,587.64 2817.53,587.64 L2752.81,587.64 C2745.99,587.64 2740.25,581.89 2740.25,575.07 L2740.25,171.82 C2740.25,165 2745.99,159.25 2752.81,159.25 Z"/><path d="M3176.72,266.99 L3105.39,422.84 L3248.05,422.84 L3176.72,266.99 Z M3064.52,512.47 L3032.79,581.46 C3030.02,587.84 3022.99,588.28 3016.18,588.28 L2946.99,588.06 C2943.58,588.06 2939.75,585.72 2937.83,582.52 C2935.7,579.12 2935.7,574.64 2937.19,571.45 L3122.43,169.48 C3124.77,164.37 3130.51,160.11 3137.75,160.11 L3212.28,160.11 C3220.58,160.11 3227.61,161.81 3231.44,170.12 L3416.26,571.45 C3419.88,578.9 3414.34,588.06 3407.1,588.06 L3337.47,588.28 C3330.45,588.28 3323.42,587.85 3320.65,581.46 L3289.14,512.47 L3064.51,512.47 L3064.52,512.47 Z"/><path d="M609.4,160.1 L543.61,160.1 C536.58,160.1 529.98,163.08 528.06,169.9 L443.33,500.56 L366.68,172.03 C364.98,164.15 357.53,159.25 350.72,159.25 L274.28,159.25 C269.81,159.25 264.7,161.6 261.3,165.86 C259.59,168.2 258.53,170.96 257.67,174.38 L170.38,501.2 L88.62,169.91 C86.92,163.09 79.89,160.11 72.87,160.11 L10.7,160.11 C3.68,160.11 -1.22,168.63 0.27,175.44 L94.59,577.41 C96.08,583.38 101.62,587.42 107.58,587.21 L228.94,587.43 C237.25,587.43 241.93,580.19 244.06,572.1 L311.56,322.57 L370.74,572.52 C372.87,580.83 380.33,587 387.35,587.21 L496.36,587.43 C503.39,587.43 510.83,582.96 513.6,572.52 L619,175.45 C620.7,168.63 616.44,160.12 609.41,160.12 L609.4,160.1 Z"/></g><path fill="#8C64C9" d="M1736.99,649.38 C1813.22,649.38 1882.2,618.51 1932.23,568.47 C1982.27,518.65 2013.14,449.67 2013.14,373.45 C2013.14,297.22 1982.27,228.24 1932.23,178.2 C1882.2,128.38 1813.21,97.51 1736.99,97.51 C1660.98,97.51 1591.79,128.38 1541.96,178.2 C1491.93,228.24 1461.05,297.23 1461.05,373.45 C1461.05,449.67 1491.93,518.64 1541.96,568.47 C1591.78,618.51 1660.98,649.38 1736.99,649.38 Z M2001.22,637.46 C1933.51,704.95 1840.25,746.9 1736.99,746.9 C1633.94,746.9 1540.69,704.96 1472.99,637.46 C1405.49,569.97 1363.76,476.5 1363.76,373.45 C1363.76,270.41 1405.49,176.93 1472.99,109.44 C1540.69,41.73 1633.94,5.68434189e-14 1736.99,5.68434189e-14 C1840.25,5.68434189e-14 1933.51,41.73 2001.22,109.44 C2068.71,176.93 2110.44,270.41 2110.44,373.45 C2110.44,476.5 2068.71,569.97 2001.22,637.46 Z"/></svg>
+  <span class="brand-sub">— Об'єкти</span>
+  <div class="nav-sep"></div>
+  <div id="logout-btn" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;padding:6px 10px;border-radius:6px" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'"><i class="ti ti-logout" style="font-size:15px"></i>Вийти</div>
+</div>
+
+<div id="auth-gate" class="auth-gate" style="display:none">
+  <div style="font-size:32px;margin-bottom:6px">🔒</div>
+  <div style="font-size:16px;font-weight:600;color:var(--black)">Потрібен вхід</div>
+  <p>Розділ доступний лише авторизованим Admin.</p>
+  <a href="login.html">Перейти до входу</a>
+</div>
+
+<div id="page-body" class="layout" style="display:none">
+  <div class="sidebar">
+    <div class="sb-label">Меню</div>
+    <a class="sb-item" href="dashboard.html"><i class="ti ti-layout-dashboard"></i>Dashboard</a>
+    <a class="sb-item" href="tasks.html"><i class="ti ti-clipboard-list"></i>Завдання</a>
+    <a class="sb-item" href="questionnaires.html"><i class="ti ti-list-check"></i>Анкети</a>
+    <a class="sb-item" href="shoppers.html"><i class="ti ti-users"></i>Покупці</a>
+    <a class="sb-item active" href="objects.html"><i class="ti ti-building"></i>Об'єкти</a>
+    <a class="sb-item" href="ai-settings.html"><i class="ti ti-robot"></i>AI-налаштування</a>
+    <a class="sb-item" href="reports.html"><i class="ti ti-chart-bar"></i>Звіти</a>
+  </div>
+
+  <div class="main">
+    <div class="page-head">
+      <div>
+        <div class="page-title">Об'єкти</div>
+        <div class="page-sub">Кінотеатри та локації</div>
+      </div>
+      <button class="btn-primary" id="toggle-form-btn"><i class="ti ti-plus"></i>Додати об'єкт</button>
+    </div>
+
+    <div class="add-form" id="add-form" style="display:none">
+      <div class="add-form-title"><i class="ti ti-plus"></i>Новий об'єкт</div>
+      <div class="alert err" id="form-alert"></div>
+
+      <div class="form-columns">
+        <div class="form-col-fields">
+          <div class="form-row">
+            <div class="form-field">
+              <label>Клієнт (мережа)</label>
+              <div style="display:flex;gap:6px">
+                <select id="f-client" style="flex:1"></select>
+                <button type="button" class="btn-outline" id="new-client-btn" title="Нова мережа" style="height:32px;padding:0 10px;white-space:nowrap"><i class="ti ti-plus"></i></button>
+                <button type="button" class="btn-outline" id="rename-client-btn" title="Перейменувати мережу" style="height:32px;padding:0 10px;white-space:nowrap"><i class="ti ti-pencil"></i></button>
+                <button type="button" class="btn-outline" id="delete-client-btn" title="Видалити мережу" style="height:32px;padding:0 10px;white-space:nowrap;color:var(--danger);border-color:var(--danger-border)"><i class="ti ti-trash"></i></button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Назва об'єкту</label>
+              <input type="text" id="f-name" placeholder="Wizoria Конкорд">
+              <div class="field-err" id="err-name"></div>
+            </div>
+          </div>
+
+          <div class="form-field" style="margin-bottom:10px;position:relative;z-index:10">
+            <label>Адреса</label>
+            <input type="text" id="f-address" placeholder="вул. Європейська 60А, Полтава" autocomplete="off">
+            <div id="address-status" style="font-size:10px;color:var(--muted);margin-top:3px;display:none"></div>
+            <div id="address-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:7px;box-shadow:var(--card-shadow);z-index:5000;max-height:180px;overflow-y:auto;margin-top:3px"></div>
+          </div>
+
+          <div class="form-field" style="margin-bottom:10px">
+            <label>Місто</label>
+            <input type="text" id="f-city" placeholder="Полтава">
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Радіус геолокації</label>
+              <div class="range-row">
+                <input type="range" id="f-radius" min="50" max="500" step="50" value="150">
+                <span class="range-val" id="f-radius-val">150м</span>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Supervisor</label>
+              <select id="f-supervisor"><option value="">Не призначено</option></select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-outline" id="cancel-btn">Скасувати</button>
+            <button class="btn-primary" id="save-btn">Зберегти об'єкт</button>
+          </div>
+        </div>
+
+        <div class="form-col-map">
+          <div id="map"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:28%">Об'єкт</th>
+            <th style="width:26%">Адреса</th>
+            <th style="width:18%">Supervisor</th>
+            <th style="width:14%">Статус</th>
+            <th style="width:14%"></th>
+          </tr>
+        </thead>
+        <tbody id="objects-tbody"></tbody>
+      </table>
+      <div class="rows-cards" id="objects-cards"></div>
+      <div class="empty-state" id="objects-empty" style="display:none">
+        <i class="ti ti-building-off"></i>Об'єктів ще немає — додайте перший
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,10,18,.45);z-index:1000;align-items:center;justify-content:center;padding:20px">
+  <div id="modal-box" style="background:var(--bg2);border-radius:14px;box-shadow:var(--card-shadow);max-width:380px;width:100%;padding:22px">
+    <div id="modal-icon" style="font-size:28px;margin-bottom:10px"></div>
+    <div id="modal-title" style="font-size:15px;font-weight:600;color:var(--black);margin-bottom:6px"></div>
+    <div id="modal-message" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px"></div>
+    <div id="modal-actions" style="display:flex;justify-content:flex-end;gap:8px"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+function showModal({ icon = 'ℹ️', title, message, buttons, input }) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('modal-overlay');
+    document.getElementById('modal-icon').textContent = icon;
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-message').textContent = message;
+    const actions = document.getElementById('modal-actions');
+    actions.innerHTML = '';
+
+    let inputEl = document.getElementById('modal-input');
+    if (input) {
+      if (!inputEl) {
+        inputEl = document.createElement('input');
+        inputEl.id = 'modal-input';
+        inputEl.type = 'text';
+        inputEl.style.cssText = 'width:100%;height:34px;border:1px solid var(--border);border-radius:7px;background:var(--bg2);padding:0 10px;font-size:13px;font-family:inherit;color:var(--text);outline:none;margin-bottom:14px;display:block';
+        document.getElementById('modal-message').insertAdjacentElement('afterend', inputEl);
+      }
+      inputEl.style.display = 'block';
+      inputEl.value = input.value || '';
+      inputEl.placeholder = input.placeholder || '';
+    } else if (inputEl) {
+      inputEl.style.display = 'none';
+    }
+
+    buttons.forEach(b => {
+      const btn = document.createElement('button');
+      btn.textContent = b.label;
+      btn.className = b.variant === 'primary' ? 'btn-primary' : (b.variant === 'danger' ? 'btn-primary' : 'btn-outline');
+      if (b.variant === 'danger') btn.style.background = 'var(--danger)';
+      btn.addEventListener('click', () => {
+        overlay.style.display = 'none';
+        const val = (input && b.value === true) ? inputEl.value.trim() : b.value;
+        resolve(val);
+      });
+      actions.appendChild(btn);
+    });
+
+    overlay.style.display = 'flex';
+    if (input) setTimeout(() => inputEl && inputEl.focus(), 50);
+  });
+}
+
+function showPromptDialog(message, title = 'Введіть значення', placeholder = '', value = '', confirmLabel = 'Створити') {
+  return showModal({
+    icon: '✏️', title, message, input: { placeholder, value },
+    buttons: [
+      { label: 'Скасувати', value: false, variant: 'outline' },
+      { label: confirmLabel, value: true, variant: 'primary' }
+    ]
+  });
+}
+
+function showConfirmDialog(message, title = 'Підтвердіть дію') {
+  return showModal({
+    icon: '⚠️', title, message,
+    buttons: [
+      { label: 'Скасувати', value: false, variant: 'outline' },
+      { label: 'Так, продовжити', value: true, variant: 'danger' }
+    ]
+  });
+}
+
+function showAlertDialog(message, title = 'Повідомлення') {
+  return showModal({
+    icon: 'ℹ️', title, message,
+    buttons: [{ label: 'Гаразд', value: true, variant: 'primary' }]
+  });
+}
+</script>
+<script>
+const API_BASE = 'https://primary-production-3872.up.railway.app/webhook';
+let token = null;
+function authHeaders() { return { 'Authorization': 'Bearer ' + token }; }
+let leafletMap = null, marker = null, geoCircle = null;
+let selectedLat = 49.5883, selectedLng = 34.5514; // Полтава — центр за замовчуванням
+let addressDebounce = null;
+let suppressNextGeocode = false; // щоб не запускати зворотний геокодинг одразу після вибору підказки
+
+function currentRadius() {
+  return Number(document.getElementById('f-radius').value);
+}
+
+function updateCircle() {
+  if (!geoCircle) return;
+  geoCircle.setLatLng([selectedLat, selectedLng]);
+  geoCircle.setRadius(currentRadius());
+}
+
+async function reverseGeocode(lat, lng) {
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/geocode`, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat, lon: lng })
+    });
+    const rd = await res.json();
+    if (rd.success && rd.results && rd.results[0] && rd.results[0].display_name) {
+      document.getElementById('f-address').value = rd.results[0].display_name;
+    }
+  } catch (err) {
+    console.error('Geocode reverse error:', err);
+  }
+}
+
+function movePinTo(lat, lng) {
+  selectedLat = lat; selectedLng = lng;
+  marker.setLatLng([lat, lng]);
+  leafletMap.setView([lat, lng], leafletMap.getZoom());
+  updateCircle();
+}
+
+function initMap() {
+  leafletMap = L.map('map').setView([selectedLat, selectedLng], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap', maxZoom: 18
+  }).addTo(leafletMap);
+
+  marker = L.marker([selectedLat, selectedLng], { draggable: true }).addTo(leafletMap);
+  geoCircle = L.circle([selectedLat, selectedLng], {
+    radius: currentRadius(), color: '#8C64C9', fillColor: '#8C64C9', fillOpacity: 0.12, weight: 1.5
+  }).addTo(leafletMap);
+
+  marker.on('dragend', () => {
+    const p = marker.getLatLng();
+    selectedLat = p.lat; selectedLng = p.lng;
+    updateCircle();
+    reverseGeocode(selectedLat, selectedLng);
+  });
+
+  leafletMap.on('click', (e) => {
+    selectedLat = e.latlng.lat; selectedLng = e.latlng.lng;
+    marker.setLatLng(e.latlng);
+    updateCircle();
+    reverseGeocode(selectedLat, selectedLng);
+  });
+}
+
+document.getElementById('f-radius').addEventListener('input', (e) => {
+  document.getElementById('f-radius-val').textContent = e.target.value + 'м';
+  updateCircle();
+});
+
+// --- Автокомплит адреси (Nominatim search) ---
+const addressInput = document.getElementById('f-address');
+const suggestionsBox = document.getElementById('address-suggestions');
+
+function hideSuggestions() {
+  suggestionsBox.style.display = 'none';
+  suggestionsBox.innerHTML = '';
+}
+
+addressInput.addEventListener('input', () => {
+  if (suppressNextGeocode) { suppressNextGeocode = false; return; }
+  clearTimeout(addressDebounce);
+  const query = addressInput.value.trim();
+  if (query.length < 3) { hideSuggestions(); document.getElementById('address-status').style.display = 'none'; return; }
+
+  addressDebounce = setTimeout(async () => {
+    const statusEl = document.getElementById('address-status');
+    statusEl.style.display = 'none';
+    try {
+      const res = await fetch(`${API_BASE}/ga/admin/geocode`, {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: query })
+      });
+      const rd = await res.json();
+      const results = (rd.success && rd.results) || [];
+      if (!results.length) {
+        statusEl.textContent = 'Нічого не знайдено';
+        statusEl.style.display = 'block';
+        hideSuggestions(); return;
+      }
+
+      suggestionsBox.innerHTML = '';
+      results.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'suggestion-item';
+        item.textContent = r.display_name;
+        item.addEventListener('click', () => {
+          suppressNextGeocode = true;
+          addressInput.value = r.display_name;
+          if (leafletMap) movePinTo(Number(r.lat), Number(r.lon));
+          hideSuggestions();
+        });
+        suggestionsBox.appendChild(item);
+      });
+      suggestionsBox.style.display = 'block';
+    } catch (err) {
+      console.error('Geocode search error:', err);
+      statusEl.textContent = "Немає з'єднання з сервісом пошуку адрес";
+      statusEl.style.display = 'block';
+      hideSuggestions();
+    }
+  }, 500);
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#address-suggestions') && e.target !== addressInput) hideSuggestions();
+});
+
+document.getElementById('toggle-form-btn').addEventListener('click', () => {
+  const form = document.getElementById('add-form');
+  const showing = form.style.display !== 'none';
+  if (showing) {
+    form.style.display = 'none';
+    return;
+  }
+  resetFormToCreateMode();
+  form.style.display = 'block';
+  if (!leafletMap) {
+    setTimeout(() => { initMap(); leafletMap.invalidateSize(); }, 50);
+  } else {
+    setTimeout(() => leafletMap.invalidateSize(), 50);
+  }
+});
+document.getElementById('cancel-btn').addEventListener('click', () => {
+  document.getElementById('add-form').style.display = 'none';
+  resetFormToCreateMode();
+});
+
+function showFormError(msg) {
+  const el = document.getElementById('form-alert');
+  el.textContent = msg;
+  el.className = 'alert err show';
+}
+function clearFormError() {
+  document.getElementById('form-alert').className = 'alert err';
+}
+
+async function loadClients() {
+  const res = await fetch(`${API_BASE}/ga/admin/clients`, { headers: authHeaders() });
+  const data = await res.json();
+  const select = document.getElementById('f-client');
+  const prevValue = select.value;
+  select.innerHTML = '';
+  (data.clients || []).forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id; opt.textContent = c.name;
+    select.appendChild(opt);
+  });
+  if (prevValue) select.value = prevValue;
+}
+
+document.getElementById('new-client-btn').addEventListener('click', async () => {
+  const name = await showPromptDialog("Назва мережі кінотеатрів", 'Нова мережа', 'напр. CinemaCity');
+  if (!name) return;
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/clients`, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    const data = await res.json();
+    if (!data.success) { await showAlertDialog(data.error || 'Помилка створення мережі', 'Помилка'); return; }
+    await loadClients();
+    document.getElementById('f-client').value = data.client.id;
+  } catch (e) {
+    await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+  }
+});
+
+document.getElementById('rename-client-btn').addEventListener('click', async () => {
+  const select = document.getElementById('f-client');
+  const clientId = Number(select.value);
+  if (!clientId) return;
+  const currentName = select.options[select.selectedIndex]?.textContent || '';
+  const name = await showPromptDialog('Нова назва мережі', 'Перейменувати мережу', '', currentName, 'Зберегти');
+  if (!name) return;
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/clients/update`, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: clientId, name })
+    });
+    const data = await res.json();
+    if (!data.success) { await showAlertDialog(data.error || 'Помилка перейменування', 'Помилка'); return; }
+    await loadClients();
+    select.value = clientId;
+  } catch (e) {
+    await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+  }
+});
+
+document.getElementById('delete-client-btn').addEventListener('click', async () => {
+  const select = document.getElementById('f-client');
+  const clientId = Number(select.value);
+  if (!clientId) return;
+  const name = select.options[select.selectedIndex]?.textContent || 'цю мережу';
+  const ok = await showConfirmDialog(`Видалити мережу «${name}»? Дію не можна скасувати.`, 'Підтвердіть видалення');
+  if (!ok) return;
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/clients/delete`, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: clientId })
+    });
+    const data = await res.json();
+    if (!data.success) { await showAlertDialog(data.error || 'Помилка видалення', 'Помилка'); return; }
+    await loadClients();
+  } catch (e) {
+    await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+  }
+});
+
+async function loadSupervisors() {
+  const res = await fetch(`${API_BASE}/ga/admin/users?role=supervisor`, { headers: authHeaders() });
+  const data = await res.json();
+  const select = document.getElementById('f-supervisor');
+  (data.users || []).forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id; opt.textContent = `${u.first_name} ${u.last_name}`;
+    select.appendChild(opt);
+  });
+}
+
+async function loadSupervisorAssignments() {
+  // Об'єдную дані з двох ендпоінтів на фронті (без змін бекенду):
+  // GET /ga/admin/objects не містить supervisor, а /ga/admin/supervisor-objects — містить.
+  const res = await fetch(`${API_BASE}/ga/admin/supervisor-objects`, { headers: authHeaders() });
+  const data = await res.json();
+  const map = {};
+  (data.assignments || []).forEach(a => {
+    map[a.object_id] = { name: `${a.first_name} ${a.last_name}`, supervisor_id: a.supervisor_id };
+  });
+  return map;
+}
+
+let allObjects = [];
+let allSupMap = {};
+
+async function loadObjects() {
+  const [objRes, supMap] = await Promise.all([
+    fetch(`${API_BASE}/ga/admin/objects`, { headers: authHeaders() }),
+    loadSupervisorAssignments()
+  ]);
+  const objData = await objRes.json();
+  const tbody = document.getElementById('objects-tbody');
+  const cards = document.getElementById('objects-cards');
+  const empty = document.getElementById('objects-empty');
+  tbody.innerHTML = ''; cards.innerHTML = '';
+
+  // Неактивні (видалені) об'єкти ховаємо зі списку — саме такої поведінки очікує адмін від кнопки «Видалити»
+  const objects = (objData.objects || []).filter(o => o.is_active);
+  allObjects = objects;
+  allSupMap = supMap;
+
+  if (objects.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  objects.forEach(o => {
+    const supInfo = supMap[o.id];
+    const supervisorName = supInfo ? supInfo.name : '—';
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td class="obj-name">${o.name}</td>
+        <td>${o.address || '—'}${o.city ? ` <span style="color:var(--muted2)">· ${o.city}</span>` : ''}</td>
+        <td>${supervisorName}</td>
+        <td><span class="status-badge"><i class="ti ti-check"></i>${o.is_active ? 'Активний' : 'Неактивний'}</span></td>
+        <td style="text-align:right"><span class="edit-btn" data-object-id="${o.id}"><i class="ti ti-pencil"></i>Редагувати</span><span class="delete-btn" data-object-id="${o.id}"><i class="ti ti-trash"></i>Видалити</span></td>
+      </tr>
+    `);
+    cards.insertAdjacentHTML('beforeend', `
+      <div class="row-card">
+        <div class="row-card-top">
+          <span class="obj-name">${o.name}</span>
+          <span class="status-badge"><i class="ti ti-check"></i>Активний</span>
+        </div>
+        <div class="row-card-meta">${o.address || '—'}<br>Supervisor: ${supervisorName}</div>
+        <div style="margin-top:8px"><span class="edit-btn" data-object-id="${o.id}"><i class="ti ti-pencil"></i>Редагувати</span><span class="delete-btn" data-object-id="${o.id}"><i class="ti ti-trash"></i>Видалити</span></div>
+      </div>
+    `);
+  });
+
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => openFormForEdit(Number(btn.dataset.objectId)));
+  });
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteObject(Number(btn.dataset.objectId), btn));
+  });
+}
+
+async function deleteObject(objectId, btnEl) {
+  const obj = allObjects.find(o => o.id === objectId);
+  const name = obj ? obj.name : `#${objectId}`;
+  const ok = await showConfirmDialog(`Видалити об'єкт «${name}»? Об'єкт стане неактивним (дані анкет/завдань збережуться).`, "Видалення об'єкту");
+  if (!ok) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/objects/delete`, {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ object_id: objectId })
+    });
+    const data = await res.json();
+    if (!data.success) { await showAlertDialog(data.error || 'Помилка видалення', 'Помилка'); return; }
+    await loadObjects();
+  } catch (err) {
+    await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+  }
+}
+
+let editingObjectId = null;
+
+async function openFormForEdit(objectId) {
+  const obj = allObjects.find(o => o.id === objectId);
+  if (!obj) return;
+
+  editingObjectId = objectId;
+  const form = document.getElementById('add-form');
+  form.style.display = 'block';
+  document.querySelector('.add-form-title').innerHTML = '<i class="ti ti-pencil"></i> Редагування об\'єкту';
+  document.getElementById('save-btn').textContent = 'Оновити об\'єкт';
+
+  document.getElementById('f-client').value = obj.client_id;
+  document.getElementById('f-name').value = obj.name;
+  document.getElementById('f-address').value = obj.address || '';
+  document.getElementById('f-city').value = obj.city || '';
+  document.getElementById('f-radius').value = obj.geo_radius_m || 150;
+  document.getElementById('f-radius-val').textContent = (obj.geo_radius_m || 150) + 'м';
+
+  const supInfo = allSupMap[objectId];
+  document.getElementById('f-supervisor').value = supInfo ? supInfo.supervisor_id : '';
+
+  selectedLat = Number(obj.latitude);
+  selectedLng = Number(obj.longitude);
+
+  if (!leafletMap) {
+    setTimeout(() => {
+      initMap();
+      leafletMap.invalidateSize();
+      movePinTo(selectedLat, selectedLng);
+    }, 50);
+  } else {
+    setTimeout(() => {
+      leafletMap.invalidateSize();
+      movePinTo(selectedLat, selectedLng);
+    }, 50);
+  }
+}
+
+function resetFormToCreateMode() {
+  editingObjectId = null;
+  document.querySelector('.add-form-title').innerHTML = '<i class="ti ti-plus"></i> Новий об\'єкт';
+  document.getElementById('save-btn').textContent = 'Зберегти об\'єкт';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-address').value = '';
+  document.getElementById('f-city').value = '';
+  document.getElementById('f-supervisor').value = '';
+  document.getElementById('f-radius').value = 150;
+  document.getElementById('f-radius-val').textContent = '150м';
+}
+
+document.getElementById('save-btn').addEventListener('click', async () => {
+  clearFormError();
+  document.getElementById('err-name').classList.remove('show');
+
+  const clientId = document.getElementById('f-client').value;
+  const name = document.getElementById('f-name').value.trim();
+  const address = document.getElementById('f-address').value.trim();
+  const city = document.getElementById('f-city').value.trim();
+  const radius = document.getElementById('f-radius').value;
+  const supervisorId = document.getElementById('f-supervisor').value;
+
+  if (!name) {
+    document.getElementById('err-name').textContent = "Назва об'єкту обов'язкова";
+    document.getElementById('err-name').classList.add('show');
+    return;
+  }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = editingObjectId ? 'Оновлюємо…' : 'Зберігаємо…';
+
+  try {
+    let objectId;
+
+    if (editingObjectId) {
+      // --- РЕЖИМ РЕДАГУВАННЯ ---
+      const res = await fetch(`${API_BASE}/ga/admin/objects/update`, {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          object_id: editingObjectId, client_id: Number(clientId), name, address, city,
+          latitude: selectedLat, longitude: selectedLng, geo_radius_m: Number(radius),
+          supervisor_id: supervisorId ? Number(supervisorId) : null
+        })
+      });
+      const data = await res.json();
+      if (!data.success) { showFormError(data.error || 'Помилка'); return; }
+      objectId = editingObjectId;
+    } else {
+      // --- РЕЖИМ СТВОРЕННЯ ---
+      const res = await fetch(`${API_BASE}/ga/admin/objects`, {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: Number(clientId), name, address, city,
+          latitude: selectedLat, longitude: selectedLng, geo_radius_m: Number(radius)
+        })
+      });
+      const data = await res.json();
+      if (!data.success) { showFormError(data.error || 'Помилка'); return; }
+      objectId = data.object.id;
+
+      if (supervisorId) {
+        await fetch(`${API_BASE}/ga/admin/supervisor-objects`, {
+          method: 'POST',
+          headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ supervisor_id: Number(supervisorId), object_id: objectId })
+        });
+      }
+    }
+
+    document.getElementById('add-form').style.display = 'none';
+    resetFormToCreateMode();
+    await loadObjects();
+  } catch (err) {
+    showFormError("Немає з'єднання з сервером");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = editingObjectId ? 'Оновити об\'єкт' : 'Зберегти об\'єкт';
+  }
+});
+
+async function init() {
+  token = localStorage.getItem('ga_token');
+  if (!token) { document.getElementById('auth-gate').style.display = 'block'; return; }
+
+  try {
+    await Promise.all([loadClients(), loadSupervisors()]);
+    await loadObjects();
+    document.getElementById('page-body').style.display = 'flex';
+  } catch (err) {
+    document.getElementById('auth-gate').style.display = 'block';
+  }
+}
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+  localStorage.removeItem('ga_token');
+  window.location.href = 'login.html';
+});
+
+init();
+</script>
+</body>
+</html>

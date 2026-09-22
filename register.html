@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<!-- ВЕРСІЯ ФАЙЛУ: 2026-09-10 — вибір фото при реєстрації тепер відкриває стандартний системний вибір (камера/галерея) замість примусової фронтальної камери, яка на частині Android/Chrome не спрацьовувала -->
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizoria — Реєстрація</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --accent:#8C64C9; --accent-hover:#a07ed8; --accent-light:rgba(140,100,201,.13); --accent-border:rgba(140,100,201,.3);
+  --bg:#f4f4f7; --bg2:#ffffff; --bg3:#f0f0f4; --border:#e0e0e8; --border2:#ccccda;
+  --text:#1a1a20; --muted:#6b6b80; --muted2:#aaaabc; --black:#0a0a12; --input-bg:#f8f8fb;
+  --success:#16a34a; --success-bg:#f0fff4; --success-border:#bbf7d0;
+  --danger:#c0392b; --danger-bg:#fff0f0; --danger-border:#ffd0d0;
+  --warn-text:#92400e; --warn-bg:#fffbeb; --warn-border:#fde68a;
+  --card-shadow:0 1px 3px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+
+.wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px}
+.panel{width:100%;max-width:440px}
+.form-box{width:100%}
+
+.nav{display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.nav svg{height:22px;width:auto}
+
+/* stepper */
+.steps{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:24px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border2);transition:background .2s,transform .2s}
+.step-dot.active{background:var(--accent);transform:scale(1.25)}
+.step-dot.done{background:var(--accent)}
+
+.fm-title{font-size:22px;font-weight:700;color:var(--black);text-align:center;margin-bottom:4px;letter-spacing:-.02em}
+.fm-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:22px}
+
+.fm-section{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);border-bottom:1px solid var(--border);padding-bottom:7px;margin:18px 0 14px}
+.fm-section:first-of-type{margin-top:0}
+
+.fm-label{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px;display:block;margin-top:14px}
+.fm-row{display:flex;gap:10px}
+.fm-row .fm-half{flex:1}
+.fm-row .fm-half .fm-label{margin-top:14px}
+
+.fm-input,.fm-select{width:100%;height:46px;border:1px solid var(--border);border-radius:9px;background:var(--input-bg);padding:0 14px;font-size:15px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s;appearance:none}
+.fm-input:focus,.fm-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);background:#fff}
+.fm-input.is-err,.fm-select.is-err{border-color:var(--danger)}
+.fm-select-wrap{position:relative}
+.fm-select-wrap::after{content:'▾';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--muted2);font-size:12px;pointer-events:none}
+.field-err{font-size:11px;color:var(--danger);margin-top:5px;display:none}
+.field-err.show{display:block}
+
+.fm-photo{width:100%;border:2px dashed var(--border2);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:22px;margin-top:14px;cursor:pointer;transition:border-color .15s;text-align:center}
+.fm-photo:hover{border-color:var(--accent)}
+.fm-photo.has-photo{border-style:solid;border-color:var(--accent-border);padding:8px}
+.fm-photo img{width:100%;max-height:180px;object-fit:cover;border-radius:8px}
+.fm-photo .icon{font-size:24px}
+.fm-photo .hint{font-size:12px;color:var(--muted)}
+
+.btn-row{display:flex;gap:10px;margin-top:24px}
+.fm-btn{flex:1;height:46px;background:var(--accent);border:none;border-radius:9px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;transition:background .15s;font-family:inherit}
+.fm-btn:hover{background:var(--accent-hover)}
+.fm-btn:disabled{opacity:.55;cursor:default}
+.fm-btn.outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.fm-btn.outline:hover{background:var(--bg3);color:var(--text)}
+
+.fm-alert{padding:10px 13px;border-radius:8px;font-size:13px;line-height:1.5;margin-top:16px;display:none}
+.fm-alert.show{display:block}
+.fm-alert.err{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+
+.fm-link{text-align:center;font-size:13px;color:var(--muted);margin-top:24px}
+.fm-link a{color:var(--accent);font-weight:600;text-decoration:none}
+.fm-link a:hover{text-decoration:underline}
+
+.fb-ok-center{text-align:center;padding:12px 0}
+.fb-ok-icon{width:56px;height:56px;border-radius:50%;background:var(--accent-light);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px}
+.fb-ok-title{font-size:20px;font-weight:700;color:var(--black);margin-bottom:8px}
+.fb-ok-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:24px}
+
+.step-view{display:none}
+.step-view.active{display:block}
+
+@media (min-width:560px){
+  .form-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;box-shadow:var(--card-shadow);padding:40px 36px}
+}
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="panel">
+    <div class="form-box">
+      <div class="nav">
+        <svg viewBox="0 0 3418 1015" xmlns="http://www.w3.org/2000/svg"><g fill="var(--black)"><path d="M709.68,159.25 L774.19,159.25 C781.22,159.25 786.75,164.79 786.75,171.82 L786.75,574.86 C786.75,581.88 781.22,587.42 774.19,587.42 L709.68,587.42 C702.66,587.42 697.12,581.88 697.12,574.86 L697.12,171.82 C697.12,164.79 702.66,159.25 709.68,159.25 Z"/><path d="M888.32,237.82 L888.32,173.1 C888.32,166.07 894.06,160.53 901.09,160.53 L1283.27,160.53 C1290.29,160.53 1296.04,166.07 1296.04,173.1 L1296.04,236.12 L1296.04,250.39 C1295.82,254.85 1294.34,258.05 1291.57,260.39 L1010.31,497.15 L901.51,586.78 L888.95,572.73 L888.73,493.75 C888.73,489.06 891.29,486.72 893.84,483.95 L1173.39,250.17 L901.08,250.17 C894.05,250.17 888.31,244.63 888.31,237.82 L888.32,237.82 Z"/><path d="M888.95,575.07 L888.95,510.35 C888.95,503.54 894.49,497.79 901.52,497.79 L1282.43,497.79 C1289.24,497.79 1294.99,503.54 1294.99,510.35 L1294.99,575.07 C1294.99,581.89 1289.24,587.64 1282.43,587.64 L901.52,587.64 C894.49,587.64 888.95,581.89 888.95,575.07 Z"/><path d="M2252.68,159.89 L2459.42,159.89 C2491.99,159.89 2548.83,162.87 2596.1,228.02 C2619.74,260.6 2622.51,312.56 2622.08,320.64 C2616.75,366.84 2597.38,407.51 2557.57,440.31 L2614.84,571.88 C2616.33,575.28 2616.12,579.54 2614.2,582.52 C2612.08,586.14 2608.24,588.27 2605.48,588.27 L2533.1,588.27 C2530.54,588.27 2527.77,588.48 2525.01,587.41 C2521.39,586.13 2517.77,583.15 2516.7,580.17 L2471.35,467.33 L2291.65,467.33 L2291.65,575.7 C2291.65,582.52 2285.91,588.27 2279.09,588.27 L2214.36,588.27 C2207.55,588.27 2201.8,582.52 2201.8,575.7 L2201.8,172.45 C2201.8,165.63 2207.55,159.89 2214.36,159.89 L2252.68,159.89 Z M2291.64,377.49 L2474.75,377.49 C2484.75,376.85 2501.15,372.38 2508.82,365.35 C2554.8,323.62 2530.11,248.46 2459.42,249.74 L2291.64,249.74 L2291.64,377.49 Z"/><path d="M2752.81,159.25 L2817.53,159.25 C2824.35,159.25 2830.1,165 2830.1,171.82 L2830.1,575.07 C2830.1,581.89 2824.35,587.64 2817.53,587.64 L2752.81,587.64 C2745.99,587.64 2740.25,581.89 2740.25,575.07 L2740.25,171.82 C2740.25,165 2745.99,159.25 2752.81,159.25 Z"/><path d="M3176.72,266.99 L3105.39,422.84 L3248.05,422.84 L3176.72,266.99 Z M3064.52,512.47 L3032.79,581.46 C3030.02,587.84 3022.99,588.28 3016.18,588.28 L2946.99,588.06 C2943.58,588.06 2939.75,585.72 2937.83,582.52 C2935.7,579.12 2935.7,574.64 2937.19,571.45 L3122.43,169.48 C3124.77,164.37 3130.51,160.11 3137.75,160.11 L3212.28,160.11 C3220.58,160.11 3227.61,161.81 3231.44,170.12 L3416.26,571.45 C3419.88,578.9 3414.34,588.06 3407.1,588.06 L3337.47,588.28 C3330.45,588.28 3323.42,587.85 3320.65,581.46 L3289.14,512.47 L3064.51,512.47 L3064.52,512.47 Z"/><path d="M609.4,160.1 L543.61,160.1 C536.58,160.1 529.98,163.08 528.06,169.9 L443.33,500.56 L366.68,172.03 C364.98,164.15 357.53,159.25 350.72,159.25 L274.28,159.25 C269.81,159.25 264.7,161.6 261.3,165.86 C259.59,168.2 258.53,170.96 257.67,174.38 L170.38,501.2 L88.62,169.91 C86.92,163.09 79.89,160.11 72.87,160.11 L10.7,160.11 C3.68,160.11 -1.22,168.63 0.27,175.44 L94.59,577.41 C96.08,583.38 101.62,587.42 107.58,587.21 L228.94,587.43 C237.25,587.43 241.93,580.19 244.06,572.1 L311.56,322.57 L370.74,572.52 C372.87,580.83 380.33,587 387.35,587.21 L496.36,587.43 C503.39,587.43 510.83,582.96 513.6,572.52 L619,175.45 C620.7,168.63 616.44,160.12 609.41,160.12 L609.4,160.1 Z"/></g><path fill="#8C64C9" d="M1736.99,649.38 C1813.22,649.38 1882.2,618.51 1932.23,568.47 C1982.27,518.65 2013.14,449.67 2013.14,373.45 C2013.14,297.22 1982.27,228.24 1932.23,178.2 C1882.2,128.38 1813.21,97.51 1736.99,97.51 C1660.98,97.51 1591.79,128.38 1541.96,178.2 C1491.93,228.24 1461.05,297.23 1461.05,373.45 C1461.05,449.67 1491.93,518.64 1541.96,568.47 C1591.78,618.51 1660.98,649.38 1736.99,649.38 Z M2001.22,637.46 C1933.51,704.95 1840.25,746.9 1736.99,746.9 C1633.94,746.9 1540.69,704.96 1472.99,637.46 C1405.49,569.97 1363.76,476.5 1363.76,373.45 C1363.76,270.41 1405.49,176.93 1472.99,109.44 C1540.69,41.73 1633.94,5.68434189e-14 1736.99,5.68434189e-14 C1840.25,5.68434189e-14 1933.51,41.73 2001.22,109.44 C2068.71,176.93 2110.44,270.41 2110.44,373.45 C2110.44,476.5 2068.71,569.97 2001.22,637.46 Z"/></svg>
+      </div>
+
+      <div class="steps" id="stepper">
+        <div class="step-dot active" data-step="1"></div>
+        <div class="step-dot" data-step="2"></div>
+        <div class="step-dot" data-step="3"></div>
+      </div>
+
+      <form id="reg-form" novalidate>
+
+        <!-- КРОК 1 — ОСОБИСТІ ДАНІ -->
+        <div class="step-view active" id="step-1">
+          <div class="fm-title">Реєстрація</div>
+          <div class="fm-sub">Профіль тайного покупця</div>
+          <div class="fm-section">Особисті дані</div>
+
+          <div class="fm-row">
+            <div class="fm-half">
+              <label class="fm-label" for="first_name">Ім'я *</label>
+              <input class="fm-input" type="text" id="first_name">
+              <div class="field-err" id="err-first_name"></div>
+            </div>
+            <div class="fm-half">
+              <label class="fm-label" for="last_name">Прізвище *</label>
+              <input class="fm-input" type="text" id="last_name">
+              <div class="field-err" id="err-last_name"></div>
+            </div>
+          </div>
+
+          <label class="fm-label" for="phone">Телефон *</label>
+          <input class="fm-input" type="text" id="phone" placeholder="+380671234567">
+          <div class="field-err" id="err-phone"></div>
+
+          <div class="fm-row">
+            <div class="fm-half">
+              <label class="fm-label" for="object_id">Кінотеатр *</label>
+              <select class="fm-select" id="object_id"><option value="">Завантаження…</option></select>
+              <div class="field-err" id="err-object_id"></div>
+            </div>
+            <div class="fm-half">
+              <label class="fm-label" for="age">Вік *</label>
+              <input class="fm-input" type="number" id="age" min="18" max="80">
+              <div class="field-err" id="err-age"></div>
+            </div>
+          </div>
+
+          <label class="fm-label" for="gender">Стать *</label>
+          <div class="fm-select-wrap">
+            <select class="fm-select" id="gender">
+              <option value="">Оберіть…</option>
+              <option value="male">Чоловіча</option>
+              <option value="female">Жіноча</option>
+            </select>
+          </div>
+          <div class="field-err" id="err-gender"></div>
+
+          <div class="btn-row">
+            <button type="button" class="fm-btn" id="to-step-2">Далі</button>
+          </div>
+          <div class="fm-link">Вже маєте акаунт? <a href="login.html">Увійти</a></div>
+        </div>
+
+        <!-- КРОК 2 — АКАУНТ ТА ФОТО -->
+        <div class="step-view" id="step-2">
+          <div class="fm-title">Реєстрація</div>
+          <div class="fm-sub">Дані для входу</div>
+          <div class="fm-section">Акаунт</div>
+
+          <label class="fm-label" for="login">Логін *</label>
+          <input class="fm-input" type="text" id="login" placeholder="латиниця, цифри, _ . -">
+          <div class="field-err" id="err-login"></div>
+
+          <label class="fm-label" for="email">Email *</label>
+          <input class="fm-input" type="email" id="email">
+          <div class="field-err" id="err-email"></div>
+
+          <label class="fm-label" for="password">Пароль *</label>
+          <input class="fm-input" type="password" id="password" placeholder="мін. 6 символів">
+          <div class="field-err" id="err-password"></div>
+
+          <div class="fm-section">Фото для верифікації</div>
+          <div class="fm-photo" id="photo-drop" onclick="document.getElementById('photo-input').click()">
+            <div class="icon">📷</div>
+            <div class="hint">Зробити / обрати фото</div>
+          </div>
+          <input type="file" id="photo-input" accept="image/*" style="display:none">
+          <div class="field-err" id="err-photo"></div>
+
+          <div class="btn-row">
+            <button type="button" class="fm-btn outline" id="to-step-1">Назад</button>
+            <button type="submit" class="fm-btn" id="submit-btn">Зареєструватись</button>
+          </div>
+          <div class="fm-alert" id="alert"></div>
+        </div>
+
+        <!-- КРОК 3 — ОЧІКУВАННЯ -->
+        <div class="step-view" id="step-3">
+          <div class="fb-ok-center">
+            <div class="fb-ok-icon">⏳</div>
+            <div class="fb-ok-title">Заявку подано!</div>
+            <div class="fb-ok-desc">Supervisor перевіряє ваш профіль. Зазвичай до 24 годин.</div>
+            <a href="login.html" class="fm-btn outline" style="display:block;text-decoration:none;text-align:center;line-height:46px;box-sizing:border-box">До входу</a>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://primary-production-3872.up.railway.app/webhook';
+
+function goToStep(n) {
+  document.querySelectorAll('.step-view').forEach(v => v.classList.remove('active'));
+  document.getElementById('step-' + n).classList.add('active');
+  document.querySelectorAll('.step-dot').forEach(d => {
+    const s = Number(d.dataset.step);
+    d.classList.toggle('active', s === n);
+    d.classList.toggle('done', s < n);
+  });
+}
+
+function setFieldError(field, msg) {
+  const input = document.getElementById(field);
+  const err = document.getElementById('err-' + field);
+  if (msg) { input?.classList.add('is-err'); err.textContent = msg; err.classList.add('show'); }
+  else { input?.classList.remove('is-err'); err.textContent = ''; err.classList.remove('show'); }
+}
+
+function validateStep1() {
+  let ok = true;
+  const v = (id) => document.getElementById(id).value.trim();
+  if (!v('first_name') || v('first_name').length > 100) { setFieldError('first_name', '1–100 символів'); ok = false; } else setFieldError('first_name', null);
+  if (!v('last_name') || v('last_name').length > 100) { setFieldError('last_name', '1–100 символів'); ok = false; } else setFieldError('last_name', null);
+  if (!/^\+380\d{9}$/.test(v('phone'))) { setFieldError('phone', 'Формат +380XXXXXXXXX'); ok = false; } else setFieldError('phone', null);
+  if (!v('object_id')) { setFieldError('object_id', 'Оберіть кінотеатр'); ok = false; } else setFieldError('object_id', null);
+  const age = Number(v('age'));
+  if (!Number.isInteger(age) || age < 18 || age > 80) { setFieldError('age', '18–80'); ok = false; } else setFieldError('age', null);
+  if (!v('gender')) { setFieldError('gender', 'Оберіть стать'); ok = false; } else setFieldError('gender', null);
+  return ok;
+}
+
+function validateStep2() {
+  let ok = true;
+  const v = (id) => document.getElementById(id).value.trim();
+  if (!/^[a-zA-Z0-9_.-]{3,50}$/.test(v('login'))) { setFieldError('login', 'Латиниця, цифри, "_", "." та "-" (3–50)'); ok = false; } else setFieldError('login', null);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) { setFieldError('email', 'Некоректний email'); ok = false; } else setFieldError('email', null);
+  if (v('password').length < 6) { setFieldError('password', 'Мін. 6 символів'); ok = false; } else setFieldError('password', null);
+  if (!document.getElementById('photo-input').files[0]) { setFieldError('photo', "Фото обов'язкове"); ok = false; } else setFieldError('photo', null);
+  return ok;
+}
+
+document.getElementById('to-step-2').addEventListener('click', () => {
+  if (validateStep1()) goToStep(2);
+});
+document.getElementById('to-step-1').addEventListener('click', () => goToStep(1));
+
+document.getElementById('photo-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const drop = document.getElementById('photo-drop');
+    drop.classList.add('has-photo');
+    drop.innerHTML = `<img src="${ev.target.result}" alt="Фото">`;
+  };
+  reader.readAsDataURL(file);
+  setFieldError('photo', null);
+});
+
+function showAlert(msg, type) {
+  const el = document.getElementById('alert');
+  el.className = 'fm-alert show ' + type;
+  el.textContent = msg;
+}
+
+document.getElementById('reg-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  document.getElementById('alert').className = 'fm-alert';
+
+  if (!validateStep2()) return;
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Надсилаємо…';
+
+  const fd = new FormData();
+  fd.append('first_name', document.getElementById('first_name').value.trim());
+  fd.append('last_name', document.getElementById('last_name').value.trim());
+  fd.append('phone', document.getElementById('phone').value.trim());
+  fd.append('object_id', document.getElementById('object_id').value);
+  fd.append('age', document.getElementById('age').value);
+  fd.append('gender', document.getElementById('gender').value);
+  fd.append('login', document.getElementById('login').value.trim());
+  fd.append('email', document.getElementById('email').value.trim());
+  fd.append('password', document.getElementById('password').value);
+  fd.append('photo', document.getElementById('photo-input').files[0]);
+
+  try {
+    const res = await fetch(`${API_BASE}/ga/auth/register`, { method: 'POST', body: fd });
+    const data = await res.json();
+
+    if (res.status === 201 && data.success) {
+      goToStep(3);
+    } else {
+      showAlert(data.error || 'Сталася помилка', 'err');
+    }
+  } catch (err) {
+    showAlert("Немає з'єднання з сервером", 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Зареєструватись';
+  }
+});
+
+async function loadObjectsForRegistration() {
+  const select = document.getElementById('object_id');
+  try {
+    const res = await fetch(`${API_BASE}/ga/public/objects`);
+    const data = await res.json();
+    const objects = data.objects || [];
+    select.innerHTML = '<option value="">Оберіть кінотеатр…</option>';
+    objects.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o.id;
+      opt.textContent = o.city ? `${o.name} (${o.city})` : o.name;
+      select.appendChild(opt);
+    });
+  } catch (err) {
+    select.innerHTML = '<option value="">Не вдалося завантажити список</option>';
+  }
+}
+loadObjectsForRegistration();
+</script>
+</body>
+</html>

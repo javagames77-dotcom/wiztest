@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizoria — Хронология разработки</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+:root {
+  --accent: #8C64C9;
+  --accent-hover: #a07ed8;
+  --accent-light: rgba(140,100,201,.13);
+  --accent-border: rgba(140,100,201,.3);
+}
+[data-theme="dark"] {
+  --bg:#111113; --bg2:#1a1a1c; --bg3:#222226; --bg4:#2a2a2f;
+  --border:#2e2e34; --border2:#3d3d45;
+  --text:#e8e8f0; --muted:#888899; --muted2:#555566; --black:#f0f0f8;
+  --nav-bg:rgba(17,17,19,.95); --code-bg:#0d0d0f;
+  --success:#4ade80; --success-bg:#0a1f10; --success-border:#1a4020;
+  --warn:#f59e0b; --warn-bg:#1a1200; --warn-border:#3a2800;
+  --idle:#555566; --idle-bg:#1c1c20; --idle-border:#2e2e34;
+  --card-shadow:0 2px 8px rgba(0,0,0,.4), 0 12px 40px rgba(0,0,0,.3);
+}
+[data-theme="light"] {
+  --bg:#f4f4f7; --bg2:#ffffff; --bg3:#f0f0f4; --bg4:#e8e8ef;
+  --border:#e0e0e8; --border2:#ccccda;
+  --text:#1a1a20; --muted:#6b6b80; --muted2:#aaaabc; --black:#0a0a12;
+  --nav-bg:rgba(255,255,255,.96); --code-bg:#f0f0f4;
+  --success:#16a34a; --success-bg:#f0fff4; --success-border:#bbf7d0;
+  --warn:#92400e; --warn-bg:#fffbeb; --warn-border:#fde68a;
+  --idle:#8a8a9a; --idle-bg:#f0f0f4; --idle-border:#e0e0e8;
+  --card-shadow:0 1px 3px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:13px;transition:background .25s,color .25s}
+.top-bar{position:sticky;top:0;height:56px;background:var(--nav-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;z-index:200;backdrop-filter:blur(16px);gap:14px}
+.wizoria-logo{height:20px;width:auto;flex-shrink:0}
+.brand-sub{font-size:13px;color:var(--muted);white-space:nowrap;font-weight:500}
+.top-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.nav-sep{flex:1}
+.lang-switch{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:2px;flex-shrink:0}
+.lang-btn{border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--muted);padding:5px 10px;border-radius:6px;cursor:pointer}
+.lang-btn.active{background:var(--accent);color:#fff}
+.overall-badge{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 12px;color:var(--muted);white-space:nowrap}
+.theme-btn{width:34px;height:34px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+.layout{display:flex;min-height:calc(100vh - 56px)}
+.sidebar{width:230px;flex-shrink:0;border-right:1px solid var(--border);padding:18px 0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;background:var(--bg2)}
+.sb-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);padding:0 16px;margin-bottom:8px}
+.sb-link{display:flex;align-items:center;gap:9px;padding:9px 16px;font-size:12px;color:var(--muted);cursor:pointer;border-left:2px solid transparent}
+.sb-link:hover{color:var(--text);background:var(--bg3)}
+.sb-link.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-light)}
+.sb-status{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sb-status.done{background:var(--success)}
+.sb-status.progress{background:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.sb-status.idle{background:var(--idle)}
+.sb-name{flex:1}
+.content{flex:1;padding:36px 44px;max-width:880px}
+.section{display:none}
+.section.active{display:block}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.page-title{font-size:26px;font-weight:700;letter-spacing:-.03em;color:var(--black);margin-bottom:6px}
+.page-desc{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px}
+.status-pill{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:4px 11px;border-radius:20px;margin-bottom:24px}
+.status-pill.done{background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.status-pill.progress{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-border)}
+.status-pill.idle{background:var(--idle-bg);color:var(--idle);border:1px solid var(--idle-border)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;box-shadow:var(--card-shadow)}
+.card-header{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.card-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;background:var(--accent-light);color:var(--accent)}
+.card-title{font-size:13px;font-weight:600;color:var(--black)}
+.card-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.card-body{padding:16px 18px}
+.entry-list{list-style:none}
+.entry{padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start}
+.entry:last-child{border-bottom:none}
+.entry-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:6px;flex-shrink:0}
+.entry-body{flex:1;font-size:12px;line-height:1.6;color:var(--text)}
+.entry-body b{color:var(--black);font-weight:600}
+.entry-tag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;background:var(--bg3);color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-left:6px}
+.empty-state{padding:28px 18px;text-align:center;color:var(--muted);font-size:12px}
+.empty-state i{font-size:22px;display:block;margin-bottom:8px;opacity:.5}
+code{font-family:'JetBrains Mono',monospace;background:var(--code-bg);padding:1px 5px;border-radius:4px;font-size:11px}
+.divider{height:1px;background:var(--border);margin:22px 0}
+.footer-note{font-size:11px;color:var(--muted2);margin-top:20px}
+@media (max-width:720px){ .top-bar{gap:8px;padding:0 12px} .wizoria-logo{display:none} .top-sep{display:none} }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <svg class="wizoria-logo" viewBox="0 0 3418 1015" xmlns="http://www.w3.org/2000/svg"><g fill="var(--black)"><path d="M709.68,159.25 L774.19,159.25 C781.22,159.25 786.75,164.79 786.75,171.82 L786.75,574.86 C786.75,581.88 781.22,587.42 774.19,587.42 L709.68,587.42 C702.66,587.42 697.12,581.88 697.12,574.86 L697.12,171.82 C697.12,164.79 702.66,159.25 709.68,159.25 Z"/><path d="M888.32,237.82 L888.32,173.1 C888.32,166.07 894.06,160.53 901.09,160.53 L1283.27,160.53 C1290.29,160.53 1296.04,166.07 1296.04,173.1 L1296.04,236.12 L1296.04,250.39 C1295.82,254.85 1294.34,258.05 1291.57,260.39 L1010.31,497.15 L901.51,586.78 L888.95,572.73 L888.73,493.75 C888.73,489.06 891.29,486.72 893.84,483.95 L1173.39,250.17 L901.08,250.17 C894.05,250.17 888.31,244.63 888.31,237.82 L888.32,237.82 Z"/><path d="M888.95,575.07 L888.95,510.35 C888.95,503.54 894.49,497.79 901.52,497.79 L1282.43,497.79 C1289.24,497.79 1294.99,503.54 1294.99,510.35 L1294.99,575.07 C1294.99,581.89 1289.24,587.64 1282.43,587.64 L901.52,587.64 C894.49,587.64 888.95,581.89 888.95,575.07 Z"/><path d="M2252.68,159.89 L2459.42,159.89 C2491.99,159.89 2548.83,162.87 2596.1,228.02 C2619.74,260.6 2622.51,312.56 2622.08,320.64 C2616.75,366.84 2597.38,407.51 2557.57,440.31 L2614.84,571.88 C2616.33,575.28 2616.12,579.54 2614.2,582.52 C2612.08,586.14 2608.24,588.27 2605.48,588.27 L2533.1,588.27 C2530.54,588.27 2527.77,588.48 2525.01,587.41 C2521.39,586.13 2517.77,583.15 2516.7,580.17 L2471.35,467.33 L2291.65,467.33 L2291.65,575.7 C2291.65,582.52 2285.91,588.27 2279.09,588.27 L2214.36,588.27 C2207.55,588.27 2201.8,582.52 2201.8,575.7 L2201.8,172.45 C2201.8,165.63 2207.55,159.89 2214.36,159.89 L2252.68,159.89 Z M2291.64,377.49 L2474.75,377.49 C2484.75,376.85 2501.15,372.38 2508.82,365.35 C2554.8,323.62 2530.11,248.46 2459.42,249.74 L2291.64,249.74 L2291.64,377.49 Z"/><path d="M2752.81,159.25 L2817.53,159.25 C2824.35,159.25 2830.1,165 2830.1,171.82 L2830.1,575.07 C2830.1,581.89 2824.35,587.64 2817.53,587.64 L2752.81,587.64 C2745.99,587.64 2740.25,581.89 2740.25,575.07 L2740.25,171.82 C2740.25,165 2745.99,159.25 2752.81,159.25 Z"/><path d="M3176.72,266.99 L3105.39,422.84 L3248.05,422.84 L3176.72,266.99 Z M3064.52,512.47 L3032.79,581.46 C3030.02,587.84 3022.99,588.28 3016.18,588.28 L2946.99,588.06 C2943.58,588.06 2939.75,585.72 2937.83,582.52 C2935.7,579.12 2935.7,574.64 2937.19,571.45 L3122.43,169.48 C3124.77,164.37 3130.51,160.11 3137.75,160.11 L3212.28,160.11 C3220.58,160.11 3227.61,161.81 3231.44,170.12 L3416.26,571.45 C3419.88,578.9 3414.34,588.06 3407.1,588.06 L3337.47,588.28 C3330.45,588.28 3323.42,587.85 3320.65,581.46 L3289.14,512.47 L3064.51,512.47 L3064.52,512.47 Z"/><path d="M609.4,160.1 L543.61,160.1 C536.58,160.1 529.98,163.08 528.06,169.9 L443.33,500.56 L366.68,172.03 C364.98,164.15 357.53,159.25 350.72,159.25 L274.28,159.25 C269.81,159.25 264.7,161.6 261.3,165.86 C259.59,168.2 258.53,170.96 257.67,174.38 L170.38,501.2 L88.62,169.91 C86.92,163.09 79.89,160.11 72.87,160.11 L10.7,160.11 C3.68,160.11 -1.22,168.63 0.27,175.44 L94.59,577.41 C96.08,583.38 101.62,587.42 107.58,587.21 L228.94,587.43 C237.25,587.43 241.93,580.19 244.06,572.1 L311.56,322.57 L370.74,572.52 C372.87,580.83 380.33,587 387.35,587.21 L496.36,587.43 C503.39,587.43 510.83,582.96 513.6,572.52 L619,175.45 C620.7,168.63 616.44,160.12 609.41,160.12 L609.4,160.1 Z"/></g><path fill="#8C64C9" d="M1736.99,649.38 C1813.22,649.38 1882.2,618.51 1932.23,568.47 C1982.27,518.65 2013.14,449.67 2013.14,373.45 C2013.14,297.22 1982.27,228.24 1932.23,178.2 C1882.2,128.38 1813.21,97.51 1736.99,97.51 C1660.98,97.51 1591.79,128.38 1541.96,178.2 C1491.93,228.24 1461.05,297.23 1461.05,373.45 C1461.05,449.67 1491.93,518.64 1541.96,568.47 C1591.78,618.51 1660.98,649.38 1736.99,649.38 Z M2001.22,637.46 C1933.51,704.95 1840.25,746.9 1736.99,746.9 C1633.94,746.9 1540.69,704.96 1472.99,637.46 C1405.49,569.97 1363.76,476.5 1363.76,373.45 C1363.76,270.41 1405.49,176.93 1472.99,109.44 C1540.69,41.73 1633.94,5.68434189e-14 1736.99,5.68434189e-14 C1840.25,5.68434189e-14 1933.51,41.73 2001.22,109.44 C2068.71,176.93 2110.44,270.41 2110.44,373.45 C2110.44,476.5 2068.71,569.97 2001.22,637.46 Z"/></svg>
+  <span class="brand-sub" data-i18n="top_subtitle">— Хронология разработки</span>
+  <div class="nav-sep"></div>
+  <div class="overall-badge" data-i18n="overall_badge">Фаза 1 завершена — старт Фази 2 (PWA)</div>
+  <div class="lang-switch">
+    <button class="lang-btn active" id="lang-ru" onclick="setLang('ru')">RU</button>
+    <button class="lang-btn" id="lang-uk" onclick="setLang('uk')">УКР</button>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()"><i class="ti ti-moon" id="i-moon"></i><i class="ti ti-sun" id="i-sun" style="display:none"></i></button>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sb-label" data-i18n="sb_label">Фазы проекта</div>
+    <div class="sb-link active" onclick="showPhase('p0', this)"><span class="sb-status done"></span><span class="sb-name" data-i18n="sb0">Фаза 0 — Фундамент</span></div>
+    <div class="sb-link" onclick="showPhase('p1', this)"><span class="sb-status done"></span><span class="sb-name" data-i18n="sb1">Фаза 1 — Admin</span></div>
+    <div class="sb-link" onclick="showPhase('p2', this)"><span class="sb-status done"></span><span class="sb-name" data-i18n="sb2">Фаза 2 — PWA</span></div>
+    <div class="sb-link" onclick="showPhase('p3', this)"><span class="sb-status done"></span><span class="sb-name" data-i18n="sb3">Фаза 3 — AI-проверка</span></div>
+    <div class="sb-link" onclick="showPhase('p4', this)"><span class="sb-status progress"></span><span class="sb-name" data-i18n="sb4">Фаза 4 — Supervisor</span></div>
+    <div class="sb-link" onclick="showPhase('p5', this)"><span class="sb-status idle"></span><span class="sb-name" data-i18n="sb5">Фаза 5 — Отчётность</span></div>
+    <div class="sb-link" onclick="showPhase('p6', this)"><span class="sb-status idle"></span><span class="sb-name" data-i18n="sb6">Фаза 6 — Стабилизация</span></div>
+  </div>
+
+  <div class="content">
+
+    <!-- ФАЗА 0 -->
+    <div class="section active" id="s-p0">
+      <div class="eyebrow">Фаза 0</div>
+      <h1 class="page-title">Фундамент</h1>
+      <div class="status-pill done"><i class="ti ti-circle-check"></i> <span data-i18n="status_done">Завершено</span></div>
+      <p class="page-desc" data-i18n="p0_desc">Схема PostgreSQL под всё ТЗ, скелет backend (Node.js/Express), базовая авторизация. Инфраструктура: n8n на Railway, БД поднимаем там же, отдельным сервисом в том же проекте.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-database"></i></div>
+          <div><div class="card-title" data-i18n="p0_card1_title">Журнал изменений БД</div><div class="card-sub" data-i18n="p0_card1_sub">Каждый SQL-блок выполняется отдельно через n8n → Execute a SQL query</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="db-log-p0">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_1"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_2"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_3"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_4"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_5"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_6"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_7"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_8"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_9"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-server-2"></i></div>
+          <div><div class="card-title" data-i18n="p0_card2_title">Backend / инфраструктура</div><div class="card-sub" data-i18n="p0_card2_sub">Каркас API</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="backend-log-p0">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_b1"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_b2"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_b3"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_b4"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_b5"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_b6"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_b7"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_b8"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-browser"></i></div>
+          <div><div class="card-title" data-i18n="p0_card3_title">Веб-фронтенд (вхід/реєстрація)</div><div class="card-sub" data-i18n="p0_card3_sub">Звичайний сайт, без PWA</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="frontend-log-p0">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_f1"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p0_f2"></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ФАЗА 1 -->
+    <div class="section" id="s-p1">
+      <div class="eyebrow">Фаза 1</div>
+      <h1 class="page-title">Admin</h1>
+      <div class="status-pill done"><i class="ti ti-circle-check"></i> <span data-i18n="status_done">Завершено</span></div>
+      <p class="page-desc" data-i18n="p1_desc">Объекты/клиенты, конструктор анкет (секции → критерии → веса → критичные критерии), создание заданий. Разблокирует Фазу 3 — AI не может считать скор без реальных критериев в БД.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-building"></i></div>
+          <div><div class="card-title" data-i18n="p1_card1_title">Клиенты и объекты</div><div class="card-sub" data-i18n="p1_card1_sub">ga-admin-clients / ga-admin-objects</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="admin-log-p1">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_1"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_2"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-list-check"></i></div>
+          <div><div class="card-title" data-i18n="p1_card2_title">Конструктор анкет</div><div class="card-sub" data-i18n="p1_card2_sub">ga-admin-questionnaires / ga-admin-criteria</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="admin-log-p1-2">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_3"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_4"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-users"></i></div>
+          <div><div class="card-title" data-i18n="p1_card3_title">Користувачі та ролі</div><div class="card-sub" data-i18n="p1_card3_sub">ga-admin-users / ga-admin-supervisor-objects</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="admin-log-p1-3">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_5"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_6"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-clipboard-list"></i></div>
+          <div><div class="card-title" data-i18n="p1_card4_title">Завдання</div><div class="card-sub" data-i18n="p1_card4_sub">ga-admin-tasks</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="admin-log-p1-4">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_7"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_8"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-layout-dashboard"></i></div>
+          <div><div class="card-title" data-i18n="p1_card5_title">Dashboard</div><div class="card-sub" data-i18n="p1_card5_sub">ga-admin-dashboard + dashboard.html</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="admin-log-p1-5">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_9"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_10"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-layout-sidebar"></i></div>
+          <div><div class="card-title" data-i18n="p1_card6_title">Фронт Admin: Dashboard + Об'єкти</div><div class="card-sub" data-i18n="p1_card6_sub">dashboard.html + objects.html</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="admin-log-p1-6">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_11"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_12"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_13"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_14"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_15"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_16"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_17"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-clipboard-list"></i></div>
+          <div><div class="card-title" data-i18n="p1_card7_title">Фронт Admin: Завдання</div><div class="card-sub" data-i18n="p1_card7_sub">tasks.html + ga-admin-tasks (перебудовано)</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="admin-log-p1-7">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_18"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_19"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_20"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p1_21"></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ФАЗА 2 -->
+    <div class="section" id="s-p2">
+      <div class="eyebrow">Фаза 2</div>
+      <h1 class="page-title" data-i18n="p2_title">PWA-приложение</h1>
+      <div class="status-pill done"><i class="ti ti-circle-check"></i> <span data-i18n="status_done">Завершено</span></div>
+      <p class="page-desc" data-i18n="p2_desc">Регистрация (pending → active), вход, экраны покупателя. База — проверенный код из <code>index-5.html</code> (камера, аудиозапись + Wake Lock, гео GPS/WiFi/Cell, offline Service Worker, push) — переносим в боевые экраны, а не исследуем заново.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-clipboard-list"></i></div>
+          <div><div class="card-title" data-i18n="p2_card1_title">Auth покупця + список завдань</div><div class="card-sub" data-i18n="p2_card1_sub">ga-shopper-tasks</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-1">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_1"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_2"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_3"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_4"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_5"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_6"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-map-pin"></i></div>
+          <div><div class="card-title" data-i18n="p2_card2_title">Геолокація (антифрод)</div><div class="card-sub" data-i18n="p2_card2_sub">ga-shopper-geo-check</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-2">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_7"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_8"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_9"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-camera"></i></div>
+          <div><div class="card-title" data-i18n="p2_card3_title">Фото/аудіо</div><div class="card-sub" data-i18n="p2_card3_sub">ga-shopper-submit-photo, ga-shopper-submit-audio</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-3">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_10"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_11"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_12"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-clipboard-check"></i></div>
+          <div><div class="card-title" data-i18n="p2_card4_title">Анкета</div><div class="card-sub" data-i18n="p2_card4_sub">ga-shopper-submit-answers</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-4">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_13"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_14"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-send"></i></div>
+          <div><div class="card-title" data-i18n="p2_card5_title">Submit (фінальна відправка)</div><div class="card-sub" data-i18n="p2_card5_sub">ga-shopper-submit</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-5">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_15"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_16"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_17"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-alert-triangle"></i></div>
+          <div><div class="card-title" data-i18n="p2_card6_title">Аудит ТЗ по Екранам (знайдені прогалини)</div><div class="card-sub" data-i18n="p2_card6_sub">повторний прохід по Частині 4</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-6">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_18"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-building-store"></i></div>
+          <div><div class="card-title" data-i18n="p2_card7_title">Об'єкти покупця (Екран 2)</div><div class="card-sub" data-i18n="p2_card7_sub">ga-shopper-objects [новий]</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-7">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_19"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_20"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-message-circle"></i></div>
+          <div><div class="card-title" data-i18n="p2_card8_title">Коментар до фото (Екран 5а)</div><div class="card-sub" data-i18n="p2_card8_sub">ga-shopper-submit-photo [оновлено]</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-8">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_21"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-clock"></i></div>
+          <div><div class="card-title" data-i18n="p2_card9_title">Таймстампи анкети</div><div class="card-sub" data-i18n="p2_card9_sub">ga-shopper-questionnaire-open [новий], ga-shopper-submit-answers [оновлено]</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-9">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_22"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_23"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-map-pin-2"></i></div>
+          <div><div class="card-title" data-i18n="p2_card10_title">Поле «місто» (Екран 2)</div><div class="card-sub" data-i18n="p2_card10_sub">ga-shopper-objects [оновлено]</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-10">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_24"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-device-mobile"></i></div>
+          <div><div class="card-title" data-i18n="p2_card11_title">PWA — перше реальне тестування на телефоні</div><div class="card-sub" data-i18n="p2_card11_sub">shopper-pwa/, ga-shopper-submit-photo, ga-shopper-submit-audio [оновлено]</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-11">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_25"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_26"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_27"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_28"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-crop"></i></div>
+          <div><div class="card-title" data-i18n="p2_card12_title">Точний аудит проти мокапів ТЗ (1:1)</div><div class="card-sub" data-i18n="p2_card12_sub">shopper-pwa/ [оновлено], ga-shopper-objects [оновлено]</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-12">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_29"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_30"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_31"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-cloud-off"></i></div>
+          <div><div class="card-title" data-i18n="p2_card13_title">Офлайн-черга (фото/аудіо/анкета)</div><div class="card-sub" data-i18n="p2_card13_sub">shopper-pwa/app.js v14, shopper-pwa/sw.js v14 — без змін на бекенді</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-13">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_32"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_38"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-database"></i></div>
+          <div><div class="card-title" data-i18n="p2_card14_title">БД: перевірка ga_task_questionnaires (хибна тривога)</div><div class="card-sub" data-i18n="p2_card14_sub">без наслідків для схеми чи даних</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-14">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_33"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-bell"></i></div>
+          <div><div class="card-title" data-i18n="p2_card15_title">Push-сповіщення (підписка, шифрування, тригер)</div><div class="card-sub" data-i18n="p2_card15_sub">ga-shopper-push-subscribe [новий], ga-admin-tasks [оновлено], shopper-pwa/app.js v15</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="shopper-log-p2-15">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_34"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_35"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_36"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p2_37"></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ФАЗА 3 -->
+    <div class="section" id="s-p3">
+      <div class="eyebrow">Фаза 3</div>
+      <h1 class="page-title" data-i18n="p3_title">AI-проверка</h1>
+      <div class="status-pill done"><i class="ti ti-circle-check"></i> <span data-i18n="status_done">Завершено</span></div>
+      <p class="page-desc" data-i18n="p3_desc">Адаптация существующего n8n-воркфлоу (Whisper → diarization → GPT-анализ по зонам → vision по фото → merge): критерии читаются из БД вместо хардкода, добавляется скоринг по весам, пороги авто-одобрения, флаги (расхождение / минусы / аномалия).</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-file-search"></i></div>
+          <div><div class="card-title" data-i18n="p3_card1_title">Аудит присланного воркфлоу (GhostAudit — Mystery Shopper AI v4)</div><div class="card-sub" data-i18n="p3_card1_sub">GhostAudit___Mystery_Shopper_AI_v4-2.json, сверка с ТЗ и ga-db-schema.md</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="ai-log-p3-1">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_1"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_2"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_3"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_4"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_5"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_6"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_7"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_8"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_9"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_10"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_11"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p3_12"></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ФАЗА 4 -->
+    <div class="section" id="s-p4">
+      <div class="eyebrow">Фаза 4</div>
+      <h1 class="page-title">Supervisor</h1>
+      <div class="status-pill progress"><i class="ti ti-clock"></i> <span data-i18n="status_progress">В работе</span></div>
+      <p class="page-desc" data-i18n="p4_desc">Список проверок «по принципу исключения» (только красные/жёлтые строки), верификация новых покупателей. UI-паттерн карточек критериев + аудио + диалог по клику на цитату — переносим из <code>ghost-audit.html</code>.</p>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-server-cog"></i></div>
+          <div><div class="card-title" data-i18n="p4_card1_title">Backend: 2 воркфлоу, 5 эндпоинтов — реализовано и протестировано в Postman</div><div class="card-sub" data-i18n="p4_card1_sub">ga-supervisor-submissions.json, ga-supervisor-shoppers.json</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="ai-log-p4-1">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_1"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_2"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_3"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_4"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_5"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_6"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_7"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-layout-grid"></i></div>
+          <div><div class="card-title" data-i18n="p4_card2_title">Frontend: 3 екрани, підключено до реального логіну — з помилками і виправленнями по ходу</div><div class="card-sub" data-i18n="p4_card2_sub">supervisor.html, login.html [оновлено]</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="ai-log-p4-2">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_8"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_9"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_10"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_11"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_12"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_13"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_14"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_15"></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon"><i class="ti ti-clipboard-list"></i></div>
+          <div><div class="card-title" data-i18n="p4_card3_title">«Завдання» (read-only) — поза мокапами ТЗ, за окремим рішенням користувача</div><div class="card-sub" data-i18n="p4_card3_sub">ga-supervisor-tasks.json [новий]</div></div>
+        </div>
+        <div class="card-body">
+          <ul class="entry-list" id="ai-log-p4-3">
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_16"></div></li>
+            <li class="entry"><div class="entry-dot"></div><div class="entry-body" data-i18n="e_p4_17"></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ФАЗА 5 -->
+    <div class="section" id="s-p5">
+      <div class="eyebrow">Фаза 5</div>
+      <h1 class="page-title" data-i18n="p5_title">Отчётность</h1>
+      <div class="status-pill idle"><i class="ti ti-clock"></i> <span data-i18n="status_idle">Ожидает</span></div>
+      <p class="page-desc" data-i18n="p5_desc">Dashboard Admin (средний скор, % авто-одобрения, аномалии, рейтинг секций), генерация PDF-отчёта с AI Executive Summary.</p>
+      <div class="card"><div class="card-body"><div class="empty-state"><i class="ti ti-hourglass-empty"></i><span data-i18n="empty_no_records">Записей пока нет</span></div></div></div>
+    </div>
+
+    <!-- ФАЗА 6 -->
+    <div class="section" id="s-p6">
+      <div class="eyebrow">Фаза 6</div>
+      <h1 class="page-title" data-i18n="p6_title">Стабилизация</h1>
+      <div class="status-pill idle"><i class="ti ti-clock"></i> <span data-i18n="status_idle">Ожидает</span></div>
+      <p class="page-desc" data-i18n="p6_desc">Сквозной прогон реального флоу от регистрации до PDF, проверка гео/офлайн/Wake Lock на реальных телефонах (iOS Safari — самое узкое место).</p>
+      <div class="card"><div class="card-body"><div class="empty-state"><i class="ti ti-hourglass-empty"></i><span data-i18n="empty_no_records">Записей пока нет</span></div></div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const I18N = {
+  top_subtitle: { ru: '— Хронология разработки', uk: '— Хронологія розробки' },
+  overall_badge: { ru: 'Фаза 1 завершена — старт Фазы 2 (PWA)', uk: 'Фаза 1 завершена — старт Фази 2 (PWA)' },
+  sb_label: { ru: 'Фазы проекта', uk: 'Фази проєкту' },
+  sb0: { ru: 'Фаза 0 — Фундамент', uk: 'Фаза 0 — Фундамент' },
+  sb1: { ru: 'Фаза 1 — Admin', uk: 'Фаза 1 — Admin' },
+  sb2: { ru: 'Фаза 2 — PWA', uk: 'Фаза 2 — PWA' },
+  sb3: { ru: 'Фаза 3 — AI-проверка', uk: 'Фаза 3 — AI-перевірка' },
+  sb4: { ru: 'Фаза 4 — Supervisor', uk: 'Фаза 4 — Supervisor' },
+  sb5: { ru: 'Фаза 5 — Отчётность', uk: 'Фаза 5 — Звітність' },
+  sb6: { ru: 'Фаза 6 — Стабилизация', uk: 'Фаза 6 — Стабілізація' },
+  status_done: { ru: 'Завершено', uk: 'Завершено' },
+  status_progress: { ru: 'В работе', uk: 'У роботі' },
+  status_idle: { ru: 'Ожидает', uk: 'Очікує' },
+  empty_no_records: { ru: 'Записей пока нет', uk: 'Записів поки немає' },
+
+  p0_desc: { ru: 'Схема PostgreSQL под всё ТЗ, скелет backend (Node.js/Express), базовая авторизация. Инфраструктура: n8n на Railway, БД поднимаем там же, отдельным сервисом в том же проекте.',
+             uk: 'Схема PostgreSQL під усе ТЗ, скелет backend (Node.js/Express), базова авторизація. Інфраструктура: n8n на Railway, БД піднімаємо там же, окремим сервісом у тому ж проєкті.' },
+  p0_card1_title: { ru: 'Журнал изменений БД', uk: 'Журнал змін БД' },
+  p0_card1_sub: { ru: 'Каждый SQL-блок выполняется отдельно через n8n → Execute a SQL query', uk: 'Кожен SQL-блок виконується окремо через n8n → Execute a SQL query' },
+  p0_card2_title: { ru: 'Backend / инфраструктура', uk: 'Backend / інфраструктура' },
+  p0_card2_sub: { ru: 'Каркас API', uk: 'Скелет API' },
+  p0_card2_empty: { ru: 'Ещё не начато — старт после базовых таблиц БД', uk: 'Ще не почато — старт після базових таблиць БД' },
+  p0_card3_title: { ru: 'Веб-фронтенд (вход/регистрация)', uk: 'Веб-фронтенд (вхід/реєстрація)' },
+  p0_card3_sub: { ru: 'Обычный сайт, без PWA', uk: 'Звичайний сайт, без PWA' },
+
+  e_p0_f1: {
+    ru: 'Уточнение архитектуры: PWA (камера/гео/офлайн для покупателя) — отдельно и позже, не трогаем. Сейчас — обычный веб-сайт: <b>регистрация</b> (только покупатель) и <b>вход</b> (общий для всех ролей, дальше расходится по <code>role</code> из ответа API — без выбора «я админ / я покупатель»).<span class="entry-tag">decision</span>',
+    uk: 'Уточнення архітектури: PWA (камера/гео/офлайн для покупця) — окремо і пізніше, не чіпаємо. Зараз — звичайний веб-сайт: <b>реєстрація</b> (тільки покупець) та <b>вхід</b> (спільний для всіх ролей, далі розходиться по <code>role</code> з відповіді API — без вибору «я адмін / я покупець»).<span class="entry-tag">decision</span>'
+  },
+  e_p0_f2: {
+    ru: 'Собраны <b>login.html</b> и <b>register.html</b> — тексты, лейблы и состояния 1:1 из мокапов ТЗ (Частини 2, 3): вхід с состояниями invalid/pending, регистрация — полноценный 3-шаговый визард (особисті дані → акаунт і фото з прев\'ю знімка → очікування). Адаптивно: на мобильном — во весь экран без рамки, от ~560px — карточка по центру. Подключены к реальным <code>ga-auth-login</code>/<code>ga-auth-register</code>. Пока не подтверждено тестированием на реальном телефоне.<span class="entry-tag">built</span>',
+    uk: 'Зібрано <b>login.html</b> та <b>register.html</b> — тексти, лейбли й стани 1:1 з мокапів ТЗ (Частини 2, 3): вхід зі станами invalid/pending, реєстрація — повноцінний 3-кроковий візард (особисті дані → акаунт і фото з прев\'ю знімка → очікування). Адаптивно: на мобільному — на весь екран без рамки, від ~560px — картка по центру. Підключено до реальних <code>ga-auth-login</code>/<code>ga-auth-register</code>. Поки не підтверджено тестуванням на реальному телефоні.<span class="entry-tag">built</span>'
+  },
+
+  e_p0_1: {
+    ru: '<b>План согласован</b> — префикс таблиц <code>ga_</code>, конфликтов с существующими проектами на Railway не будет. Далее: по одной таблице за раз.<span class="entry-tag">setup</span>',
+    uk: '<b>План погоджено</b> — префікс таблиць <code>ga_</code>, конфліктів з існуючими проєктами на Railway не буде. Далі: по одній таблиці за раз.<span class="entry-tag">setup</span>'
+  },
+  e_p0_2: {
+    ru: 'Создана таблица <b>ga_users</b> — email/login (unique, регистронезависимые индексы), password_hash (bcrypt), поля профиля (first/last_name, phone, city, age, gender, photo_url), <code>role</code> (admin/supervisor/shopper), <code>status</code> (pending/active/blocked) с CHECK-ограничениями.<span class="entry-tag">SQL</span>',
+    uk: 'Створено таблицю <b>ga_users</b> — email/login (unique, case-insensitive індекси), password_hash (bcrypt), поля профілю (first/last_name, phone, city, age, gender, photo_url), <code>role</code> (admin/supervisor/shopper), <code>status</code> (pending/active/blocked) з CHECK-обмеженнями.<span class="entry-tag">SQL</span>'
+  },
+  e_p0_3: {
+    ru: 'Создана таблица <b>ga_access_tokens</b> — сессионные токены (FK → ga_users, TTL через expires_at, индексы по token и user_id). Соответствует флоу выдачи токена из Части 2 ТЗ.<span class="entry-tag">SQL</span>',
+    uk: 'Створено таблицю <b>ga_access_tokens</b> — сесійні токени (FK → ga_users, TTL через expires_at, індекси по token та user_id). Відповідає флоу видачі токена з Частини 2 ТЗ.<span class="entry-tag">SQL</span>'
+  },
+  e_p0_4: {
+    ru: 'Созданы таблицы <b>ga_clients</b> (сети-клиенты) и <b>ga_objects</b> (конкретные локации: адрес, координаты <code>latitude/longitude</code>, <code>geo_radius_m</code> — допустимый радиус для гео-антифрода). FK ga_objects → ga_clients.<span class="entry-tag">SQL</span>',
+    uk: 'Створено таблиці <b>ga_clients</b> (мережі-клієнти) та <b>ga_objects</b> (конкретні локації: адреса, координати <code>latitude/longitude</code>, <code>geo_radius_m</code> — допустимий радіус для гео-антифроду). FK ga_objects → ga_clients.<span class="entry-tag">SQL</span>'
+  },
+  e_p0_5: {
+    ru: 'Создана таблица <b>ga_supervisor_objects</b> — привязка supervisor\'ов к конкретным объектам (many-to-many, UNIQUE пара). Позволяет назначать одного supervisor\'а на несколько точек сети.<span class="entry-tag">SQL</span>',
+    uk: 'Створено таблицю <b>ga_supervisor_objects</b> — прив\'язка supervisor\'ів до конкретних об\'єктів (many-to-many, UNIQUE пара). Дозволяє призначати одного supervisor на кілька точок мережі.<span class="entry-tag">SQL</span>'
+  },
+  e_p0_6: {
+    ru: 'Создано ядро конструктора анкет: <b>ga_questionnaires</b> (привязка к object_id + section_key, настройки AI: порог авто-одобрения, мин. длительность аудио, макс. время заполнения) и <b>ga_criteria</b> (вопросы: yes_no / scale_1_5 / text, вес, признак критичности, поддержка условной ветки через parent_criterion_id + condition_value). Это снимает главное расхождение с n8n-воркфлоу — критерии теперь живут в БД, а не в хардкоде.<span class="entry-tag">SQL</span>',
+    uk: 'Створено ядро конструктора анкет: <b>ga_questionnaires</b> (прив\'язка до object_id + section_key, налаштування AI: поріг авто-схвалення, мін. тривалість аудіо, макс. час заповнення) та <b>ga_criteria</b> (питання: yes_no / scale_1_5 / text, вага, ознака критичності, підтримка умовної гілки через parent_criterion_id + condition_value). Це знімає головне розходження з n8n-воркфлоу — критерії тепер живуть у БД, а не хардкод.<span class="entry-tag">SQL</span>'
+  },
+  e_p0_7: {
+    ru: 'Создана таблица <b>ga_tasks</b> — задания (object_id, shopper_id, deadline, created_by). Статус-машина: <code>assigned → in_progress → submitted → approved/rejected/needs_revision</code> — последний статус соответствует возврату на доработку из Части 7 ТЗ.<span class="entry-tag">SQL</span>',
+    uk: 'Створено таблицю <b>ga_tasks</b> — завдання (object_id, shopper_id, deadline, created_by). Статус-машина: <code>assigned → in_progress → submitted → approved/rejected/needs_revision</code> — останній статус відповідає поверненню на доопрацювання з Частини 7 ТЗ.<span class="entry-tag">SQL</span>'
+  },
+  e_p0_8: {
+    ru: 'Созданы <b>ga_task_photo_requirements</b>, <b>ga_task_audio_requirements</b> (с <code>section_key</code> для маппинга на набор промптов-критериев AI) и <b>ga_task_questionnaires</b> — набор проверок внутри конкретного задания. Далее: <b>ga_submissions</b> + результаты AI + скоринг.<span class="entry-tag">SQL</span>',
+    uk: 'Створено <b>ga_task_photo_requirements</b>, <b>ga_task_audio_requirements</b> (з <code>section_key</code> для мапінгу на промпт-набір критеріїв AI) та <b>ga_task_questionnaires</b> — набір перевірок усередині конкретного завдання. Далі: <b>ga_submissions</b> + результати AI + скоринг.<span class="entry-tag">SQL</span>'
+  },
+  e_p0_9: {
+    ru: '<b>Проверка БД</b> — запрос к <code>information_schema.tables</code> подтвердил: все 18 таблиц на месте (ga_users, ga_access_tokens, ga_clients, ga_objects, ga_supervisor_objects, ga_questionnaires, ga_criteria, ga_tasks, ga_task_photo_requirements, ga_task_audio_requirements, ga_task_questionnaires, ga_submissions, ga_submission_photos, ga_submission_audio, ga_submission_answers, ga_ai_results, ga_flags, ga_submission_scores). Расхождений нет.<span class="entry-tag">verify</span>',
+    uk: '<b>Перевірка БД</b> — запит до <code>information_schema.tables</code> підтвердив: усі 18 таблиць на місці (ga_users, ga_access_tokens, ga_clients, ga_objects, ga_supervisor_objects, ga_questionnaires, ga_criteria, ga_tasks, ga_task_photo_requirements, ga_task_audio_requirements, ga_task_questionnaires, ga_submissions, ga_submission_photos, ga_submission_audio, ga_submission_answers, ga_ai_results, ga_flags, ga_submission_scores). Розбіжностей немає.<span class="entry-tag">verify</span>'
+  },
+
+  e_p0_b1: {
+    ru: 'Смена архитектуры: авторизация и регистрация делаются как <b>n8n-воркфлоу</b> (по образцу существующего паттерна «SelfCore» — Postgres-ноды с <code>crypt()</code>/<code>gen_salt</code>, без отдельного Express-сервера), а не как самостоятельный backend. Включено расширение БД <code>pgcrypto</code> (нужно для <code>crypt()</code>).<span class="entry-tag">decision</span>',
+    uk: 'Зміна архітектури: авторизація та реєстрація роблять як <b>n8n-воркфлоу</b> (за зразком існуючого патерну «SelfCore» — Postgres-ноди з <code>crypt()</code>/<code>gen_salt</code>, без окремого Express-сервера), а не як самостійний backend. Увімкнено розширення БД <code>pgcrypto</code> (потрібно для <code>crypt()</code>).<span class="entry-tag">decision</span>'
+  },
+  e_p0_b2: {
+    ru: 'Собран воркфлоу <b>ga-auth-login</b> (POST /ga/auth/login): поиск по email/login, проверка пароля через <code>crypt()</code>, статусы active/pending/blocked с кодами 401/403, выдача токена на 30 дней в <code>ga_access_tokens</code>.<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано воркфлоу <b>ga-auth-login</b> (POST /ga/auth/login): пошук за email/login, перевірка пароля через <code>crypt()</code>, статуси active/pending/blocked з кодами 401/403, видача токена на 30 днів у <code>ga_access_tokens</code>.<span class="entry-tag">n8n</span>'
+  },
+  e_p0_b3: {
+    ru: 'Собран воркфлоу <b>ga-auth-register</b>: валидация полей, проверка уникальности login/email, запись в <code>ga_users</code> со статусом <code>pending</code> (без выдачи токена). Фото пользователя — через отдельную загрузку в облако.<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано воркфлоу <b>ga-auth-register</b>: валідація полів, перевірка унікальності login/email, запис у <code>ga_users</code> зі статусом <code>pending</code> (без видачі токена). Фото користувача — через окреме завантаження у хмару.<span class="entry-tag">n8n</span>'
+  },
+  e_p0_b4: {
+    ru: 'Хранение фото — <b>Cloudinary</b> (cloud name <code>t091exyd</code>), способ защиты — «ссылка-секрет»: upload-пресет <code>a_shopper_photos</code>, режим Unsigned, генерация непредсказуемого public ID (случайное имя файла вместо оригинального). Прямая ссылка технически публична, но угадать её нельзя.<span class="entry-tag">decision</span>',
+    uk: 'Зберігання фото — <b>Cloudinary</b> (cloud name <code>t091exyd</code>), спосіб захисту — «посилання-секрет»: upload-пресет <code>a_shopper_photos</code>, режим Unsigned, генерація непередбачуваного public ID (випадкове ім\'я файлу замість оригінального). Пряме посилання технічно публічне, але вгадати його не можна.<span class="entry-tag">decision</span>'
+  },
+  e_p0_b5: {
+    ru: 'Баг: Postgres-нода <code>Check Login+Email Unique</code> не передаёт binary дальше по цепочке — фото терялось до загрузки в Cloudinary. Исправлено нодой <b>Restore Photo Binary</b> (забирает файл обратно из Validate Input). После фикса — <b>первый успешный прогон register</b>: 201, status:"pending", id создан.<span class="entry-tag">fix + verified</span>',
+    uk: 'Баг: Postgres-нода <code>Check Login+Email Unique</code> не передає binary далі по ланцюгу — фото губилося до завантаження у Cloudinary. Виправлено нодою <b>Restore Photo Binary</b> (забирає файл назад із Validate Input). Після фіксу — <b>перший успішний прогін register</b>: 201, status:"pending", id створено.<span class="entry-tag">fix + verified</span>'
+  },
+  e_p0_b6: {
+    ru: 'Баг в ga-auth-login: при 0 найденных строках Postgres-нода <code>Check Credentials</code> отдавала 0 элементов на выход вместо одного пустого — из-за этого <code>Valid?</code> не срабатывал ни в одну ветку, и n8n возвращал пустой 200 вместо 401. Исправлено опцией <b>Always Output Data</b> на ноде.<span class="entry-tag">fix</span>',
+    uk: 'Баг у ga-auth-login: при 0 знайдених рядках Postgres-нода <code>Check Credentials</code> віддавала 0 елементів на вихід замість одного порожнього — через це <code>Valid?</code> не спрацьовував у жодну гілку, і n8n повертав порожній 200 замість 401. Виправлено опцією <b>Always Output Data</b> на ноді.<span class="entry-tag">fix</span>'
+  },
+  e_p0_b7: {
+    ru: 'Postman-тесты 1–5 из 6 пройдены: register (201 pending), register-дубликат (409), невалидный телефон (400), login pending-аккаунта (403), login с неверным паролем (401). Остался тест №6 (login активного пользователя, 200 + token) — после ручного UPDATE status.<span class="entry-tag">testing</span>',
+    uk: 'Postman-тести 1–5 з 6 пройдено: register (201 pending), register-дублікат (409), невалідний телефон (400), login pending-акаунту (403), login з невірним паролем (401). Залишився тест №6 (login активного користувача, 200 + token) — після ручного UPDATE status.<span class="entry-tag">testing</span>'
+  },
+  e_p0_b8: {
+    ru: 'Тест №6 пройден: после <code>UPDATE ga_users SET status=\'active\'</code> — login вернул 200, токен (96 hex-символов) и корректные данные юзера (role: shopper). <b>Все 6/6 тестов зелёные. Авторизация и регистрация полностью рабочие, Фаза 0 закрыта.</b><span class="entry-tag">verified</span>',
+    uk: 'Тест №6 пройдено: після <code>UPDATE ga_users SET status=\'active\'</code> — login повернув 200, токен (96 hex-символів) та коректні дані юзера (role: shopper). <b>Усі 6/6 тестів зелені. Авторизація та реєстрація повністю робочі, Фазу 0 закрито.</b><span class="entry-tag">verified</span>'
+  },
+
+  p1_desc: { ru: 'Объекты/клиенты, конструктор анкет (секции → критерии → веса → критичные критерии), создание заданий. Разблокирует Фазу 3 — AI не может считать скор без реальных критериев в БД.',
+             uk: 'Об\'єкти/клієнти, конструктор анкет (секції → критерії → ваги → критичні критерії), створення завдань. Розблоковує Фазу 3 — AI не може рахувати скор без реальних критеріїв у БД.' },
+  p1_card1_title: { ru: 'Клиенты и объекты', uk: 'Клієнти та об\'єкти' },
+  p1_card1_sub: { ru: 'ga-admin-clients / ga-admin-objects', uk: 'ga-admin-clients / ga-admin-objects' },
+  p1_card2_title: { ru: 'Конструктор анкет', uk: 'Конструктор анкет' },
+  p1_card2_sub: { ru: 'ga-admin-questionnaires / ga-admin-criteria', uk: 'ga-admin-questionnaires / ga-admin-criteria' },
+  p1_card3_title: { ru: 'Пользователи и роли', uk: 'Користувачі та ролі' },
+  p1_card3_sub: { ru: 'ga-admin-users / ga-admin-supervisor-objects', uk: 'ga-admin-users / ga-admin-supervisor-objects' },
+  p1_card4_title: { ru: 'Задания', uk: 'Завдання' },
+  p1_card4_sub: { ru: 'ga-admin-tasks', uk: 'ga-admin-tasks' },
+  p1_card5_title: { ru: 'Dashboard', uk: 'Dashboard' },
+  p1_card5_sub: { ru: 'ga-admin-dashboard + dashboard.html', uk: 'ga-admin-dashboard + dashboard.html' },
+  p1_card6_title: { ru: 'Фронт Admin: Dashboard + Об\'єкти', uk: 'Фронт Admin: Dashboard + Об\'єкти' },
+  p1_card6_sub: { ru: 'dashboard.html + objects.html', uk: 'dashboard.html + objects.html' },
+  p1_card7_title: { ru: 'Фронт Admin: Задания', uk: 'Фронт Admin: Завдання' },
+  p1_card7_sub: { ru: 'tasks.html + ga-admin-tasks (перестроен)', uk: 'tasks.html + ga-admin-tasks (перебудовано)' },
+
+  e_p1_18: {
+    ru: 'Собрана страница <b>tasks.html</b> по мокапу ТЗ (список + форма «Нове завдання»): статистика (Активних/Очікує/Завершено), таблица с иконками требований и цветными статус-бейджами по всем 6 статусам, форма создания с тремя типами вимог (Фото/Аудіо/Анкета) через мини-формы и чипсы — анкеты подтягиваются реально с числом вопросов из готового API. Поле Supervisor сделано read-only (в бэке привязан к объекту, не к заданию) — явно оговорено.<span class="entry-tag">frontend</span>',
+    uk: 'Зібрано сторінку <b>tasks.html</b> за мокапом ТЗ (список + форма «Нове завдання»): статистика (Активних/Очікує/Завершено), таблиця з іконками вимог та кольоровими статус-бейджами по всіх 6 статусах, форма створення з трьома типами вимог (Фото/Аудіо/Анкета) через міні-форми та чіпси — анкети підтягуються реально з числом питань із готового API. Поле Supervisor зроблено read-only (у беку прив\'язаний до об\'єкту, не до завдання) — явно обумовлено.<span class="entry-tag">frontend</span>'
+  },
+  e_p1_19: {
+    ru: 'Серьёзный бэкенд-баг: создание задания с несколькими требованиями периодически возвращало пустой ответ (задание при этом реально создавалось в БД) — из-за склейки нескольких INSERT через `;` в одном запросе, ненадёжный подход. Переделано на архитектуру с гранулярными операциями: бэкенд <b>ga-admin-tasks</b> перестроен до 93 нод / 6 маршрутов — список, создание (по одной таблице INSERT за раз с <code>alwaysOutputData</code>), удаление (только статус assigned), плюс новые <code>GET /tasks/detail</code>, <code>POST /tasks/requirements/add</code>, <code>POST /tasks/requirements/remove</code> — каждая вимога добавляется/удаляется отдельным простым запросом.<span class="entry-tag">major fix</span>',
+    uk: 'Серйозний бекенд-баг: створення завдання з кількома вимогами періодично повертало порожню відповідь (завдання при цьому реально створювалося в БД) — через склейку кількох INSERT через `;` в одному запиті, ненадійний підхід. Перероблено на архітектуру з гранулярними операціями: бекенд <b>ga-admin-tasks</b> перебудовано до 93 нод / 6 маршрутів — список, створення (по одній таблиці INSERT за раз з <code>alwaysOutputData</code>), видалення (лише статус assigned), плюс нові <code>GET /tasks/detail</code>, <code>POST /tasks/requirements/add</code>, <code>POST /tasks/requirements/remove</code> — кожна вимога додається/видаляється окремим простим запитом.<span class="entry-tag">major fix</span>'
+  },
+  e_p1_20: {
+    ru: '«Відкрити»/«Переглянути» переделаны из инфо-диалога в <b>реальный экран редактирования</b>: детали задания (только просмотр — бэк пока не поддерживает смену объекта/покупателя/дедлайна, честно указано в интерфейсе) + список вимог с настоящими ID из БД, удаление/добавление каждой вимоги синхронизируется с сервером немедленно (не через отложенное «Зберегти»). Добавлена кнопка «Видалити» для заданий в статусе «Призначено».<span class="entry-tag">frontend + backend</span>',
+    uk: '«Відкрити»/«Переглянути» перероблено з інфо-діалогу на <b>реальний екран редагування</b>: деталі завдання (лише перегляд — бек поки не підтримує зміну об\'єкту/покупця/дедлайну, чесно вказано в інтерфейсі) + список вимог із справжніми ID з БД, видалення/додавання кожної вимоги синхронізується з сервером негайно (не через відкладене «Зберегти»). Додано кнопку «Видалити» для завдань у статусі «Призначено».<span class="entry-tag">frontend + backend</span>'
+  },
+  e_p1_21: {
+    ru: 'Остаточная нестабильность ответа при создании (пустое тело при HTTP 200, задание при этом сохраняется корректно) обработана на фронте прагматично: пустой ответ при успешном статусе трактуется как успех, а не ошибка — раз данные и так долетают до БД. Убрано дублирование в названии анкеты («Каса — Каса» → «Каса (Каса)»). <b>Страница «Завдання» полностью закрыта.</b><span class="entry-tag">resolved</span>',
+    uk: 'Залишкова нестабільність відповіді при створенні (порожнє тіло при HTTP 200, завдання при цьому зберігається коректно) оброблена на фронті прагматично: порожня відповідь при успішному статусі трактується як успіх, а не помилка — раз дані й так долітають до БД. Прибрано дублювання в назві анкети («Каса — Каса» → «Каса (Каса)»). <b>Сторінку «Завдання» повністю закрито.</b><span class="entry-tag">resolved</span>'
+  },
+
+  e_p1_9: {
+    ru: 'Собран <b>ga-admin-dashboard</b>: сводная статистика по сети (перевірок, середній скор, % авто-схвалення, аномалії) + рейтинг об\'єктів с динамикой місяць-до-місяця + рейтинг секцій. Важное архитектурное решение: рейтинг секцій считается не из <code>ga_submission_scores</code> (там скор один на всё задание, а не по секциям), а из <code>ga_ai_results</code> + вес критерия — это точнее отражает секцию. Собран и фронт <b>dashboard.html</b> 1:1 с мокапом ТЗ, с честной адаптивностью: таблица рейтинга объектов на ≤720px физически заменяется карточками (другой DOM, не CSS-сжатие), JS проверен через <code>node --check</code>.<span class="entry-tag">n8n + frontend</span>',
+    uk: 'Зібрано <b>ga-admin-dashboard</b>: зведена статистика по мережі (перевірок, середній скор, % авто-схвалення, аномалії) + рейтинг об\'єктів з динамікою місяць-до-місяця + рейтинг секцій. Важливе архітектурне рішення: рейтинг секцій рахується не з <code>ga_submission_scores</code> (там скор один на все завдання, а не по секціях), а з <code>ga_ai_results</code> + вага критерію — це точніше відображає секцію. Зібрано й фронт <b>dashboard.html</b> 1:1 з мокапом ТЗ, з чесною адаптивністю: таблиця рейтингу об\'єктів на ≤720px фізично замінюється картками (інший DOM, не CSS-стиснення), JS перевірено через <code>node --check</code>.<span class="entry-tag">n8n + frontend</span>'
+  },
+  e_p1_10: {
+    ru: 'Postman-коллекция «Dashboard», 4 теста — все зелёные с первого прогона. Проверена именно <b>корректная пустота</b> (реальных сдач заданий ещё нет — PWA не существует): <code>checks_completed:0</code>, <code>avg_score:null</code>, объект в рейтинге присутствует с <code>checks_count:0</code>, <code>weakest_sections:[]</code>. <b>Фаза 1 (Admin) по Частині 8 ТЗ закрыта полностью</b> — все пять блоков собраны и протестированы.<span class="entry-tag">verified 4/4</span>',
+    uk: 'Postman-колекція «Dashboard», 4 тести — усі зелені з першого прогону. Перевірено саме <b>коректну порожнечу</b> (реальних здач завдань ще немає — PWA не існує): <code>checks_completed:0</code>, <code>avg_score:null</code>, об\'єкт у рейтингу присутній з <code>checks_count:0</code>, <code>weakest_sections:[]</code>. <b>Фазу 1 (Admin) за Частиною 8 ТЗ закрито повністю</b> — усі п\'ять блоків зібрано й протестовано.<span class="entry-tag">verified 4/4</span>'
+  },
+
+  e_p1_11: {
+    ru: 'Аудит: реального фронта Admin (кроме бэкенда) не существовало вообще, а сам Dashboard, когда его собрали, имел расхождения с точным мокапом ТЗ (цвет «Середній скор»/«Авто-схвалено» — должен быть зелёным, а не фиолетовым; пороги «Найслабші зони» — 4 уровня, а не 3; подпись періоду — конкретный месяц, а не обобщённо; отсутствовал персистентный сайдбар «Dashboard/Завдання/Покупці/Об\'єкти/Звіти»). Все расхождения найдены построчной сверкой с мокапом ТЗ и исправлены — бэкенд дашборда не трогали.<span class="entry-tag">audit + fix</span>',
+    uk: 'Аудит: реального фронту Admin (окрім бекенду) не існувало взагалі, а сам Dashboard, коли його зібрали, мав розбіжності з точним мокапом ТЗ (колір «Середній скор»/«Авто-схвалено» — має бути зеленим, а не фіолетовим; пороги «Найслабші зони» — 4 рівні, а не 3; підпис періоду — конкретний місяць, а не узагальнено; був відсутній персистентний сайдбар «Dashboard/Завдання/Покупці/Об\'єкти/Звіти»). Усі розбіжності знайдено побудовою звіркою з мокапом ТЗ та виправлено — бекенд дашборда не чіпали.<span class="entry-tag">audit + fix</span>'
+  },
+  e_p1_12: {
+    ru: 'Собрана страница <b>objects.html</b> 1:1 по мокапу ТЗ: форма «Новий об\'єкт» с реальной Leaflet-картой (перетаскиваемый пин, клик для установки точки), слайдер радиуса геолокации 50–500м, привязка Supervisor\'а, таблица объектов. Общий сайдбар «Меню» (Dashboard/Завдання/Покупці/Об\'єкти/Звіти) переиспользуется между страницами с одинаковыми именами файлов — перекрёстные ссылки проверены и совпадают.<span class="entry-tag">frontend</span>',
+    uk: 'Зібрано сторінку <b>objects.html</b> 1:1 за мокапом ТЗ: форма «Новий об\'єкт» з реальною Leaflet-картою (перетягуваний пін, клік для встановлення точки), повзунок радіуса геолокації 50–500м, прив\'язка Supervisor\'а, таблиця об\'єктів. Спільний сайдбар «Меню» (Dashboard/Завдання/Покупці/Об\'єкти/Звіти) перевикористовується між сторінками з однаковими іменами файлів — перехресні посилання перевірено, збігаються.<span class="entry-tag">frontend</span>'
+  },
+  e_p1_13: {
+    ru: 'Добавлен новый маршрут <code>POST /ga/admin/objects/update</code> (кнопка «Редагувати» стала реально рабочей) — обновление полей объекта + переназначение supervisor\'а. Баг: изначально апдейт всегда снимал привязку supervisor\'а, даже если поле не передавалось в запросе — исправлено различением «поле отсутствует» (не трогаем) / «передано null» (снимаем) / «передано число» (переназначаем). Postman-коллекция «Objects Update», 7 тестов — все зелёные после фикса.<span class="entry-tag">fix + verified 7/7</span>',
+    uk: 'Додано новий маршрут <code>POST /ga/admin/objects/update</code> (кнопка «Редагувати» стала реально робочою) — оновлення полів об\'єкту + перепризначення supervisor\'а. Баг: спочатку апдейт завжди знімав прив\'язку supervisor\'а, навіть якщо поле не передавалось у запиті — виправлено розрізненням «поле відсутнє» (не чіпаємо) / «передано null» (знімаємо) / «передано число» (перепризначаємо). Postman-колекція «Objects Update», 7 тестів — усі зелені після фіксу.<span class="entry-tag">fix + verified 7/7</span>'
+  },
+  e_p1_14: {
+    ru: 'Реально подключена кнопка «Редагувати» на фронте (была статичной надписью без единого обработчика — упущение) — открывает форму, предзаполненную текущими данными, карта переставляет пин. Добавлена кнопка «Видалити» (за пределами мокапа ТЗ, явно оговорено) — мягкое удаление через новый <code>POST /ga/admin/objects/delete</code> (<code>is_active=false</code>, не физический DELETE — связанные анкеты/задания не страдают). Список объектов на фронте и рейтинг объектов на Dashboard теперь оба фильтруют <code>is_active=TRUE</code> — раньше удалённые продолжали показываться.<span class="entry-tag">frontend + backend</span>',
+    uk: 'Реально підключено кнопку «Редагувати» на фронті (була статичним написом без жодного обробника — упущення) — відкриває форму, попередньо заповнену поточними даними, карта переставляє пін. Додано кнопку «Видалити» (за межами мокапу ТЗ, явно обумовлено) — м\'яке видалення через новий <code>POST /ga/admin/objects/delete</code> (<code>is_active=false</code>, не фізичний DELETE — пов\'язані анкети/завдання не страждають). Список об\'єктів на фронті і рейтинг об\'єктів на Dashboard тепер обидва фільтрують <code>is_active=TRUE</code> — раніше видалені продовжували показуватись.<span class="entry-tag">frontend + backend</span>'
+  },
+  e_p1_15: {
+    ru: 'Реализована интерактивная карта в форме объекта: визуальный круг радиуса геолокации (обновляется вместе со слайдером), кастомные модальные окна вместо браузерных <code>alert</code>/<code>confirm</code>, исправлен z-index всплывающих подсказок (Leaflet создаёт собственные слои с высоким z-index, подсказки рисовались под картой).<span class="entry-tag">frontend</span>',
+    uk: 'Реалізована інтерактивна карта в формі об\'єкту: візуальний круг радіуса геолокації (оновлюється разом зі слайдером), кастомні модальні вікна замість браузерних <code>alert</code>/<code>confirm</code>, виправлено z-index спливаючих підказок (Leaflet створює власні шари з високим z-index, підказки малювались під картою).<span class="entry-tag">frontend</span>'
+  },
+  e_p1_16: {
+    ru: 'Автокомплит адреса и обратный геокодинг — долгая цепочка диагностики: Photon (неподдерживаемый параметр lang=uk) → Nominatim напрямую из браузера (реально заблокирован CORS-политикой именно с домена wizoria.onrender.com — подтверждено ошибкой браузера) → собственный n8n-прокси (найден и исправлен баг агрегации — HTTP-нода при 0/массиве результатов сплитит их на отдельные items, тот же паттерн, что уже ловили на Postgres-нодах) → обнаружен уже существующий рабочий эндпоинт на этом же n8n от другого проекта (Athlete API) → по требованию пользователя пересобран как полностью независимый <b>ga-admin-geocode</b> (свой роут, свой auth, тот же контракт: <code>{address}</code> или <code>{lat,lon}</code> → <code>{results:[...]}</code>), не зависящий от чужого проекта.<span class="entry-tag">fix chain, resolved</span>',
+    uk: 'Автокомпліт адреси та зворотний геокодинг — довгий ланцюжок діагностики: Photon (непідтримуваний параметр lang=uk) → Nominatim напряму з браузера (реально заблоковано CORS-політикою саме з домену wizoria.onrender.com — підтверджено помилкою браузера) → власний n8n-проксі (знайдено і виправлено баг агрегації — HTTP-нода при 0/масиві результатів сплітить їх на окремі items, той самий патерн, що вже ловили на Postgres-нодах) → виявлено вже існуючий робочий ендпоінт на цьому ж n8n від іншого проєкту (Athlete API) → на вимогу користувача перезібрано як повністю незалежний <b>ga-admin-geocode</b> (свій роут, свій auth, той самий контракт: <code>{address}</code> або <code>{lat,lon}</code> → <code>{results:[...]}</code>), що не залежить від чужого проєкту.<span class="entry-tag">fix chain, resolved</span>'
+  },
+  e_p1_17: {
+    ru: 'Баг: рейтинг объектов на Dashboard показывал и удалённые (<code>is_active=false</code>) объекты — добавлен фильтр <code>AND o.is_active = TRUE</code> в запрос <code>ga-admin-dashboard</code>. Тестовый object_id=1 («Wizoria Конкорд», на нём и делали все тесты) восстановлен вручную после случайного удаления. <b>Страница «Об\'єкти» полностью закрыта</b>: карта, форма, создание, редактирование, мягкое удаление, автокомплит адреса — всё работает и подключено к реальному API, подтверждено вживую скриншотами.<span class="entry-tag">fix, verified live</span>',
+    uk: 'Баг: рейтинг об\'єктів на Dashboard показував і видалені (<code>is_active=false</code>) об\'єкти — додано фільтр <code>AND o.is_active = TRUE</code> у запит <code>ga-admin-dashboard</code>. Тестовий object_id=1 («Wizoria Конкорд», на ньому й робили всі тести) відновлено вручну після випадкового видалення. <b>Сторінку «Об\'єкти» повністю закрито</b>: карта, форма, створення, редагування, м\'яке видалення, автокомпліт адреси — все працює і підключено до реального API, підтверджено наживо скріншотами.<span class="entry-tag">fix, verified live</span>'
+  },
+
+  e_p1_7: {
+    ru: 'Собран <b>ga-admin-tasks</b>: создание задания (object_id + shopper_id + deadline) одним запросом вместе со всеми требованиями (фото/аудио/анкеты) — динамически строится и выполняется пачка INSERT-ов. Проверки: shopper_id обязательно с ролью shopper (не admin/supervisor), object_id существует, deadline — валидный ISO 8601, обязательна хотя бы одна вимога. Список — с JOIN объекта и покупателя, фильтры по object_id/shopper_id/status.<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано <b>ga-admin-tasks</b>: створення завдання (object_id + shopper_id + deadline) одним запитом разом з усіма вимогами (фото/аудіо/анкети) — динамічно будується та виконується пачка INSERT-ів. Перевірки: shopper_id обов\'язково з роллю shopper (не admin/supervisor), object_id існує, deadline — валідний ISO 8601, обов\'язкова хоча б одна вимога. Список — з JOIN об\'єкта та покупця, фільтри по object_id/shopper_id/status.<span class="entry-tag">n8n</span>'
+  },
+  e_p1_8: {
+    ru: 'Postman-коллекция «Tasks», 9 тестов — все зелёные с первого прогона, ни одного бага (впервые за проект). <b>Фаза 1 (Admin) по Частині 8 ТЗ закрыта полностью</b>: об\'єкти/клієнти, конструктор анкет, користувачі та ролі, завдання — всё собрано и протестировано. Остался только Dashboard.<span class="entry-tag">verified 9/9</span>',
+    uk: 'Postman-колекція «Tasks», 9 тестів — усі зелені з першого прогону, жодного бага (вперше за проєкт). <b>Фазу 1 (Admin) за Частиною 8 ТЗ закрито повністю</b>: об\'єкти/клієнти, конструктор анкет, користувачі та ролі, завдання — все зібрано й протестовано. Залишився тільки Dashboard.<span class="entry-tag">verified 9/9</span>'
+  },
+
+  e_p1_5: {
+    ru: 'Собраны <b>ga-admin-users</b> (создание Supervisor/Admin — сразу <code>active</code>, без публичной регистрации; список с фильтром по <code>role</code>; ручная смена статуса покупателя active/blocked/pending) и <b>ga-admin-supervisor-objects</b> (назначение объектов supervisor\'у с проверкой роли, дубликаты через <code>ON CONFLICT DO NOTHING</code>).<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано <b>ga-admin-users</b> (створення Supervisor/Admin — одразу <code>active</code>, без публічної реєстрації; список із фільтром по <code>role</code>; ручна зміна статусу покупця active/blocked/pending) та <b>ga-admin-supervisor-objects</b> (призначення об\'єктів supervisor\'у з перевіркою ролі, дублікати через <code>ON CONFLICT DO NOTHING</code>).<span class="entry-tag">n8n</span>'
+  },
+  e_p1_6: {
+    ru: 'Баг: у ноды перевірки «юзера знайдено» порівнювались число (id) і рядковий оператор notEmpty при strict-типах — воркфлоу падав повністю. Виправлено тим самим патерном, що і в інших воркфлоу (проміжна Code-нода з булевим полем перед IF). Postman-коллекция «Users & Roles», 13 тестов — все зелёные после фикса.<span class="entry-tag">fix + verified 13/13</span>',
+    uk: 'Баг: у ноди перевірки «юзера знайдено» порівнювались число (id) і рядковий оператор notEmpty при strict-типах — воркфлоу падав повністю. Виправлено тим самим патерном, що і в інших воркфлоу (проміжна Code-нода з булевим полем перед IF). Postman-колекція «Users & Roles», 13 тестів — усі зелені після фіксу.<span class="entry-tag">fix + verified 13/13</span>'
+  },
+
+  e_p1_3: {
+    ru: 'Собраны воркфлоу <b>ga-admin-questionnaires</b> (GET список с JOIN объекта / POST создание с валидацией <code>section_key</code> и порогами AI по умолчанию 80/30/180) и <b>ga-admin-criteria</b> — три маршрута: список, создание критерия (авто <code>order_index</code> = последний+1, опциональная условная ветка через <code>parent_criterion_id</code>+<code>condition_value</code>), и отдельный <code>POST /criteria/reorder</code> для drag-n-drop (bulk-обновление порядка одним SQL через <code>CASE id WHEN...THEN...END</code>).<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано воркфлоу <b>ga-admin-questionnaires</b> (GET список з JOIN об\'єкта / POST створення з валідацією <code>section_key</code> та порогами AI за замовчуванням 80/30/180) та <b>ga-admin-criteria</b> — три маршрути: список, створення критерію (авто <code>order_index</code> = останній+1, опціональна умовна гілка через <code>parent_criterion_id</code>+<code>condition_value</code>), і окремий <code>POST /criteria/reorder</code> для drag-n-drop (bulk-оновлення порядку одним SQL через <code>CASE id WHEN...THEN...END</code>).<span class="entry-tag">n8n</span>'
+  },
+  e_p1_4: {
+    ru: 'Postman-коллекция «Questionnaires & Criteria», 11 тестов — все зелёные: создание анкеты (пороги по умолчанию подтверждены), валидация section_key/answer_type, 404 на несуществующие object_id/questionnaire_id, автонумерация order_index при создании критериев (1, затем 2), и главное — <b>reorder реально меняет порядок</b> (проверено повторным GET после свапа).<span class="entry-tag">verified 11/11</span>',
+    uk: 'Postman-колекція «Questionnaires & Criteria», 11 тестів — усі зелені: створення анкети (пороги за замовчуванням підтверджено), валідація section_key/answer_type, 404 на неіснуючі object_id/questionnaire_id, автонумерація order_index при створенні критеріїв (1, потім 2), і головне — <b>reorder реально змінює порядок</b> (перевірено повторним GET після свапу).<span class="entry-tag">verified 11/11</span>'
+  },
+
+  e_p1_1: {
+    ru: 'Собраны воркфлоу <b>ga-admin-clients</b> (GET список / POST создание) и <b>ga-admin-objects</b> (GET список с JOIN клиента + фільтр <code>?client_id=</code> / POST создание с валидацией координат и проверкой существования клиента). Оба защищены проверкой токена — доступ только активному <code>admin</code>, иначе 403.<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано воркфлоу <b>ga-admin-clients</b> (GET список / POST створення) та <b>ga-admin-objects</b> (GET список з JOIN клієнта + фільтр <code>?client_id=</code> / POST створення з валідацією координат і перевіркою існування клієнта). Обидва захищені перевіркою токена — доступ лише активному <code>admin</code>, інакше 403.<span class="entry-tag">n8n</span>'
+  },
+  e_p1_2: {
+    ru: 'Postman-коллекция «Admin (Clients & Objects)», 10 тестов — все зелёные: доступ без токена (403), CRUD клиентов (создание/валидация/список), CRUD объектов (создание/несуществующий client_id → 404/битые координаты → 400/список с client_name/фильтр по клиенту). Тестовый admin создан вручную в БД (по ТЗ — регистрации у admin/supervisor нет).<span class="entry-tag">verified 10/10</span>',
+    uk: 'Postman-колекція «Admin (Clients & Objects)», 10 тестів — усі зелені: доступ без токена (403), CRUD клієнтів (створення/валідація/список), CRUD об\'єктів (створення/неіснуючий client_id → 404/биті координати → 400/список з client_name/фільтр по клієнту). Тестовий admin створено вручну в БД (за ТЗ — реєстрації у admin/supervisor немає).<span class="entry-tag">verified 10/10</span>'
+  },
+
+  p2_title: { ru: 'PWA-приложение', uk: 'PWA застосунок' },
+  p2_desc: { ru: 'Регистрация (pending → active), вход, экраны покупателя. База — проверенный код из <code>index-5.html</code> (камера, аудиозапись + Wake Lock, гео GPS/WiFi/Cell, offline Service Worker, push) — переносим в боевые экраны, а не исследуем заново.',
+             uk: 'Реєстрація (pending → active), вхід, екрани покупця. База — перевірений код з <code>index-5.html</code> (камера, аудіозапис + Wake Lock, гео GPS/WiFi/Cell, offline Service Worker, push) — переносимо у бойові екрани, а не досліджуємо заново.' },
+
+  p2_card1_title: { ru: 'Auth покупателя + список заданий', uk: 'Auth покупця + список завдань' },
+  p2_card1_sub: { ru: 'ga-shopper-tasks', uk: 'ga-shopper-tasks' },
+
+  e_p2_1: {
+    ru: '<b>Архитектурное решение</b> — общий auth-паттерн для shopper-эндпоинтов, а не отдельный набор кода параллельно admin-проверке: одна Code-нода <code>Compute Auth Flag</code> с параметром <code>ALLOWED_ROLES</code> (здесь <code>[«shopper»]</code>), различает три причины отказа (токен не найден / роль не подходит / аккаунт не active) — переиспользуется в следующих shopper-воркфлоу (гео, фото, аудио, анкета, submit) простой сменой списка ролей.<span class="entry-tag">decision</span>',
+    uk: '<b>Архітектурне рішення</b> — спільний auth-патерн для shopper-ендпоінтів, а не окремий набір коду паралельно admin-перевірці: одна Code-нода <code>Compute Auth Flag</code> з параметром <code>ALLOWED_ROLES</code> (тут <code>[«shopper»]</code>), розрізняє три причини відмови (токен не знайдено / роль не підходить / акаунт не active) — переюзається у наступних shopper-воркфлоу (гео, фото, аудіо, анкета, submit) простою зміною списку ролей.<span class="entry-tag">decision</span>'
+  },
+  e_p2_2: {
+    ru: 'Собран первый shopper-воркфлоу <b>ga-shopper-tasks</b> (GET /ga/shopper/tasks): список СВОИХ заданий по токену (<code>shopper_id</code> берётся из токена, не передаётся снаружи) — JOIN с <code>ga_objects</code>, опциональные фильтры <code>object_id</code>/<code>status</code>. Строго последовательная цепочка нод (без Merge), обе Postgres-ноды с <code>alwaysOutputData</code>, boolean-флаг перед IF — по паттернам из журнала багов. По ходу поправлена ошибка в пути вебхука: реальная конвенция — вложенный путь <code>ga/&lt;домен&gt;/&lt;ресурс&gt;</code> (как в <code>ga/auth/login</code>), а не плоский <code>ga-shopper-tasks</code>.<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано перший shopper-воркфлоу <b>ga-shopper-tasks</b> (GET /ga/shopper/tasks): список СВОЇХ завдань за токеном (<code>shopper_id</code> береться з токена, не передається ззовні) — JOIN з <code>ga_objects</code>, опціональні фільтри <code>object_id</code>/<code>status</code>. Строго послідовний ланцюг нод (без Merge), обидві Postgres-ноди з <code>alwaysOutputData</code>, boolean-прапор перед IF — за патернами з журналу багів. По ходу виправлено помилку у шляху вебхука: реальна конвенція — вкладений шлях <code>ga/&lt;домен&gt;/&lt;ресурс&gt;</code> (як у <code>ga/auth/login</code>), а не плоский <code>ga-shopper-tasks</code>.<span class="entry-tag">n8n</span>'
+  },
+  e_p2_3: {
+    ru: 'Postman-коллекция «ga-shopper-tasks», 6 тестов — все зелёные с первого прогона: список без фильтров, фильтр по <code>object_id</code>, фильтр по <code>status</code>, доступ без токена (403), с мусорным токеном (403), и главное — <b>валидный токен admin на shopper-эндпоинте тоже даёт 403</b> с явным сообщением про роль (а не «токен не найден») — подтверждает, что auth-паттерн различает причины отказа, а не просто блокирует всех подряд.<span class="entry-tag">verified 6/6</span>',
+    uk: 'Postman-колекція «ga-shopper-tasks», 6 тестів — усі зелені з першого прогону: список без фільтрів, фільтр за <code>object_id</code>, фільтр за <code>status</code>, доступ без токена (403), зі сміттєвим токеном (403), і головне — <b>валідний токен admin на shopper-ендпоінті теж дає 403</b> з явним повідомленням про роль (а не «токен не знайдено») — підтверджує, що auth-патерн розрізняє причини відмови, а не просто блокує всіх поспіль.<span class="entry-tag">verified 6/6</span>'
+  },
+
+  e_p2_4: {
+    ru: '<b>Уточнён порядок шагов сдачи задания</b> — по итогам тщательного анализа полной схемы БД (все <code>ga_*</code> таблицы). Оказалось: <code>ga_submission_photos</code>, <code>ga_submission_audio</code> и <code>ga_submission_answers</code> ссылаются на <code>submission_id</code>, а не на <code>task_id</code> напрямую — значит строка в <code>ga_submissions</code> должна создаваться не на финальном Submit, а сразу после успешного гео-подтверждения присутствия (экран «Геолокація»), и уже тогда <code>ga_tasks.status</code> переходит в <code>in_progress</code>. Также обнаружен недостающий шаг: эндпоинта «деталі завдання» (требования к фото/аудио + анкета по конкретному <code>task_id</code>) сейчас не существует вообще — без него покупатель не узнает, что именно снимать/записывать. Итоговый порядок эндпоінтів: <code>task-details</code> → <code>geo-check</code> (создаёт <code>submission_id</code>) → фото/аудио (по <code>submission_id</code>) → анкета → <code>submit</code>. Открытый вопрос: кто инициирует push-уведомление о новом задании (n8n-триггер на INSERT в <code>ga_tasks</code> ещё не спроектирован).<span class="entry-tag">decision</span>',
+    uk: '<b>Уточнено порядок кроків здачі завдання</b> — за підсумками ретельного аналізу повної схеми БД (усі <code>ga_*</code> таблиці). Виявилось: <code>ga_submission_photos</code>, <code>ga_submission_audio</code> та <code>ga_submission_answers</code> посилаються на <code>submission_id</code>, а не на <code>task_id</code> напряму — отже рядок у <code>ga_submissions</code> має створюватися не на фінальному Submit, а одразу після успішного гео-підтвердження присутності (екран «Геолокація»), і вже тоді <code>ga_tasks.status</code> переходить у <code>in_progress</code>. Також виявлено відсутній крок: ендпоінт «деталі завдання» (вимоги до фото/аудіо + анкета по конкретному <code>task_id</code>) зараз взагалі не існує — без нього покупець не дізнається, що саме знімати/записувати. Підсумковий порядок ендпоінтів: <code>task-details</code> → <code>geo-check</code> (створює <code>submission_id</code>) → фото/аудіо (за <code>submission_id</code>) → анкета → <code>submit</code>. Відкрите питання: хто ініціює push-сповіщення про нове завдання (n8n-тригер на INSERT у <code>ga_tasks</code> ще не спроєктовано).<span class="entry-tag">decision</span>'
+  },
+
+  e_p2_5: {
+    ru: 'Собран воркфлоу <b>ga-shopper-task-details</b> (GET /ga/shopper/task-details?task_id=): проверка принадлежности задания текущему shopper\u2019у (не только auth, но и <code>shopper_id</code> из токена == <code>task.shopper_id</code>, иначе честные разные коды — 404 «не найдено» / 403 «чужое»), затем последовательно (без Merge) собираются <code>ga_task_photo_requirements</code>, <code>ga_task_audio_requirements</code> и анкета — <code>ga_task_questionnaires</code> → <code>ga_questionnaires</code> → <code>ga_criteria</code> (через <code>ANY($1)</code> на случай нескольких анкет на задание), критерии группируются по <code>questionnaire_id</code> в финальной Code-ноде.<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано воркфлоу <b>ga-shopper-task-details</b> (GET /ga/shopper/task-details?task_id=): перевірка належності завдання поточному shopper\u2019у (не лише auth, а й <code>shopper_id</code> з токена == <code>task.shopper_id</code>, інакше чесні різні коди — 404 «не знайдено» / 403 «чуже»), потім послідовно (без Merge) збираються <code>ga_task_photo_requirements</code>, <code>ga_task_audio_requirements</code> та анкета — <code>ga_task_questionnaires</code> → <code>ga_questionnaires</code> → <code>ga_criteria</code> (через <code>ANY($1)</code> на випадок кількох анкет на завдання), критерії групуються по <code>questionnaire_id</code> у фінальній Code-ноді.<span class="entry-tag">n8n</span>'
+  },
+  e_p2_6: {
+    ru: 'Postman-коллекция «ga-shopper-task-details», 6 тестов — все зелёные с первого прогона: полный ответ по task_id=1 (реальные фото/аудио требования + анкета «Каса» с 2 критериями, порядок по order_index подтверждён после Фазы 1 reorder), без токена/с мусорным/с admin-токеном → 403, несуществующий task_id → честный 404 (не 403). Тест «чужое задание» пропущен — в БД пока один тестовый shopper, не на чем проверить. После прогона найдена и исправлена утечка: поле <code>statusCode</code> случайно торчало в теле JSON-ошибок — убрано, используется только для реального HTTP-кода ответа.<span class="entry-tag">verified 6/6</span>',
+    uk: 'Postman-колекція «ga-shopper-task-details», 6 тестів — усі зелені з першого прогону: повна відповідь по task_id=1 (реальні фото/аудіо вимоги + анкета «Каса» з 2 критеріями, порядок за order_index підтверджено після Фази 1 reorder), без токена/зі сміттєвим/з admin-токеном → 403, неіснуючий task_id → чесний 404 (не 403). Тест «чуже завдання» пропущено — в БД поки один тестовий shopper, нема на чому перевірити. Після прогону знайдено й виправлено витік: поле <code>statusCode</code> випадково стирчало в тілі JSON-помилок — прибрано, використовується лише для реального HTTP-коду відповіді.<span class="entry-tag">verified 6/6</span>'
+  },
+
+  p2_card2_title: { ru: 'Геолокация (антифрод)', uk: 'Геолокація (антифрод)' },
+  p2_card2_sub: { ru: 'ga-shopper-geo-check', uk: 'ga-shopper-geo-check' },
+
+  e_p2_7: {
+    ru: '<b>Два архитектурных допущения</b>, проговорены явно (в ТЗ не детализировано): (1) повторный <code>geo-check</code> по заданию со статусом уже <code>in_progress</code> — <b>409</b>, повторно открыть нельзя, предотвращает дубли в <code>ga_submissions</code>; (2) «слишком далеко от объекта» (вне <code>geo_radius_m</code>) — это <b>не ошибка</b>, а обычный бизнес-ответ <code>200 {success:false, reason:\'too_far\'}</code>, покупатель может подойти ближе и повторить попытку.<span class="entry-tag">decision</span>',
+    uk: '<b>Два архітектурних допущення</b>, проговорені явно (у ТЗ не деталізовано): (1) повторний <code>geo-check</code> по завданню зі статусом вже <code>in_progress</code> — <b>409</b>, повторно відкрити не можна, запобігає дублям у <code>ga_submissions</code>; (2) «занадто далеко від об\'єкта» (поза <code>geo_radius_m</code>) — це <b>не помилка</b>, а звичайна бізнес-відповідь <code>200 {success:false, reason:\'too_far\'}</code>, покупець може підійти ближче і повторити спробу.<span class="entry-tag">decision</span>'
+  },
+  e_p2_8: {
+    ru: 'Собран воркфлоу <b>ga-shopper-geo-check</b> (POST /ga/shopper/geo-check): auth → валидация тела (<code>lat</code>/<code>lng</code>/<code>method</code> ∈ gps|wifi|cell) → проверка задания (найдено / принадлежит shopper\'у / статус ещё <code>assigned</code>, иначе 404/403/409) → дистанция по формуле Haversine до координат объекта → если в радиусе, создаёт <code>ga_submissions</code> (<code>opened_at=now()</code>) и переводит <code>ga_tasks.status → in_progress</code>, возвращает <code>submission_id</code>. Вся цепочка последовательная, без Merge, Postgres-ноды с <code>alwaysOutputData</code>.<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано воркфлоу <b>ga-shopper-geo-check</b> (POST /ga/shopper/geo-check): auth → валідація тіла (<code>lat</code>/<code>lng</code>/<code>method</code> ∈ gps|wifi|cell) → перевірка завдання (знайдено / належить shopper\'у / статус ще <code>assigned</code>, інакше 404/403/409) → дистанція за формулою Haversine до координат об\'єкта → якщо в радіусі, створює <code>ga_submissions</code> (<code>opened_at=now()</code>) і переводить <code>ga_tasks.status → in_progress</code>, повертає <code>submission_id</code>. Весь ланцюг послідовний, без Merge, Postgres-ноди з <code>alwaysOutputData</code>.<span class="entry-tag">n8n</span>'
+  },
+  e_p2_9: {
+    ru: 'Postman-коллекция «ga-shopper-geo-check», 9 тестов — все зелёные с первого прогона: успешный гео-чек в радиусе (дистанция 50м, создан <code>submission_id</code>, статус → <code>in_progress</code>), повторный вызов по тому же заданию → 409, вне радиуса (300м) → честный бизнес-ответ <code>too_far</code> (не ошибка), невалидный <code>method</code> → 400, несуществующий <code>task_id</code> → 404, и три auth-сценария (без токена / мусорный / admin-роль) → 403. Координаты объекта и тестовые точки рассчитаны заранее по формуле Haversine, чтобы не гадать.<span class="entry-tag">verified 9/9</span>',
+    uk: 'Postman-колекція «ga-shopper-geo-check», 9 тестів — усі зелені з першого прогону: успішний гео-чек у радіусі (дистанція 50м, створено <code>submission_id</code>, статус → <code>in_progress</code>), повторний виклик по тому ж завданню → 409, поза радіусом (300м) → чесна бізнес-відповідь <code>too_far</code> (не помилка), невалідний <code>method</code> → 400, неіснуючий <code>task_id</code> → 404, і три auth-сценарії (без токена / сміттєвий / admin-роль) → 403. Координати об\'єкта і тестові точки розраховані заздалегідь за формулою Haversine, щоб не гадати.<span class="entry-tag">verified 9/9</span>'
+  },
+
+  p2_card3_title: { ru: 'Фото/аудио', uk: 'Фото/аудіо' },
+  p2_card3_sub: { ru: 'ga-shopper-submit-photo, ga-shopper-submit-audio', uk: 'ga-shopper-submit-photo, ga-shopper-submit-audio' },
+
+  e_p2_10: {
+    ru: 'Найден и переиспользован готовый паттерн загрузки файлов из <b>ga-auth-register</b> (по примеру, приложенному пользователем): multipart/form-data → binary в webhook → валидация (mime/размер) до всех Postgres-вызовов → после Postgres binary теряется, поэтому отдельная Code-нода <code>Restore Binary</code> забирает его обратно из самой ранней ноды в цепочке → загрузка в Cloudinary через HTTP Request (не отдельный n8n-коннектор) с <code>formBinaryData</code> и unsigned preset. Для фото — тот же preset <code>a_shopper_photos</code>, что и при регистрации; для аудио создан новый preset <code>a_shopper_audio</code> (Cloudinary хранит аудио под <code>/video/upload</code>, но эндпоинт <code>/auto/upload</code> определяет тип сам).<span class="entry-tag">decision</span>',
+    uk: 'Знайдено й перевикористано готовий патерн завантаження файлів з <b>ga-auth-register</b> (за прикладом, доданим користувачем): multipart/form-data → binary у webhook → валідація (mime/розмір) до всіх Postgres-викликів → після Postgres binary втрачається, тому окрема Code-нода <code>Restore Binary</code> забирає його назад із найранішої ноди в ланцюгу → завантаження в Cloudinary через HTTP Request (не окремий n8n-конектор) з <code>formBinaryData</code> та unsigned preset. Для фото — той самий preset <code>a_shopper_photos</code>, що й при реєстрації; для аудіо створено новий preset <code>a_shopper_audio</code> (Cloudinary зберігає аудіо під <code>/video/upload</code>, але ендпоінт <code>/auto/upload</code> визначає тип сам).<span class="entry-tag">decision</span>'
+  },
+  e_p2_11: {
+    ru: 'Собраны <b>ga-shopper-submit-photo</b> и <b>ga-shopper-submit-audio</b> (POST, multipart): auth → валидация файла → один Postgres-запрос проверяет разом submission (существует / принадлежит shopper\u2019у / задание в <code>in_progress</code>) и что <code>requirement_id</code> реально относится к этому заданию (для аудио — ещё и что <code>duration_sec</code> не короче <code>min_duration_sec</code>) → Cloudinary → <code>INSERT</code> в <code>ga_submission_photos</code>/<code>ga_submission_audio</code>.<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано <b>ga-shopper-submit-photo</b> та <b>ga-shopper-submit-audio</b> (POST, multipart): auth → валідація файлу → один Postgres-запит перевіряє разом submission (існує / належить shopper\u2019у / завдання в <code>in_progress</code>) і що <code>requirement_id</code> реально відноситься до цього завдання (для аудіо — ще й що <code>duration_sec</code> не коротше <code>min_duration_sec</code>) → Cloudinary → <code>INSERT</code> у <code>ga_submission_photos</code>/<code>ga_submission_audio</code>.<span class="entry-tag">n8n</span>'
+  },
+  e_p2_12: {
+    ru: 'Обе Postman-коллекции прогнаны полностью, все зелёные с первого прогона (с одним ожидаемым исключением: аудио-preset изначально отсутствовал в Cloudinary — «Upload preset not found», создан вручную, после чего тест прошёл без изменений в воркфлоу). <b>submit-photo 4/4</b>: успешная загрузка (реальный <code>cloudinary.com</code> URL), без файла → 400, несуществующий <code>submission_id</code> → 404, без токена → 403. <b>submit-audio 4/4</b>: успешная загрузка (<code>duration_sec</code> совпадает), слишком короткая запись → 400, несуществующий <code>requirement_id</code> → 404, без токена → 403.<span class="entry-tag">verified 4/4 + 4/4</span>',
+    uk: 'Обидві Postman-колекції прогнано повністю, усі зелені з першого прогону (з одним очікуваним винятком: аудіо-preset спочатку був відсутній у Cloudinary — «Upload preset not found», створено вручну, після чого тест пройшов без змін у воркфлоу). <b>submit-photo 4/4</b>: успішне завантаження (реальний <code>cloudinary.com</code> URL), без файлу → 400, неіснуючий <code>submission_id</code> → 404, без токена → 403. <b>submit-audio 4/4</b>: успішне завантаження (<code>duration_sec</code> збігається), закоротка запис → 400, неіснуючий <code>requirement_id</code> → 404, без токена → 403.<span class="entry-tag">verified 4/4 + 4/4</span>'
+  },
+
+  p2_card4_title: { ru: 'Анкета', uk: 'Анкета' },
+  p2_card4_sub: { ru: 'ga-shopper-submit-answers', uk: 'ga-shopper-submit-answers' },
+
+  e_p2_13: {
+    ru: 'Собран воркфлоу <b>ga-shopper-submit-answers</b> (POST, JSON, одна отправка всего массива <code>answers</code> сразу — без инкрементального сохранения по одному вопросу): auth → валидация тела → проверка submission (владелец / статус <code>in_progress</code>) → сверка каждого присланного <code>criterion_id</code> и <code>answer_value</code> против реальных критериев анкеты задания (<code>yes_no</code> → yes/no, <code>scale_N_M</code> → число в диапазоне, парсится из <code>answer_type</code> регуляркой; остальные типы — допущение: просто непустая строка, т.к. в доступной части ТЗ не перечислены все варианты) → проверка «анкета для этого submission ещё не заполнялась» (409, если уже) → построчная вставка в <code>ga_submission_answers</code> (массив разворачивается в отдельные items, Postgres-нода отрабатывает свой стандартный per-item прогон в n8n, без ручного цикла).<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано воркфлоу <b>ga-shopper-submit-answers</b> (POST, JSON, одна відправка всього масиву <code>answers</code> одразу — без інкрементального збереження по одному питанню): auth → валідація тіла → перевірка submission (власник / статус <code>in_progress</code>) → звірка кожного надісланого <code>criterion_id</code> та <code>answer_value</code> проти реальних критеріїв анкети завдання (<code>yes_no</code> → yes/no, <code>scale_N_M</code> → число в діапазоні, парситься з <code>answer_type</code> регуляркою; інші типи — допущення: просто непорожній рядок, оскільки в доступній частині ТЗ не перелічені всі варіанти) → перевірка «анкета для цього submission ще не заповнювалась» (409, якщо вже) → порядковий insert у <code>ga_submission_answers</code> (масив розгортається в окремі items, Postgres-нода відпрацьовує свій стандартний per-item прогін у n8n, без ручного циклу).<span class="entry-tag">n8n</span>'
+  },
+  e_p2_14: {
+    ru: 'Postman-коллекция «ga-shopper-submit-answers», 7 тестов — все зелёные (порядок важен: сначала три сценария отказа на неиспользованном <code>submission_id</code>, потом успешная отправка, потом повтор → 409): неизвестный <code>criterion_id</code> → 400, невалидное значение под <code>yes_no</code> → 400, дублирующийся <code>criterion_id</code> в массиве → 400, успешная отправка 2 ответов → 201, повторная отправка того же submission → 409 «анкета вже заповнена», без токена → 403. По ходу поймана и исправлена мелкая непоследовательность: часть сообщений об ошибке была на русском вместо украинского — унифицировано.<span class="entry-tag">verified 7/7</span>',
+    uk: 'Postman-колекція «ga-shopper-submit-answers», 7 тестів — усі зелені (порядок важливий: спершу три сценарії відмови на невикористаному <code>submission_id</code>, потім успішна відправка, потім повтор → 409): невідомий <code>criterion_id</code> → 400, невалідне значення під <code>yes_no</code> → 400, дублюючий <code>criterion_id</code> у масиві → 400, успішна відправка 2 відповідей → 201, повторна відправка того ж submission → 409 «анкета вже заповнена», без токена → 403. Дорогою піймано й виправлено дрібну неузгодженість: частина повідомлень про помилку була російською замість української — уніфіковано.<span class="entry-tag">verified 7/7</span>'
+  },
+
+  p2_card5_title: { ru: 'Submit (финальная отправка)', uk: 'Submit (фінальна відправка)' },
+  p2_card5_sub: { ru: 'ga-shopper-submit', uk: 'ga-shopper-submit' },
+
+  e_p2_15: {
+    ru: 'Для честной проверки условной ветки в тестовые данные добавлен реальный критерий-потомок: <code>ga_criteria.id=3</code>, <code>parent_criterion_id=1</code>, <code>condition_value=\'yes\'</code> (обязателен, только если на «Привітання клієнта» ответили yes). Побочно обнаружен дизайн-нюанс: <code>ga-shopper-submit-answers</code> одноразовый (409 при повторе), поэтому дозаполнить анкету новым условным вопросом через API нельзя — пришлось вставить недостающий ответ напрямую SQL. Если понадобится сценарий «дозаполнить после того, как появился новый обязательный вопрос», <code>submit-answers</code> нужно будет переделать на upsert — пока оставлено как открытый вопрос, не блокирующий Фазу 2.<span class="entry-tag">decision</span>',
+    uk: 'Для чесної перевірки умовної гілки в тестові дані додано реальний критерій-нащадок: <code>ga_criteria.id=3</code>, <code>parent_criterion_id=1</code>, <code>condition_value=\'yes\'</code> (обов\'язковий, лише якщо на «Привітання клієнта» відповіли yes). Побічно виявлено дизайн-нюанс: <code>ga-shopper-submit-answers</code> одноразовий (409 при повторі), тому дозаповнити анкету новим умовним питанням через API не можна — довелося вставити відсутню відповідь напряму SQL. Якщо знадобиться сценарій «дозаповнити після того, як з\'явилося нове обов\'язкове питання», <code>submit-answers</code> потрібно буде переробити на upsert — поки залишено як відкрите питання, не блокує Фазу 2.<span class="entry-tag">decision</span>'
+  },
+  e_p2_16: {
+    ru: 'Собран воркфлоу <b>ga-shopper-submit</b> (POST, финальный шаг): auth → проверка submission (владелец / ещё <code>in_progress</code>) → комплектность по трём независимым проверкам (фото — <code>required_count</code> против фактического количества, аудио — просто наличие хотя бы одной записи, анкета — обязательность с учётом условной ветки: критерий с <code>parent_criterion_id</code> обязателен только если ответ родителя совпал с <code>condition_value</code>) → если чего-то не хватает, возвращает точный список (<code>missing.photos/audio/criteria</code>) → если всё на месте, <code>ga_submissions.submitted_at=now()</code> и <code>ga_tasks.status → submitted</code>.<span class="entry-tag">n8n</span>',
+    uk: 'Зібрано воркфлоу <b>ga-shopper-submit</b> (POST, фінальний крок): auth → перевірка submission (власник / ще <code>in_progress</code>) → комплектність за трьома незалежними перевірками (фото — <code>required_count</code> проти фактичної кількості, аудіо — просто наявність хоча б одного запису, анкета — обов\'язковість з урахуванням умовної гілки: критерій з <code>parent_criterion_id</code> обов\'язковий лише якщо відповідь батька збіглася з <code>condition_value</code>) → якщо чогось не вистачає, повертає точний список (<code>missing.photos/audio/criteria</code>) → якщо все на місці, <code>ga_submissions.submitted_at=now()</code> і <code>ga_tasks.status → submitted</code>.<span class="entry-tag">n8n</span>'
+  },
+  e_p2_17: {
+    ru: 'Postman-коллекция «ga-shopper-submit», 6 тестов — все зелёные (с ручной SQL-вставкой между тестами 1 и 4, добивающей ответ на условный критерий): неполный submission (не хватает критерия 3, при этом фото/аудио уже подтянуты как выполненные) → честный 400 со списком <code>missing</code>, несуществующий <code>submission_id</code> → 404, без токена → 403, тот же submission после добавления ответа → 200 <code>task_status: submitted</code>, повторная отправка уже отправленного → 409. Полный end-to-end цикл shopper-стороны (гео → фото → аудио → анкета → submit) пройден на реальных данных от начала до конца.<span class="entry-tag">verified 6/6</span>',
+    uk: 'Postman-колекція «ga-shopper-submit», 6 тестів — усі зелені (з ручною SQL-вставкою між тестами 1 і 4, що добиває відповідь на умовний критерій): неповний submission (не вистачає критерія 3, при цьому фото/аудіо вже підтягнуті як виконані) → чесний 400 зі списком <code>missing</code>, неіснуючий <code>submission_id</code> → 404, без токена → 403, той самий submission після додавання відповіді → 200 <code>task_status: submitted</code>, повторна відправка вже відправленого → 409. Повний end-to-end цикл shopper-сторони (гео → фото → аудіо → анкета → submit) пройдено на реальних даних від початку до кінця.<span class="entry-tag">verified 6/6</span>'
+  },
+
+  p2_card6_title: { ru: 'Аудит ТЗ по экранам (найдены пробелы)', uk: 'Аудит ТЗ по Екранам (знайдені прогалини)' },
+  p2_card6_sub: { ru: 'повторный проход по Части 4', uk: 'повторний прохід по Частині 4' },
+  p2_card7_title: { ru: 'Объекты покупателя (Экран 2)', uk: "Об'єкти покупця (Екран 2)" },
+  p2_card7_sub: { ru: 'ga-shopper-objects [новый]', uk: 'ga-shopper-objects [новий]' },
+  p2_card8_title: { ru: 'Комментарий к фото (Экран 5а)', uk: 'Коментар до фото (Екран 5а)' },
+  p2_card8_sub: { ru: 'ga-shopper-submit-photo [обновлён]', uk: 'ga-shopper-submit-photo [оновлено]' },
+  p2_card9_title: { ru: 'Таймстампы анкеты', uk: 'Таймстампи анкети' },
+  p2_card9_sub: { ru: 'ga-shopper-questionnaire-open [новый], ga-shopper-submit-answers [обновлён]', uk: 'ga-shopper-questionnaire-open [новий], ga-shopper-submit-answers [оновлено]' },
+  p2_card10_title: { ru: 'Поле «город» (Экран 2)', uk: 'Поле «місто» (Екран 2)' },
+  p2_card10_sub: { ru: 'ga-shopper-objects [обновлён]', uk: 'ga-shopper-objects [оновлено]' },
+  p2_card11_title: { ru: 'PWA — первое реальное тестирование на телефоне', uk: 'PWA — перше реальне тестування на телефоні' },
+  p2_card11_sub: { ru: 'shopper-pwa/, ga-shopper-submit-photo, ga-shopper-submit-audio [обновлены]', uk: 'shopper-pwa/, ga-shopper-submit-photo, ga-shopper-submit-audio [оновлено]' },
+  p2_card12_title: { ru: 'Точный аудит против мокапов ТЗ (1:1)', uk: 'Точний аудит проти мокапів ТЗ (1:1)' },
+  p2_card12_sub: { ru: 'shopper-pwa/ [обновлён], ga-shopper-objects [обновлён]', uk: 'shopper-pwa/ [оновлено], ga-shopper-objects [оновлено]' },
+
+  e_p2_18: {
+    ru: 'По прямому требованию пользователя проведён повторный построчный аудит <b>всего</b> ТЗ (все 9 частей), а не только своего же чек-листа из хендовера — предыдущий проход был поверхностным. Найдено 5 расхождений: <b>(1)</b> целиком отсутствовал эндпоинт под Екран 2 «Кінотеатри» (список объектов с счётчиком заданий); <b>(2)</b> <code>ga-shopper-tasks</code> не хватает сводки по требованиям задания и прогресса по объекту для Екрана 4; <b>(3)</b> нет поля «Коментар» к фото (Екран 5а) — отсутствует колонка в <code>ga_submission_photos</code>; <b>(4)</b> не фиксируется отдельное время именно заповнення анкети — прямая цитата ТЗ («Точний час відкриття та відправки анкети»), нужно для флага аномалії у Фазі 3, а не только опен/submit всього завдання; <b>(5)</b> минор — у <code>ga_objects</code> нет отдельного поля «місто». Составлен план исправлений по приоритету, согласован с пользователем перед стартом фронтенда.<span class="entry-tag">decision</span>',
+    uk: 'На прямий запит користувача проведено повторний побудовий аудит <b>усього</b> ТЗ (усі 9 частин), а не лише власного чек-листа з хендовера — попередній прохід був поверховим. Знайдено 5 розбіжностей: <b>(1)</b> цілком був відсутній ендпоінт під Екран 2 «Кінотеатри» (список об\'єктів з лічильником завдань); <b>(2)</b> <code>ga-shopper-tasks</code> бракує зведення по вимогах завдання та прогресу по об\'єкту для Екрана 4; <b>(3)</b> немає поля «Коментар» до фото (Екран 5а) — відсутня колонка в <code>ga_submission_photos</code>; <b>(4)</b> не фіксується окремий час саме заповнення анкети — пряма цитата ТЗ («Точний час відкриття та відправки анкети»), потрібно для флага аномалії у Фазі 3, а не лише опен/submit усього завдання; <b>(5)</b> мінор — у <code>ga_objects</code> немає окремого поля «місто». Складено план виправлень за пріоритетом, узгоджено з користувачем перед стартом фронтенду.<span class="entry-tag">decision</span>'
+  },
+  e_p2_19: {
+    ru: '<b>[Пункт 1 плана]</b> Собран новый воркфлоу <b>ga-shopper-objects</b> (GET /ga/shopper/objects): список объектов покупателя с агрегатом по заданиям (<code>total_tasks</code>/<code>completed_tasks</code>/<code>remaining_tasks</code>/<code>all_done</code>) через <code>GROUP BY</code> по <code>ga_tasks</code> этого shopper\'а. Postman-коллекция, 4 теста — все зелёные с первого прогона: точное совпадение цифр (3 задания на объекте, 1 уже submitted → remaining=2, all_done=false), без токена → 403, admin-токен → 403.<span class="entry-tag">n8n</span><span class="entry-tag">verified 4/4</span>',
+    uk: '<b>[Пункт 1 плану]</b> Зібрано новий воркфлоу <b>ga-shopper-objects</b> (GET /ga/shopper/objects): список об\'єктів покупця з агрегатом по завданнях (<code>total_tasks</code>/<code>completed_tasks</code>/<code>remaining_tasks</code>/<code>all_done</code>) через <code>GROUP BY</code> по <code>ga_tasks</code> цього shopper\'а. Postman-колекція, 4 тести — усі зелені з першого прогону: точний збіг цифр (3 завдання на об\'єкті, 1 вже submitted → remaining=2, all_done=false), без токена → 403, admin-токен → 403.<span class="entry-tag">n8n</span><span class="entry-tag">verified 4/4</span>'
+  },
+
+  e_p2_20: {
+    ru: '<b>Найден и исправлен баг дублирования данных</b> при тестировании доработанного <code>ga-shopper-tasks</code>: последовательная цепочка Postgres-нод (Фото → Аудіо → Анкети) выполнялась <b>по разу на каждый входной item</b>, а не один раз — из-за этого при нескольких заданиях аудио задваивалось ×3, анкеты ×9. Причина: n8n Postgres-нода без явного <code>executeOnce: true</code> перезапускает запрос на каждый item, полученный от предыдущей ноды. Проверил по аналогии — та же скрытая цепочка (Photo → Audio → Questionnaire/Criteria) была и в уже «протестированных и зелёных» <code>ga-shopper-task-details</code> и <code>ga-shopper-submit</code>; тесты там проходили только потому, что у task_id=1 случайно было ровно по 1 строке каждого типа (1×1=1 — дублирование не проявлялось). Добавлен <code>executeOnce: true</code> на все три Postgres-ноды в каждом из трёх воркфлоу. Все три перепроверены заново на реальных данных без дублей: <code>ga-shopper-tasks</code> (7/7, включая новый тест на requirement-сводку и object_progress), <code>ga-shopper-task-details</code> (6/6), <code>ga-shopper-submit</code> (5/5, на свежем submission_id=2 — missing.photos/audio/criteria без единого повтора).<span class="entry-tag">bugfix</span><span class="entry-tag">verified</span>',
+    uk: '<b>Знайдено й виправлено баг дублювання даних</b> під час тестування доопрацьованого <code>ga-shopper-tasks</code>: послідовний ланцюг Postgres-нод (Фото → Аудіо → Анкети) виконувався <b>по разу на кожен вхідний item</b>, а не один раз — через це при кількох завданнях аудіо здвоювалося ×3, анкети ×9. Причина: n8n Postgres-нода без явного <code>executeOnce: true</code> перезапускає запит на кожен item, отриманий від попередньої ноди. Перевірив за аналогією — той самий прихований ланцюг (Photo → Audio → Questionnaire/Criteria) був і у вже «протестованих та зелених» <code>ga-shopper-task-details</code> і <code>ga-shopper-submit</code>; тести там проходили лише тому, що у task_id=1 випадково було рівно по 1 рядку кожного типу (1×1=1 — дублювання не проявлялося). Додано <code>executeOnce: true</code> на всі три Postgres-ноди в кожному з трьох воркфлоу. Усі три перевірено заново на реальних даних без дублів: <code>ga-shopper-tasks</code> (7/7, включно з новим тестом на requirement-зведення і object_progress), <code>ga-shopper-task-details</code> (6/6), <code>ga-shopper-submit</code> (5/5, на свіжому submission_id=2 — missing.photos/audio/criteria без жодного повтору).<span class="entry-tag">bugfix</span><span class="entry-tag">verified</span>'
+  },
+  e_p2_21: {
+    ru: '<b>[Пункт 3 плана]</b> Добавлена колонка <code>comment TEXT</code> в <code>ga_submission_photos</code> (ручной ALTER TABLE), воркфлоу <code>ga-shopper-submit-photo</code> доработан — принимает необязательное поле <code>comment</code> в multipart-теле, сохраняет и возвращает его в ответе (закрывает Екран 5а из ТЗ). Postman-коллекция обновлена (тест на сохранение комментария + переключён на актуальный <code>submission_id=2</code>, т.к. предыдущий уже <code>submitted</code>) — все 4 теста зелёные.<span class="entry-tag">verified 4/4</span>',
+    uk: '<b>[Пункт 3 плану]</b> Додано колонку <code>comment TEXT</code> у <code>ga_submission_photos</code> (ручний ALTER TABLE), воркфлоу <code>ga-shopper-submit-photo</code> доопрацьовано — приймає необов\'язкове поле <code>comment</code> у multipart-тілі, зберігає і повертає його у відповіді (закриває Екран 5а з ТЗ). Postman-колекція оновлена (тест на збереження коментаря + перемкнуто на актуальний <code>submission_id=2</code>, оскільки попередній вже <code>submitted</code>) — усі 4 тести зелені.<span class="entry-tag">verified 4/4</span>'
+  },
+
+  e_p2_22: {
+    ru: '<b>[Пункт 4 плана]</b> Добавлены колонки <code>questionnaire_opened_at</code>/<code>questionnaire_submitted_at</code> в <code>ga_submissions</code> (ручной ALTER TABLE) — отдельно от <code>opened_at</code>/<code>submitted_at</code>, которые фиксируют момент геоподтверждения и финального submit всего задания целиком (фото+аудио+анкета), а не именно время работы с анкетой. Это прямое требование ТЗ («Точний час відкриття та відправки анкети»), нужное для будущего flag «Аномалія» в Фазі 3 (анкета заповнена надто швидко). Собран новый воркфлоу <b>ga-shopper-questionnaire-open</b> — вызывается клиентом при реальном открытии экрана анкети, идемпотентно ставит <code>questionnaire_opened_at</code> только один раз. Доработан <b>ga-shopper-submit-answers</b> — при успешной отправке дополнительно ставит <code>questionnaire_submitted_at</code> и возвращает его в ответе.<span class="entry-tag">decision</span><span class="entry-tag">n8n</span>',
+    uk: '<b>[Пункт 4 плану]</b> Додано колонки <code>questionnaire_opened_at</code>/<code>questionnaire_submitted_at</code> у <code>ga_submissions</code> (ручний ALTER TABLE) — окремо від <code>opened_at</code>/<code>submitted_at</code>, які фіксують момент геопідтвердження та фінального submit усього завдання цілком (фото+аудіо+анкета), а не саме час роботи з анкетою. Це пряма вимога ТЗ («Точний час відкриття та відправки анкети»), потрібна для майбутнього flag «Аномалія» у Фазі 3 (анкета заповнена надто швидко). Зібрано новий воркфлоу <b>ga-shopper-questionnaire-open</b> — викликається клієнтом при реальному відкритті екрана анкети, ідемпотентно ставить <code>questionnaire_opened_at</code> лише один раз. Доопрацьовано <b>ga-shopper-submit-answers</b> — при успішній відправці додатково ставить <code>questionnaire_submitted_at</code> і повертає його у відповіді.<span class="entry-tag">decision</span><span class="entry-tag">n8n</span>'
+  },
+  e_p2_23: {
+    ru: '<code>ga-shopper-questionnaire-open</code>, 5 тестов — все зелёные: первый вызов (<code>already_opened:false</code>), повторный вызов идемпотентен (<code>already_opened:true</code>, время не перезаписывается), несуществующий submission → 404, без токена → 403. <code>ga-shopper-submit-answers</code> перепроверен на новом submission_id=3 (создан прямо внутри самой Postman-коллекции через geo-check, без единого ручного шага) — все 8 запросов (0, 0b, 1–6) зелёные, включая подтверждённый <code>questionnaire_submitted_at</code> с реальным timestamp в ответе. По ходу поймана и исправлена собственная накладка: первый прогон вернул <code>questionnaire_submitted_at: null</code> из-за того, что воркфлоу был перезалит до добавления <code>RETURNING</code> в апдейт — пересобрали Postman-коллекцию так, чтобы она создавала свежие тестовые данные полностью сама, без ручных запросов.<span class="entry-tag">verified 5/5 + 8/8</span>',
+    uk: '<code>ga-shopper-questionnaire-open</code>, 5 тестів — усі зелені: перший виклик (<code>already_opened:false</code>), повторний виклик ідемпотентний (<code>already_opened:true</code>, час не перезаписується), неіснуючий submission → 404, без токена → 403. <code>ga-shopper-submit-answers</code> перевірено заново на новому submission_id=3 (створено прямо всередині самої Postman-колекції через geo-check, без жодного ручного кроку) — усі 8 запитів (0, 0b, 1–6) зелені, включно з підтвердженим <code>questionnaire_submitted_at</code> з реальним timestamp у відповіді. Дорогою піймано й виправлено власну накладку: перший прогін повернув <code>questionnaire_submitted_at: null</code> через те, що воркфлоу було перезалито до додавання <code>RETURNING</code> в апдейт — перезібрали Postman-колекцію так, щоб вона створювала свіжі тестові дані повністю сама, без ручних запитів.<span class="entry-tag">verified 5/5 + 8/8</span>'
+  },
+
+  e_p2_24: {
+    ru: '<b>[Пункт 5 плана, минор]</b> Добавлена колонка <code>city VARCHAR(100)</code> в <code>ga_objects</code> (ручной ALTER TABLE + заполнение существующей строки), <code>ga-shopper-objects</code> доработан — отдаёт <code>city</code> отдельным полем (Екран 2 показывает город отдельно от адреса). Postman-коллекция обновлена, 4/4 зелёные, <code>city: "Полтава"</code> подтверждён. <b>Этим закрыт весь план доработки из повторного аудита ТЗ (пункты 1–5) — можно переходить к фронтенду.</b><span class="entry-tag">verified 4/4</span>',
+    uk: '<b>[Пункт 5 плану, мінор]</b> Додано колонку <code>city VARCHAR(100)</code> у <code>ga_objects</code> (ручний ALTER TABLE + заповнення існуючого рядка), <code>ga-shopper-objects</code> доопрацьовано — віддає <code>city</code> окремим полем (Екран 2 показує місто окремо від адреси). Postman-колекція оновлена, 4/4 зелені, <code>city: "Полтава"</code> підтверджено. <b>Цим закрито весь план доопрацювання з повторного аудиту ТЗ (пункти 1–5) — можна переходити до фронтенду.</b><span class="entry-tag">verified 4/4</span>'
+  },
+
+  e_p2_25: {
+    ru: '<b>Найден и закрыт пробел, который не мог поймать ни один Postman-тест:</b> все 9 shopper-эндпоинтов не имели CORS (<code>allowedOrigins</code>) на Webhook-ноде — Postman это игнорирует полностью (CORS применяется только настоящими браузерами), поэтому дыра оставалась незамеченной через весь цикл тестирования. Добавлен <code>allowedOrigins: "*"</code> на все 9 воркфлоу. Также собран лендинг (<code>index.html</code> в корне репозитория) и иконки PWA (использован фирменный акцентный «O» из вордмарка Wizoria вместо нового дизайна с нуля).<span class="entry-tag">bugfix</span>',
+    uk: '<b>Знайдено й закрито прогалину, яку не міг зловити жоден Postman-тест:</b> усі 9 shopper-ендпоінтів не мали CORS (<code>allowedOrigins</code>) на Webhook-ноді — Postman це повністю ігнорує (CORS застосовується лише справжніми браузерами), тому діра лишалася непоміченою через увесь цикл тестування. Додано <code>allowedOrigins: "*"</code> на всі 9 воркфлоу. Також зібрано лендинг (<code>index.html</code> у корені репозиторію) та іконки PWA (використано фірмовий акцентний «O» з вордмарку Wizoria замість нового дизайну з нуля).<span class="entry-tag">bugfix</span>'
+  },
+  e_p2_26: {
+    ru: 'При первом реальном прогоне на телефоне поймана серия связанных багов вокруг возобновления задания («Продовжити»): (1) <code>ga-shopper-tasks</code> не отдавал <code>submission_id</code> уже начатого задания — добавлено через <code>LEFT JOIN</code> на <code>ga_submissions</code>; (2) на клиенте <code>State.currentSubmissionId</code> мог утекать между разными заданиями и не сбрасывался в начале навигации; (3) экран-хаб рисовал полностью рабочие кнопки, даже когда <code>submission_id</code> не найден — реальной защиты не было, хотя выглядела как есть. Все три закрыты, плюс добавлено сохранение активной сессии в <code>localStorage</code>, чтобы переживать известный баг iOS/WKWebView — перезагрузку страницы при возврате из нативной камеры.<span class="entry-tag">bugfix</span>',
+    uk: 'При першому реальному прогоні на телефоні піймано серію повʼязаних багів навколо відновлення завдання («Продовжити»): (1) <code>ga-shopper-tasks</code> не віддавав <code>submission_id</code> вже розпочатого завдання — додано через <code>LEFT JOIN</code> на <code>ga_submissions</code>; (2) на клієнті <code>State.currentSubmissionId</code> міг протікати між різними завданнями і не скидався на початку навігації; (3) екран-хаб малював повністю робочі кнопки, навіть коли <code>submission_id</code> не знайдено — реального захисту не було, хоча виглядало як є. Усі три закрито, плюс додано збереження активної сесії в <code>localStorage</code>, щоб переживати відомий баг iOS/WKWebView — перезавантаження сторінки при поверненні з нативної камери.<span class="entry-tag">bugfix</span>'
+  },
+  e_p2_27: {
+    ru: 'После всех фиксов ошибка на iPhone сохранялась (Android при этом работал) — добавлена диагностика прямо в текст ошибки на экране (реальное значение <code>submission_id</code>, отправленное клиентом), а решающим шагом стал разбор execution log самого n8n: вход в ноду <code>Validate File</code> показал <code>submissionId: 2</code> (валидно!) и настоящую причину — <code>error: "Фото обов\'язкове"</code>. Всё это время видимое на экране сообщение про <code>submission_id</code> было лишь более ранней по цепочке проверкой; реальная проблема — файл фото физически не доезжал до сервера при отправке с iOS Safari, независимо от того, шли ли текстовые поля в теле multipart или в query-строке URL.<span class="entry-tag">root cause</span>',
+    uk: 'Після всіх фіксів помилка на iPhone зберігалася (Android при цьому працював) — додано діагностику прямо в текст помилки на екрані (реальне значення <code>submission_id</code>, надіслане клієнтом), а вирішальним кроком став розбір execution log самого n8n: вхід у ноду <code>Validate File</code> показав <code>submissionId: 2</code> (валідно!) і справжню причину — <code>error: "Фото обов\'язкове"</code>. Увесь цей час видиме на екрані повідомлення про <code>submission_id</code> було лише ранішою по ланцюгу перевіркою; реальна проблема — файл фото фізично не доїжджав до сервера при відправці з iOS Safari, незалежно від того, чи йшли текстові поля в тілі multipart, чи в query-рядку URL.<span class="entry-tag">root cause</span>'
+  },
+  e_p2_28: {
+    ru: '<b>Итоговое решение</b>: полностью убран <code>multipart/form-data</code> из <code>ga-shopper-submit-photo</code> и <code>ga-shopper-submit-audio</code> — фото/аудио теперь кодируются в base64 прямо в браузере (<code>FileReader</code>) и отправляются обычным JSON-телом, точно так же, как уже стабильно работают <code>geo-check</code> и <code>submit-answers</code>. Бинарные данные собираются из base64 в отдельной Code-ноде («Build Binary From Base64») непосредственно перед загрузкой в Cloudinary — раньше этого момента файл существует просто как текстовая строка в JSON и не подвержен разночтениям multipart-парсинга между браузерами. Подтверждено пользователем работающим на реальном iPhone.<span class="entry-tag">verified on device</span>',
+    uk: '<b>Підсумкове рішення</b>: повністю прибрано <code>multipart/form-data</code> з <code>ga-shopper-submit-photo</code> та <code>ga-shopper-submit-audio</code> — фото/аудіо тепер кодуються в base64 прямо в браузері (<code>FileReader</code>) і надсилаються звичайним JSON-тілом, точно так само, як уже стабільно працюють <code>geo-check</code> та <code>submit-answers</code>. Бінарні дані збираються з base64 в окремій Code-ноді («Build Binary From Base64») безпосередньо перед завантаженням у Cloudinary — до цього моменту файл існує просто як текстовий рядок у JSON і не підвладний розбіжностям multipart-парсингу між браузерами. Підтверджено користувачем як таке, що працює на реальному iPhone.<span class="entry-tag">verified on device</span>'
+  },
+
+  e_p2_29: {
+    ru: 'По прямому и очень настойчивому требованию пользователя проведён построчный аудит <b>всех 7 экранов</b> против точных мокапов ТЗ (не общее впечатление, а пиксель-в-пиксель): найдено 12 расхождений. <b>Экран 1</b> — отсутствовала ссылка «Зареєструватись». <b>Экран 2</b> — не было явной кнопки «Перейти» у главного объекта, у остальных объектов бейдж счётчика был акцентного цвета вместо warn, прозрачность «Здано»-карточки не совпадала (.6 вместо .5). <b>Экран 4/Hub</b> — цвет бейджа «Нове» не совпадал с темой иконки пункта (фото/аудіо/анкета), только первый пункт должен иметь залитую кнопку (у остальных — контурная), бейдж выполненного пункта был «Готово» вместо «Здано». <b>Екран 5а</b> — лишнее уточнение «(необов\'язково)» в подписи, показывалось реальное превью фото вместо простой галочки+подписи как в мокапі, кнопка была «Готово» вместо «Зберегти». <b>Екран 5б</b> — формат таймера не совпадал (мал бути mm:ss через двокрапку). <b>Екран 5в</b> — реальный баг: подпись прогресса и заполнение прогресс-бару считались по-разному (0-based vs 1-based), из-за чого «3/8» не відповідало 37% заповнення смуги. Всі 12 виправлено за один прохід.<span class="entry-tag">bugfix</span>',
+    uk: 'На прямий і дуже наполегливий запит користувача проведено побудовий аудит <b>усіх 7 екранів</b> проти точних мокапів ТЗ (не загальне враження, а піксель-в-піксель): знайдено 12 розбіжностей. <b>Екран 1</b> — була відсутня посилання «Зареєструватись». <b>Екран 2</b> — не було явної кнопки «Перейти» у головного об\'єкта, у решти об\'єктів бейдж лічильника був акцентного кольору замість warn, прозорість «Здано»-картки не збігалася (.6 замість .5). <b>Екран 4/Hub</b> — колір бейджа «Нове» не збігався з темою іконки пункту (фото/аудіо/анкета), лише перший пункт мав мати залиту кнопку (в інших — контурна), бейдж виконаного пункту був «Готово» замість «Здано». <b>Екран 5а</b> — зайве уточнення «(необов\'язково)» в підписі, показувалося реальне прев\'ю фото замість простої галочки+підпису як у мокапі, кнопка була «Готово» замість «Зберегти». <b>Екран 5б</b> — формат таймера не збігався (мав бути mm:ss через двокрапку). <b>Екран 5в</b> — реальний баг: підпис прогресу і заповнення прогрес-бару рахувалися по-різному (0-based vs 1-based), через що «3/8» не відповідало 37% заповнення смуги. Усі 12 виправлено за один прохід.<span class="entry-tag">bugfix</span>'
+  },
+  e_p2_30: {
+    ru: 'Реальная карта на экране геолокации — по образцу, присланному пользователем (Leaflet + OpenStreetMap, тот же стек, что и в проекте). Добавлены координаты (<code>latitude</code>/<code>longitude</code>/<code>geo_radius_m</code>) в ответ <b>ga-shopper-objects</b> — без этого показать объект на карте было физически нечем. На экране теперь два маркера — квадратик объекта (с кругом радиуса геозоны) и точка живой позиции покупателя, карта сама подгоняет масштаб (<code>fitBounds</code>), чтобы оба были видны одновременно.<span class="entry-tag">n8n</span>',
+    uk: 'Реальна карта на екрані геолокації — за зразком, надісланим користувачем (Leaflet + OpenStreetMap, той самий стек, що й у проекті). Додано координати (<code>latitude</code>/<code>longitude</code>/<code>geo_radius_m</code>) у відповідь <b>ga-shopper-objects</b> — без цього показати об\'єкт на карті було фізично нічим. На екрані тепер два маркери — квадратик об\'єкта (з колом радіуса геозони) і точка живої позиції покупця, карта сама підганяє масштаб (<code>fitBounds</code>), щоб обидва були видні одночасно.<span class="entry-tag">n8n</span>'
+  },
+
+  e_p2_31: {
+    ru: '<b>Подтверждено пользователем на реальном устройстве</b>: карта на экране геолокации (v13) отображается корректно — оба маркера (объект с кругом геозоны + живая позиция), автоподгонка масштаба (<code>fitBounds</code>) работает как задумано. Пункт закрыт.<span class="entry-tag">verified on device</span>',
+    uk: '<b>Підтверджено користувачем на реальному пристрої</b>: карта на екрані геолокації (v13) відображається коректно — обидва маркери (об\'єкт з колом геозони + жива позиція), автопідгонка масштабу (<code>fitBounds</code>) працює як задумано. Пункт закрито.<span class="entry-tag">verified on device</span>'
+  },
+  e_p2_32: {
+    ru: 'Офлайн-очередь для фото/аудио/анкеты (n8n и БД не трогали — задача чисто клиентская). <b>Что сделано</b>: (1) <code>api()</code> в <code>app.js</code> больше не бросает исключение при обрыве сети — всегда отдаёт единый флаг <code>offline</code>, на который ориентируются все вызовы (заодно закрыт скрытый баг — раньше сабмиты фото/аудио/анкеты не были обёрнуты в try/catch и могли зависать молча); (2) <code>sw.js</code> помечает свой офлайн-фолбэк заголовком <code>X-GA-Offline: 1</code>, чтобы не завязываться на текст ошибки; (3) новый модуль <code>OfflineDB</code> (сырой IndexedDB, без библиотек) + <code>OfflineQueue</code> — при <code>offline: true</code> данные пункта (все фото разом одним пунктом очереди, аудиозапись, ответы анкеты) уходят в очередь вместо показа ошибки; (4) в хабе — третье состояние бейджа «Очікує синхр.» между «Нове» и «Здано», переиспользован уже существующий стиль <code>.badge.muted</code>, новых цветов не вводили; (5) синхронизация запускается сама — по событию <code>online</code>, по возврату видимости вкладки (тот же паттерн iOS/WKWebView reload, что уже учтён для <code>localStorage</code>-сессии) и при заходе в хаб/восстановлении сессии; (6) кнопка «Відправити на перевірку» сначала смотрит в локальную очередь и не бьёт по серверу впустую, если по этому submission ещё есть несинхронизированные пункты. <b>Осознанное упрощение</b>: если сервер при синхронизации отклонит пункт по реальной валидации (не по сети) — пункт сбрасывается обратно в «Нове», старые файлы из памяти не восстанавливаются, нужно переснять/переответить заново. Версия <code>v14</code>. <b>Не подтверждено на устройстве</b> — нужен реальный прогон с авиарежимом.<span class="entry-tag">built</span>',
+    uk: 'Офлайн-черга для фото/аудіо/анкети (n8n і БД не чіпали — завдання суто клієнтське). <b>Що зроблено</b>: (1) <code>api()</code> в <code>app.js</code> більше не кидає виняток при обриві мережі — завжди віддає єдиний прапор <code>offline</code>, на який орієнтуються всі виклики (заразом закрито прихований баг — раніше сабміти фото/аудіо/анкети не були обгорнуті в try/catch і могли зависати мовчки); (2) <code>sw.js</code> позначає свій офлайн-фолбек заголовком <code>X-GA-Offline: 1</code>, щоб не зав\'язуватися на текст помилки; (3) новий модуль <code>OfflineDB</code> (сирий IndexedDB, без бібліотек) + <code>OfflineQueue</code> — при <code>offline: true</code> дані пункту (усі фото разом одним пунктом черги, аудіозапис, відповіді анкети) йдуть у чергу замість показу помилки; (4) у хабі — третій стан бейджа «Очікує синхр.» між «Нове» і «Здано», перевикористано вже наявний стиль <code>.badge.muted</code>, нових кольорів не вводили; (5) синхронізація запускається сама — за подією <code>online</code>, за поверненням видимості вкладки (той самий патерн iOS/WKWebView reload, що вже враховано для <code>localStorage</code>-сесії) та при заході в хаб/відновленні сесії; (6) кнопка «Відправити на перевірку» спершу дивиться в локальну чергу і не б\'є по серверу даремно, якщо по цьому submission ще є несинхронізовані пункти. <b>Свідоме спрощення</b>: якщо сервер під час синхронізації відхилить пункт за реальною валідацією (не за мережею) — пункт скидається назад у «Нове», старі файли з пам\'яті не відновлюються, треба переробити заново. Версія <code>v14</code>. <b>Не підтверджено на пристрої</b> — потрібен реальний прогін з режимом польоту.<span class="entry-tag">built</span>'
+  },
+
+  p2_card13_title: { ru: 'Офлайн-очередь (фото/аудио/анкета)', uk: 'Офлайн-черга (фото/аудіо/анкета)' },
+  p2_card13_sub: { ru: 'shopper-pwa/app.js v14, shopper-pwa/sw.js v14 — без изменений на бекенде', uk: 'shopper-pwa/app.js v14, shopper-pwa/sw.js v14 — без змін на бекенді' },
+
+  p2_card14_title: { ru: 'БД: проверка ga_task_questionnaires (ложная тревога)', uk: 'БД: перевірка ga_task_questionnaires (хибна тривога)' },
+  p2_card14_sub: { ru: 'без последствий для схемы или данных', uk: 'без наслідків для схеми чи даних' },
+  e_p2_33: {
+    ru: 'Перед началом работы над push проверили структуру всех таблиц <code>ga_*</code> (интроспекция через <code>information_schema</code>). Ошибочно принял составной <code>UNIQUE(task_id, questionnaire_id)</code> на <code>ga_task_questionnaires</code> за два отдельных одноколоночных constraint\'а (не сверил <code>constraint_name</code> в результате запроса) и предложил «починить несуществующий баг» — пользователь выполнил <code>ALTER TABLE</code>, добавивший дублирующий constraint. Ошибка обнаружена на следующем шаге проверки, дубликат немедленно убран тем же способом (<code>DROP CONSTRAINT</code> на добавленный constraint), схема подтверждена идентичной исходной. <b>Данные не менялись ни на одном шаге</b> — инцидент касался только структуры одной таблицы. Правило на будущее: перед любым <code>ALTER</code>/<code>DROP</code> — построчная сверка результата <code>SELECT</code>, а не беглое чтение.<span class="entry-tag">false alarm</span>',
+    uk: 'Перед початком роботи над push перевірили структуру всіх таблиць <code>ga_*</code> (інтроспекція через <code>information_schema</code>). Помилково прийняв складений <code>UNIQUE(task_id, questionnaire_id)</code> на <code>ga_task_questionnaires</code> за два окремих одноколонкових constraint\'и (не звірив <code>constraint_name</code> у результаті запиту) і запропонував «полагодити неіснуючий баг» — користувач виконав <code>ALTER TABLE</code>, що додав дублюючий constraint. Помилку виявлено на наступному кроці перевірки, дублікат негайно прибрано тим самим способом (<code>DROP CONSTRAINT</code> на доданий constraint), схема підтверджена ідентичною вихідній. <b>Дані не змінювалися на жодному кроці</b> — інцидент стосувався лише структури однієї таблиці. Правило на майбутнє: перед будь-яким <code>ALTER</code>/<code>DROP</code> — побудовна звірка результату <code>SELECT</code>, а не побіжне читання.<span class="entry-tag">false alarm</span>'
+  },
+
+  p2_card15_title: { ru: 'Push-уведомления (подписка, шифрование, триггер)', uk: 'Push-сповіщення (підписка, шифрування, тригер)' },
+  p2_card15_sub: { ru: 'ga-shopper-push-subscribe [новый], ga-admin-tasks [обновлён], shopper-pwa/app.js v15', uk: 'ga-shopper-push-subscribe [новий], ga-admin-tasks [оновлено], shopper-pwa/app.js v15' },
+  e_p2_34: {
+    ru: '<b>Клиент + подписка</b>: сгенерирована пара VAPID-ключей (EC P-256) для проекта; в <code>app.js</code> (v15) добавлен модуль <code>PushSetup</code> — запрашивает разрешение и вызывает <code>pushManager.subscribe()</code> после логина и при каждом открытии приложения с сохранённой сессией. Новая таблица <code>ga_push_subscriptions</code> (user_id UNIQUE, endpoint, p256dh, auth) и эндпоинт <code>ga-shopper-push-subscribe</code> — построен один в один по стилю уже готового <code>ga-shopper-questionnaire-open</code> (Extract Token → Get Token Row → Check Auth → Auth OK? → Upsert), апсерт по <code>user_id</code>.<span class="entry-tag">built</span>',
+    uk: '<b>Клієнт + підписка</b>: згенеровано пару VAPID-ключів (EC P-256) для проєкту; в <code>app.js</code> (v15) додано модуль <code>PushSetup</code> — запитує дозвіл і викликає <code>pushManager.subscribe()</code> після логіну та при кожному відкритті застосунку зі збереженою сесією. Нова таблиця <code>ga_push_subscriptions</code> (user_id UNIQUE, endpoint, p256dh, auth) і ендпоінт <code>ga-shopper-push-subscribe</code> — побудований один в один за стилем вже готового <code>ga-shopper-questionnaire-open</code> (Extract Token → Get Token Row → Check Auth → Auth OK? → Upsert), апсерт за <code>user_id</code>.<span class="entry-tag">built</span>'
+  },
+  e_p2_35: {
+    ru: '<b>Триггер</b>: выяснилось, что эндпоинт создания задания (<code>ga-admin-tasks</code>, <code>POST /ga/admin/tasks</code>) уже полностью реализован — авторизация, валидация, привязка требований одним multi-statement SQL. Push встроен точечно между уже существующими <code>Merge Final</code> и <code>Respond Create Task OK</code> (8 новых нод), ни одна из 28 исходных нод не изменена — проверено построчным сравнением. Шифрование (RFC 8291 payload + RFC 8188 aes128gcm + RFC 8292 VAPID JWT ES256) реализовано на <code>crypto.subtle</code>, без npm-пакетов; оба алгоритма (шифрование и подпись) заранее проверены независимо — зашифровано/подписано в Node, расшифровано/сверено в Python (<code>cryptography</code>), побайтово совпало.<span class="entry-tag">built</span>',
+    uk: '<b>Тригер</b>: з\'ясувалося, що ендпоінт створення завдання (<code>ga-admin-tasks</code>, <code>POST /ga/admin/tasks</code>) вже повністю реалізований — авторизація, валідація, прив\'язка вимог одним multi-statement SQL. Push вбудовано точково між вже наявними <code>Merge Final</code> і <code>Respond Create Task OK</code> (8 нових нод), жодна з 28 вихідних нод не змінена — перевірено побудовним порівнянням. Шифрування (RFC 8291 payload + RFC 8188 aes128gcm + RFC 8292 VAPID JWT ES256) реалізовано на <code>crypto.subtle</code>, без npm-пакетів; обидва алгоритми (шифрування і підпис) заздалегідь перевірені незалежно — зашифровано/підписано в Node, розшифровано/звірено в Python (<code>cryptography</code>), побайтово збіглося.<span class="entry-tag">built</span>'
+  },
+  e_p2_36: {
+    ru: '<b>Серия из трёх багов при первом реальном прогоне</b>, все найдены и закрыты по execution log, без единого предположения вслепую: (1) Code-нода не видела <code>$env</code> — переменные в Railway были добавлены, но зависли как «staged changes», обычного Restart недостаточно, нужен явный <b>Deploy</b>; (2) после деплоя — <code>crypto is not defined</code>: у этого n8n Code-нода выполняется в отдельном изолированном Task Runner (<code>JsTaskRunner</code>), где нет глобальных <code>crypto</code>/<code>URL</code> — потребовался явный <code>require(\'crypto\').webcrypto</code> вместо глобального объекта; (3) <code>require(\'url\')</code> оказался запрещён Task Runner\'ом даже после аллоулиста — вместо повторной возни с настройками убрали зависимость от модуля вовсе, вырезая origin простым regexp.<span class="entry-tag">bugfix</span>',
+    uk: '<b>Серія з трьох багів при першому реальному прогоні</b>, усі знайдено й закрито за execution log, без жодного припущення наосліп: (1) Code-нода не бачила <code>$env</code> — змінні в Railway були додані, але зависли як «staged changes», звичайного Restart недостатньо, потрібен явний <b>Deploy</b>; (2) після деплою — <code>crypto is not defined</code>: у цього n8n Code-нода виконується в окремому ізольованому Task Runner (<code>JsTaskRunner</code>), де немає глобальних <code>crypto</code>/<code>URL</code> — знадобився явний <code>require(\'crypto\').webcrypto</code> замість глобального обʼєкта; (3) <code>require(\'url\')</code> виявився заборонений Task Runner\'ом навіть після allowlist — замість повторної метушні з налаштуваннями прибрали залежність від модуля взагалі, вирізаючи origin простим regexp.<span class="entry-tag">bugfix</span>'
+  },
+  e_p2_37: {
+    ru: '<b>Подтверждено на реальном Android-устройстве</b>: создание задания через <code>ga-admin-tasks</code> дошло до <code>ga_push_subscriptions</code> покупца (<code>ivan_petrov</code>) и показало настоящее push-уведомление «Нове завдання» на телефоне. Push-уведомления Фазы 2 — готовы и подтверждены.<span class="entry-tag">verified on device</span>',
+    uk: '<b>Підтверджено на реальному Android-пристрої</b>: створення завдання через <code>ga-admin-tasks</code> дійшло до <code>ga_push_subscriptions</code> покупця (<code>ivan_petrov</code>) і показало справжнє push-сповіщення «Нове завдання» на телефоні. Push-сповіщення Фази 2 — готові й підтверджені.<span class="entry-tag">verified on device</span>'
+  },
+
+  e_p2_38: {
+    ru: '<b>Подтверждено на реальном устройстве полным циклом</b>: авиарежим → заполнено фото/аудио/анкета → в хабе появился бейдж «Очікує синхр.» → включена сеть → пункты сами стали «Здано» без захода на экран заново. Офлайн-очередь работает как задумано. <b>Фаза 2 (PWA) закрыта полностью</b> — карта, push-уведомления и офлайн-очередь подтверждены на реальных устройствах.<span class="entry-tag">verified on device</span>',
+    uk: '<b>Підтверджено на реальному пристрої повним циклом</b>: режим польоту → заповнено фото/аудіо/анкету → в хабі з\'явився бейдж «Очікує синхр.» → увімкнено мережу → пункти самі стали «Здано» без заходу на екран знову. Офлайн-черга працює як задумано. <b>Фаза 2 (PWA) закрита повністю</b> — карта, push-сповіщення та офлайн-черга підтверджені на реальних пристроях.<span class="entry-tag">verified on device</span>'
+  },
+
+  p3_title: { ru: 'AI-проверка', uk: 'AI-перевірка' },
+  p3_card1_title: { ru: 'Аудит присланного воркфлоу (GhostAudit — Mystery Shopper AI v4)', uk: 'Аудит надісланого воркфлоу (GhostAudit — Mystery Shopper AI v4)' },
+  p3_card1_sub: { ru: 'GhostAudit___Mystery_Shopper_AI_v4-2.json, сверка с ТЗ и ga-db-schema.md', uk: 'GhostAudit___Mystery_Shopper_AI_v4-2.json, звірка з ТЗ і ga-db-schema.md' },
+
+  p4_card1_title: { ru: 'Backend: 2 воркфлоу, 5 эндпоинтов — реализовано и протестировано в Postman', uk: 'Backend: 2 воркфлоу, 5 ендпоінтів — реалізовано і протестовано в Postman' },
+  p4_card1_sub: { ru: 'ga-supervisor-submissions.json, ga-supervisor-shoppers.json', uk: 'ga-supervisor-submissions.json, ga-supervisor-shoppers.json' },
+  p4_card2_title: { ru: 'Frontend: 3 экрана, подключено к реальному логину — с ошибками и исправлениями по ходу', uk: 'Frontend: 3 екрани, підключено до реального логіну — з помилками і виправленнями по ходу' },
+  p4_card2_sub: { ru: 'supervisor.html, login.html [обновлён]', uk: 'supervisor.html, login.html [оновлено]' },
+  p4_card3_title: { ru: '«Завдання» (read-only) — вне мокапов ТЗ, по отдельному решению пользователя', uk: '«Завдання» (read-only) — поза мокапами ТЗ, за окремим рішенням користувача' },
+  p4_card3_sub: { ru: 'ga-supervisor-tasks.json [новый]', uk: 'ga-supervisor-tasks.json [новий]' },
+
+  e_p3_1: {
+    ru: '<b>Ключевая находка:</b> присланный воркфлоу — не под Wizoria, а референс/черновик под другого клиента («Cinema Citi»). Зоны (<code>kasa/bar/vhid/vyhid</code>) и тексты критериев зашиты прямо в JS-ноде <code>Build GPT Prompt</code>, вебхук принимает <code>meta_date/meta_name/meta_cinema</code> — нет ни <code>task_id</code>, ни <code>submission_id</code>. Структуру пайплайна (STT → диаризация → GPT-анализ по зонам → vision по фото → merge) берём за основу, но адаптация — это переписывание входа/промптов/выхода под реальную схему, а не донастройка.<span class="entry-tag">audit finding</span>',
+    uk: '<b>Ключова знахідка:</b> надісланий воркфлоу — не під Wizoria, а референс/чернетка під іншого клієнта («Cinema Citi»). Зони (<code>kasa/bar/vhid/vyhid</code>) і тексти критеріїв зашиті прямо в JS-ноді <code>Build GPT Prompt</code>, вебхук приймає <code>meta_date/meta_name/meta_cinema</code> — немає ні <code>task_id</code>, ні <code>submission_id</code>. Структуру пайплайна (STT → діаризація → GPT-аналіз по зонах → vision по фото → merge) беремо за основу, але адаптація — це переписування входу/промптів/виходу під реальну схему, а не донастройка.<span class="entry-tag">audit finding</span>'
+  },
+  e_p3_2: {
+    ru: '<b>Нет записи результатов в БД.</b> Единственная Postgres-нода в файле — тестовый <code>SELECT table_name FROM information_schema.tables WHERE table_name LIKE \'ga_%\'</code>, не подключена к остальному флоу. Ничего не пишется в <code>ga_ai_results</code>, <code>ga_submission_scores</code>, <code>ga_flags</code> — это предстоит добавить с нуля.<span class="entry-tag">audit finding</span>',
+    uk: '<b>Немає запису результатів у БД.</b> Єдина Postgres-нода у файлі — тестовий <code>SELECT table_name FROM information_schema.tables WHERE table_name LIKE \'ga_%\'</code>, не підключена до решти флоу. Нічого не записується в <code>ga_ai_results</code>, <code>ga_submission_scores</code>, <code>ga_flags</code> — це треба додати з нуля.<span class="entry-tag">audit finding</span>'
+  },
+  e_p3_3: {
+    ru: '<b>Нет скоринга и решения по авто-одобрению.</b> Воркфлоу не читает <code>ga_criteria.weight</code>, <code>is_critical</code>, <code>ga_questionnaires.auto_approve_threshold</code> — расчёт балла по секциям/объекту и флаги («Розбіжність AI», «Мінуси в анкеті», «Аномалія») не реализованы, только сырой текстовый анализ от GPT.<span class="entry-tag">audit finding</span>',
+    uk: '<b>Немає скорингу і рішення щодо авто-схвалення.</b> Воркфлоу не читає <code>ga_criteria.weight</code>, <code>is_critical</code>, <code>ga_questionnaires.auto_approve_threshold</code> — розрахунок балу по секціях/об\'єкту і флаги («Розбіжність AI», «Мінуси в анкеті», «Аномалія») не реалізовані, лише сирий текстовий аналіз від GPT.<span class="entry-tag">audit finding</span>'
+  },
+  e_p3_4: {
+    ru: '<b>Структурный баг в ветвлении.</b> IF-ноды <code>Has Audio</code> и <code>Has Photo</code> подключены только на true-выход (false-ветка никуда не ведёт). Т.к. фото обрабатываются ПОСЛЕ аудио-цепочки (<code>Aggregate Zones → Split Photos</code>), при отсутствии аудио вся цепочка обрывается — фото не анализируются, вебхук не отвечает вовсе.<span class="entry-tag">audit finding — bug</span>',
+    uk: '<b>Структурний баг у розгалуженні.</b> IF-ноди <code>Has Audio</code> і <code>Has Photo</code> підключені лише на true-вихід (false-гілка нікуди не веде). Оскільки фото обробляються ПІСЛЯ аудіо-ланцюжка (<code>Aggregate Zones → Split Photos</code>), за відсутності аудіо весь ланцюжок обривається — фото не аналізуються, вебхук не відповідає взагалі.<span class="entry-tag">audit finding — bug</span>'
+  },
+  e_p3_5: {
+    ru: '<b>Диаризация не сохраняется.</b> Ветка <code>Prep Diarize Prompt → Diarize Dialogue → Parse Diarize Response</code> реально считается и передаётся дальше в промпт зон-анализа, но результат нигде не пишется в <code>ga_submission_audio.dialogue</code> (jsonb) — при текущей логике он теряется после ответа вебхука.<span class="entry-tag">audit finding</span>',
+    uk: '<b>Діаризація не зберігається.</b> Гілка <code>Prep Diarize Prompt → Diarize Dialogue → Parse Diarize Response</code> реально рахується і передається далі в промпт аналізу зон, але результат ніде не записується в <code>ga_submission_audio.dialogue</code> (jsonb) — за поточної логіки він втрачається після відповіді вебхука.<span class="entry-tag">audit finding</span>'
+  },
+  e_p3_6: {
+    ru: '<b>Открытый вопрос по Vision-ноде:</b> в параметрах <code>GPT-4o Vision Agent</code> нет явной привязки бинарных данных фото к запросу к модели (только текстовый промпт) — не подтверждено по JSON, реально ли фото доезжает до GPT-4o или анализируется только название зоны. Нужно проверить в самом n8n.<span class="entry-tag">audit finding</span>',
+    uk: '<b>Відкрите питання по Vision-ноді:</b> у параметрах <code>GPT-4o Vision Agent</code> немає явної прив\'язки бінарних даних фото до запиту до моделі (лише текстовий промпт) — не підтверджено за JSON, чи справді фото доїжджає до GPT-4o, чи аналізується лише назва зони. Треба перевірити в самому n8n.<span class="entry-tag">audit finding</span>'
+  },
+  e_p3_7: {
+    ru: '<b>Уточнение от пользователя:</b> оба файла (воркфлоу + <code>ghost-audit.html</code>) — это рабочий референс-пример с другого проекта («Cinema Citi»), уже проверенный и работающий, а не черновик для Wizoria. Задача — перенести логику и интерфейс 1:1 (порядок шагов STT → диаризация → GPT-анализ зон → vision → merge, структуру промптов, весь UI: drag-drop загрузка, прогресс-бар из 5 шагов, score-cards, карточки зон с критериями, клик по цитате → диалог с аудио на тайм-коде), пересадив только источники данных на реальную схему (<code>task_id</code>/<code>submission_id</code> вместо ручной загрузки файлов, критерии из <code>ga_criteria</code> вместо хардкода) и достроив слой скоринга/флагов/порогов по ТЗ и `ga-db-schema.md`, которого в примере нет (простой % «да/всего» без весов — подтверждено чтением JS результатов). Дальше — переход к реализации, без дополнительных уточняющих вопросов по этому пункту.<span class="entry-tag">clarified</span>',
+    uk: '<b>Уточнення від користувача:</b> обидва файли (воркфлоу + <code>ghost-audit.html</code>) — це робочий референс-приклад з іншого проєкту («Cinema Citi»), вже перевірений і працюючий, а не чернетка для Wizoria. Завдання — перенести логіку та інтерфейс 1:1 (порядок кроків STT → діаризація → GPT-аналіз зон → vision → merge, структуру промптів, весь UI: drag-drop завантаження, прогрес-бар з 5 кроків, score-cards, картки зон з критеріями, клік по цитаті → діалог з аудіо на тайм-коді), пересадивши лише джерела даних на реальну схему (<code>task_id</code>/<code>submission_id</code> замість ручного завантаження файлів, критерії з <code>ga_criteria</code> замість хардкоду) і добудувавши шар скорингу/флагів/порогів за ТЗ і `ga-db-schema.md`, якого в прикладі немає (простий % «так/усього» без ваг — підтверджено читанням JS результатів). Далі — перехід до реалізації, без додаткових уточнювальних питань щодо цього пункту.<span class="entry-tag">clarified</span>'
+  },
+  e_p3_8: {
+    ru: '<b>Повторный глубокий разбор ТЗ + реальных данных БД (по прямому требованию пользователя, после неудачного вопроса про триггер, ответ на который уже был в ТЗ):</b><br>1) <b>Важное расхождение:</b> реальные секции по ТЗ — «каса, бар, туалет, зал» (дословно: «Формується текстовий висновок по кожній секції (каса, бар, туалет, зал)»), а у референс-примера зоны <code>kasa/bar/vhid/vyhid</code> («вхід/вихід» — контролёр на входе/выходе). Это ДРУГОЙ набор секций из другого проекта — при переносе беру именно «каса/бар/туалет/зал», а не зоны примера, и без хардкода вообще (зоны = реальные <code>section_key</code> из <code>ga_task_audio_requirements</code>/<code>ga_questionnaires</code> конкретного задания).<br>2) <b>Типы критериев по ТЗ подтверждены:</b> «Так/Ні» (с опциональной умовною гілкою), «Шкала 1–5», «Текстове поле» (вільний коментар — не скорится числом, только для AI-висновку). У нас в БД это отражено как <code>answer_type</code>: <code>yes_no</code>, <code>scale_1_5</code>, и, видимо, <code>text</code>.<br>3) <b>Формула скоринга подтверждена на реальных данных</b> (questionnaire_id=1, submission_id=1): критерий 1 «Привітання» — вага 20, критичний, відповідь «так» → AI підтвердив → 100%; критерий 2 «Пропозиція снеків» — вага 10, шкала 1–5, відповідь «4» → 80%; критерий 3 (умовна гілка, тригериться бо критерий 1 = «так») «доп. соус» — вага 5, «так» → 100%. Зважений скор секції = (20×100 + 10×80 + 5×100) / (20+10+5) = 3300/35 ≈ <b>94</b> → вище порогу <code>auto_approve_threshold=80</code> → авто-схвалено, флагів немає (критичний критерій не «ні»). Умовні (пропущені) критерії просто не мають рядка в <code>ga_submission_answers</code> — і не входять ні в чисельник, ні в знаменник, це видно по реальным данным.<br>4) <b>Мокап ТЗ явно показывает третий столбец «Оцінка» с пометкой «Ні — не зафіксовано»</b> (когда AI не подтвердил) — отдельно от простого так/ні, это должно попасть в <code>ga_ai_results.ai_result</code> + <code>mismatch=true</code>.<br>5) <b>Открытый момент (беру как рабочее допущение, не блокирует старт):</b> «Загальний скор по об\'єкту — середньозважений по всіх секціях» — вес секций в ТЗ не уточнён; беру простое среднее по секциям, входящим в submission, пока не будет сказано иначе.<br>6) <b>Замечено по реальным данным:</b> <code>questionnaire_opened_at</code>/<code>questionnaire_submitted_at</code> у submission_id=1 — оба <code>null</code>, хотя нужны для флага «анкета заповнена надто швидко» (<code>max_fill_time_sec</code>) — похоже, это поле ещё не заполняется на фронте, стоит держать в уме отдельно от Фазы 3.<span class="entry-tag">re-verified — corrected zones</span>',
+    uk: '<b>Повторний глибокий розбір ТЗ + реальних даних БД (за прямою вимогою користувача, після невдалого питання про тригер, відповідь на яке вже була в ТЗ):</b><br>1) <b>Важливе розходження:</b> реальні секції за ТЗ — «каса, бар, туалет, зал» (дослівно: «Формується текстовий висновок по кожній секції (каса, бар, туалет, зал)»), а в референс-прикладі зони <code>kasa/bar/vhid/vyhid</code> («вхід/вихід» — контролер на вході/виході). Це ІНШИЙ набір секцій з іншого проєкту — при перенесенні беру саме «каса/бар/туалет/зал», а не зони прикладу, і взагалі без хардкоду (зони = реальні <code>section_key</code> з <code>ga_task_audio_requirements</code>/<code>ga_questionnaires</code> конкретного завдання).<br>2) <b>Типи критеріїв за ТЗ підтверджено:</b> «Так/Ні» (з опціональною умовною гілкою), «Шкала 1–5», «Текстове поле» (вільний коментар — не оцінюється числом, лише для AI-висновку). У нас в БД це відображено як <code>answer_type</code>: <code>yes_no</code>, <code>scale_1_5</code>, і, вочевидь, <code>text</code>.<br>3) <b>Формулу скорингу підтверджено на реальних даних</b> (questionnaire_id=1, submission_id=1): критерій 1 «Привітання» — вага 20, критичний, відповідь «так» → AI підтвердив → 100%; критерій 2 «Пропозиція снеків» — вага 10, шкала 1–5, відповідь «4» → 80%; критерій 3 (умовна гілка, тригериться бо критерій 1 = «так») «доп. соус» — вага 5, «так» → 100%. Зважений скор секції = (20×100 + 10×80 + 5×100) / (20+10+5) = 3300/35 ≈ <b>94</b> → вище порогу <code>auto_approve_threshold=80</code> → авто-схвалено, флагів немає (критичний критерій не «ні»). Умовні (пропущені) критерії просто не мають рядка в <code>ga_submission_answers</code> — і не входять ні в чисельник, ні в знаменник, це видно по реальних даних.<br>4) <b>Мокап ТЗ явно показує третій стовпець «Оцінка» з позначкою «Ні — не зафіксовано»</b> (коли AI не підтвердив) — окремо від простого так/ні, це має потрапити в <code>ga_ai_results.ai_result</code> + <code>mismatch=true</code>.<br>5) <b>Відкритий момент (беру як робоче припущення, не блокує старт):</b> «Загальний скор по об\'єкту — середньозважений по всіх секціях» — вага секцій у ТЗ не уточнена; беру просте середнє по секціях, що входять у submission, поки не буде сказано інакше.<br>6) <b>Помічено по реальних даних:</b> <code>questionnaire_opened_at</code>/<code>questionnaire_submitted_at</code> у submission_id=1 — обидва <code>null</code>, хоча потрібні для флага «анкета заповнена надто швидко» (<code>max_fill_time_sec</code>) — схоже, це поле ще не заповнюється на фронті, варто тримати в голові окремо від Фази 3.<span class="entry-tag">re-verified — corrected zones</span>'
+  },
+
+  e_p3_9: {
+    ru: '<b>Первый тест этапа A (Postman) упал:</b> <code>ExpressionError: Node \'Fetch Questionnaires And Criteria\' hasn\'t been executed</code>. Причина — 5 Postgres-запросов были подключены ПАРАЛЛЕЛЬНО (веером от одной ноды) в один Code-узел без явного <code>Merge</code>: нода-приёмник стартует по первой готовой ветке, остальные могут быть ещё не выполнены к этому моменту. <b>Исправлено</b> — переведено на последовательную цепочку (каждый Postgres-запрос строго после предыдущего, <code>executeOnce: true</code>, ссылка на <code>task_id</code> везде через <code>$(\'Parse Task Input\').first().json.task_id</code>). Новый паттерн проекта: несколько независимых Postgres-запросов, результаты которых нужны одной Code-ноде вместе — либо строго последовательно, либо через настоящий <code>Merge</code>-узел, но не параллельным веером в общий вход.<span class="entry-tag">bug fixed — new pattern</span>',
+    uk: '<b>Перший тест етапу A (Postman) впав:</b> <code>ExpressionError: Node \'Fetch Questionnaires And Criteria\' hasn\'t been executed</code>. Причина — 5 Postgres-запитів були підключені ПАРАЛЕЛЬНО (віялом від однієї ноди) в один Code-вузол без явного <code>Merge</code>: нода-приймач стартує по першій готовій гілці, інші можуть бути ще не виконані на цей момент. <b>Виправлено</b> — переведено на послідовний ланцюжок (кожен Postgres-запит строго після попереднього, <code>executeOnce: true</code>, посилання на <code>task_id</code> скрізь через <code>$(\'Parse Task Input\').first().json.task_id</code>). Новий патерн проєкту: кілька незалежних Postgres-запитів, результати яких потрібні одній Code-ноді разом — або строго послідовно, або через справжній <code>Merge</code>-вузол, але не паралельним віялом у спільний вхід.<span class="entry-tag">bug fixed — new pattern</span>'
+  },
+
+  e_p3_10: {
+    ru: '<b>Настоящая причина ошибки <code>model.includes is not a function</code> и провала vision-анализа:</b> я поставил Agent/Chat Model-ноды с другими <code>typeVersion</code> (<code>1.7</code>/<code>1</code>), чем в подтверждённо рабочем референс-воркфлоу (<code>3.1</code>/<code>1.3</code>), и для vision самовольно придумал заход через <code>openAi resource=image/operation=analyze</code> с параметром <code>url</code> — хотя в референсе это ТА ЖЕ Agent-нода с текстовым промптом, а картинка передаётся автоматически бинарником со входа (без explicit URL). Переключение на <code>Tools Agent</code> было ложным следом — правильный фикс: точное совпадение <code>typeVersion</code> с рабочим примером (Agent <code>3.1</code>, Chat Model <code>1.3</code>, Whisper <code>2.1</code>) + возврат vision на Agent-подход с восстановленным скачиванием фото в бинарник перед ней. Урок: при переносе логики «1:1» из рабочего примера — сверять не только структуру промптов, но и точные версии AI-нод, а не полагаться на память о том, «как обычно делается».<span class="entry-tag">bug fixed — root cause: typeVersion mismatch</span>',
+    uk: '<b>Справжня причина помилки <code>model.includes is not a function</code> і провалу vision-аналізу:</b> я поставив Agent/Chat Model-ноди з іншими <code>typeVersion</code> (<code>1.7</code>/<code>1</code>), ніж у підтверджено робочому референс-воркфлоу (<code>3.1</code>/<code>1.3</code>), а для vision самовільно вигадав захід через <code>openAi resource=image/operation=analyze</code> з параметром <code>url</code> — хоча в референсі це ТА САМА Agent-нода з текстовим промптом, а картинка передається автоматично бінарником зі входу (без explicit URL). Перемикання на <code>Tools Agent</code> було хибним слідом — правильний фікс: точний збіг <code>typeVersion</code> з робочим прикладом (Agent <code>3.1</code>, Chat Model <code>1.3</code>, Whisper <code>2.1</code>) + повернення vision на Agent-підхід з відновленим завантаженням фото в бінарник перед нею. Урок: при перенесенні логіки «1:1» з робочого прикладу — звіряти не лише структуру промптів, а й точні версії AI-нод, а не покладатися на пам\'ять про те, «як зазвичай робиться».<span class="entry-tag">bug fixed — root cause: typeVersion mismatch</span>'
+  },
+
+  e_p3_11: {
+    ru: '<b>Подтверждено на реальных данных end-to-end</b> (<code>task_id=1</code>): <code>ga_ai_results</code> — 3 строки по критериям (включая пойманное расхождение AI на критерии «доп. соус», <code>mismatch=true</code>), <code>ga_submission_scores</code> — <code>section_score=object_score=92.86</code>, <code>decision=\'pending\'</code>, <code>ga_flags</code> — <code>ai_mismatch</code> + <code>anomaly</code> (фото не соответствует описанию). Backend AI-проверки (STT → диаризация → GPT-анализ по реальным критериям → vision → скоринг по весам → флаги → запись в БД) работает полностью на реальной схеме Wizoria. <b>Осталось для полного включения в продакшн:</b> подключить автоматический триггер из <code>ga-shopper-submit</code> (fire-and-forget вызов вебхука <code>ga-ai-check</code> сразу после сдачи анкеты — решение по архитектуре уже принято ранее в этой сессии, реализация ещё не сделана) — сейчас пайплайн запускается только вручную через Postman.<span class="entry-tag">verified end-to-end — real data</span>',
+    uk: '<b>Підтверджено на реальних даних end-to-end</b> (<code>task_id=1</code>): <code>ga_ai_results</code> — 3 рядки по критеріях (включно з упійманою розбіжністю AI на критерії «доп. соус», <code>mismatch=true</code>), <code>ga_submission_scores</code> — <code>section_score=object_score=92.86</code>, <code>decision=\'pending\'</code>, <code>ga_flags</code> — <code>ai_mismatch</code> + <code>anomaly</code> (фото не відповідає опису). Backend AI-перевірки (STT → діаризація → GPT-аналіз по реальних критеріях → vision → скоринг по вагах → флаги → запис у БД) працює повністю на реальній схемі Wizoria. <b>Залишилось для повного включення в продакшн:</b> підключити автоматичний тригер з <code>ga-shopper-submit</code> (fire-and-forget виклик вебхука <code>ga-ai-check</code> одразу після здачі анкети — рішення по архітектурі вже прийнято раніше в цій сесії, реалізація ще не зроблена) — зараз пайплайн запускається лише вручну через Postman.<span class="entry-tag">verified end-to-end — real data</span>'
+  },
+
+  e_p3_12: {
+    ru: '<b>Фаза 3 (AI-проверка) полностью закрыта.</b> Автотриггер из <code>ga-shopper-submit</code> подтверждён на реальной сдаче задания (<code>submission_id=3</code>, fire-and-forget, без единого ручного вызова <code>ga-ai-check</code>) — данные в <code>ga_ai_results</code>/<code>ga_submission_scores</code>/<code>ga_flags</code> появились сами. Расхождение по времени между записями объяснено: сабмит отправлялся при отладке несколько раз, задание успешно проходило дважды, AI-пайплайн пересчитал результат по <code>ON CONFLICT DO UPDATE</code> (актуальны данные последнего прогона) — это ожидаемое поведение, не баг.<span class="entry-tag">phase closed</span>',
+    uk: '<b>Фаза 3 (AI-перевірка) повністю закрита.</b> Автотригер з <code>ga-shopper-submit</code> підтверджено на реальній здачі завдання (<code>submission_id=3</code>, fire-and-forget, без жодного ручного виклику <code>ga-ai-check</code>) — дані в <code>ga_ai_results</code>/<code>ga_submission_scores</code>/<code>ga_flags</code> з\'явилися самі. Розбіжність за часом між записами пояснена: сабміт відправлявся під час відлагодження кілька разів, завдання успішно проходило двічі, AI-пайплайн перерахував результат за <code>ON CONFLICT DO UPDATE</code> (актуальні дані останнього прогону) — це очікувана поведінка, не баг.<span class="entry-tag">phase closed</span>'
+  },
+
+  p3_desc: { ru: 'Адаптация существующего n8n-воркфлоу (Whisper → diarization → GPT-анализ по зонам → vision по фото → merge): критерии читаются из БД вместо хардкода, добавляется скоринг по весам, пороги авто-одобрения, флаги (расхождение / минусы / аномалия).',
+             uk: 'Адаптація існуючого n8n-воркфлоу (Whisper → diarization → GPT-аналіз по зонах → vision по фото → merge): критерії читаються з БД замість хардкоду, додається скоринг по вагах, пороги авто-схвалення, флаги (розбіжність / мінуси / аномалія).' },
+
+  e_p4_1: {
+    ru: '<b>Повторный сплошной разбор раздела «Supervisor» в ТЗ</b> (список перевірок, детальний перегляд з клікабельною цитатою, верифікація покупців) + сверка со схемой БД. Найден реальный пробел: ТЗ прямо требует «формується текстовий висновок по кожній секції» (AI Executive Summary), но ни в <code>ga_submission_scores</code>, ни в <code>ga_ai_results</code>, ни где-либо ещё нет колонки под этот текст — только числовые скоры и построчные <code>ai_quote</code> по критериям. Решение: поле <code>ai_summary</code> возвращается в API как явный <code>null</code> с пометкой в коде, а не подменяется синтезированным текстом; ALTER + генерация самого текста — отдельная задача вне Фазы 4.<span class="entry-tag">audit finding — ТЗ vs schema gap</span>',
+    uk: '<b>Повторний суцільний розбір розділу «Supervisor» у ТЗ</b> (список перевірок, детальний перегляд з клікабельною цитатою, верифікація покупців) + звірка зі схемою БД. Знайдено реальну прогалину: ТЗ прямо вимагає «формується текстовий висновок по кожній секції» (AI Executive Summary), але ні в <code>ga_submission_scores</code>, ні в <code>ga_ai_results</code>, ні десь-інде немає колонки під цей текст — лише числові скори і порядкові <code>ai_quote</code> по критеріях. Рішення: поле <code>ai_summary</code> повертається в API як явний <code>null</code> з позначкою в коді, а не підміняється синтезованим текстом; ALTER + генерація самого тексту — окрема задача поза Фазою 4.<span class="entry-tag">audit finding — ТЗ vs schema gap</span>'
+  },
+  e_p4_2: {
+    ru: '<b>Рабочие допущения по местам, не детализированным в ТЗ на уровне БД</b> (зафиксировано явно, не додумано молча): 1) видимость списка перевірок — фильтр по <code>ga_supervisor_objects.supervisor_id → object_id</code>; 2) «повернути на доопрацювання» — пишется только в <code>ga_submission_scores.decision=\'needs_revision\'</code>, сам механизм повторной сдачи шоппером (новый статус <code>ga_tasks</code>, уведомление) в схеме не предусмотрен — TODO вне Фазы 4; 3) отклонение покупца — <code>DELETE</code> из <code>ga_users</code> (не смена статуса), т.к. <code>email</code>/<code>login</code> UNIQUE, а по ТЗ «повторна реєстрація можлива»; 4) бейдж новых заявок — глобальный count по <code>role=\'shopper\' AND status=\'pending\'</code>, без привязки к объекту (на регистрации шоппер ещё ни к чему не привязан).<span class="entry-tag">working assumptions</span>',
+    uk: '<b>Робочі припущення по місцях, не деталізованих у ТЗ на рівні БД</b> (зафіксовано явно, не додумано мовчки): 1) видимість списку перевірок — фільтр по <code>ga_supervisor_objects.supervisor_id → object_id</code>; 2) «повернути на доопрацювання» — пишеться лише в <code>ga_submission_scores.decision=\'needs_revision\'</code>, сам механізм повторної здачі шоппером (новий статус <code>ga_tasks</code>, сповіщення) у схемі не передбачений — TODO поза Фазою 4; 3) відхилення покупця — <code>DELETE</code> з <code>ga_users</code> (не зміна статусу), бо <code>email</code>/<code>login</code> UNIQUE, а за ТЗ «повторна реєстрація можлива»; 4) бейдж нових заявок — глобальний count по <code>role=\'shopper\' AND status=\'pending\'</code>, без прив\'язки до об\'єкта (на реєстрації шоппер ще ні до чого не прив\'язаний).<span class="entry-tag">working assumptions</span>'
+  },
+  e_p4_3: {
+    ru: '<b>Построено 2 воркфлоу 1:1 по паттерну <code>ga-admin-tasks</code></b> (тот же auth-цепочка Extract Token → Lookup Token → Check Role → If → 403, тот же способ строить SQL-фильтры конкатенацией строки, те же CORS-заголовки): <code>ga-supervisor-submissions.json</code> — GET список, GET детальный перегляд, POST рішення (approve/reject/needs_revision, резолвит <code>ga_flags</code>); <code>ga-supervisor-shoppers.json</code> — GET pending, POST verify.<span class="entry-tag">implemented</span>',
+    uk: '<b>Побудовано 2 воркфлоу 1:1 за патерном <code>ga-admin-tasks</code></b> (той самий auth-ланцюжок Extract Token → Lookup Token → Check Role → If → 403, той самий спосіб будувати SQL-фільтри конкатенацією рядка, ті самі CORS-заголовки): <code>ga-supervisor-submissions.json</code> — GET список, GET детальний перегляд, POST рішення (approve/reject/needs_revision, резолвить <code>ga_flags</code>); <code>ga-supervisor-shoppers.json</code> — GET pending, POST verify.<span class="entry-tag">implemented</span>'
+  },
+  e_p4_4: {
+    ru: '<b>Найден и исправлен баг утроения данных в детальном перегляде</b> (audio/photos/flags приходили по 3 копии). Причина — НЕ грязные данные (проверено: в <code>ga_flags</code>/<code>ga_submission_audio</code>/<code>ga_submission_photos</code> реально по 1–2 строки), а последовательная цепочка Postgres-нод: <code>Query Criteria</code> отдаёт N items (по критерию) → следующий Postgres-запрос выполняется N раз (нода <code>executeQuery</code> запускается один раз НА КАЖДЫЙ входящий item), эффект каскадом усиливается на каждом следующем запросе. <b>Исправлено</b> — после каждого multi-row Postgres-запроса, за которым идёт ещё один Postgres-запрос, вставлена схлопывающая Code-нода (1 item на выходе). То же самое исправлено в <code>ga-supervisor-decision</code> (<code>Resolve Flags</code> мог вернуть >1 item и задвоить <code>respondToWebhook</code>). <b>Дополнение к паттерну из Фазы 3</b> (там — параллельный веер без Merge ломал ссылки на ещё не выполненные ветки): здесь наоборот — последовательная цепочка без схлопывания между Postgres-узлами умножает число выполнений. Оба случая — про то, что нельзя пускать multi-item поток напрямую в следующий Postgres/Code-узел без явного контроля количества items.<span class="entry-tag">bug fixed — new pattern addendum</span>',
+    uk: '<b>Знайдено і виправлено баг потроєння даних у детальному перегляді</b> (audio/photos/flags приходили по 3 копії). Причина — НЕ брудні дані (перевірено: в <code>ga_flags</code>/<code>ga_submission_audio</code>/<code>ga_submission_photos</code> реально по 1–2 рядки), а послідовний ланцюжок Postgres-нод: <code>Query Criteria</code> віддає N items (по критерію) → наступний Postgres-запит виконується N разів (нода <code>executeQuery</code> запускається один раз НА КОЖЕН вхідний item), ефект каскадом підсилюється на кожному наступному запиті. <b>Виправлено</b> — після кожного multi-row Postgres-запиту, за яким іде ще один Postgres-запит, вставлено схлопуючу Code-ноду (1 item на виході). Те саме виправлено в <code>ga-supervisor-decision</code> (<code>Resolve Flags</code> міг повернути >1 item і задвоїти <code>respondToWebhook</code>). <b>Доповнення до патерну з Фази 3</b> (там — паралельне віяло без Merge ламало посилання на ще не виконані гілки): тут навпаки — послідовний ланцюжок без схлопування між Postgres-вузлами множить кількість виконань. Обидва випадки — про те, що не можна пускати multi-item потік напряму в наступний Postgres/Code-вузол без явного контролю кількості items.<span class="entry-tag">bug fixed — new pattern addendum</span>'
+  },
+  e_p4_5: {
+    ru: '<b>Найден реальный FK-риск через <code>pg_constraint</code> перед тем, как писать DELETE</b> (правило из Фазы 3): <code>ga_push_subscriptions.user_id</code> → <code>ON DELETE NO ACTION</code> (не CASCADE) — если у отклоняемого pending-покупця уже есть push-подписка, <code>DELETE FROM ga_users</code> упал бы с ошибкой FK. Добавлено явное удаление <code>ga_push_subscriptions</code> перед удалением юзера. Также добавлена защита: перед удалением проверяется, что у покупця нет ни одного <code>ga_tasks</code> (там CASCADE — тихо снесло бы задания, если бы админ по ошибке успел назначить задание ещё pending-юзеру, т.к. <code>ga-admin-tasks</code>\' <code>Check Refs</code> проверяет только <code>role=\'shopper\'</code>, не <code>status</code>).<span class="entry-tag">audit finding — FK constraint</span>',
+    uk: '<b>Знайдено реальний FK-ризик через <code>pg_constraint</code> перед тим, як писати DELETE</b> (правило з Фази 3): <code>ga_push_subscriptions.user_id</code> → <code>ON DELETE NO ACTION</code> (не CASCADE) — якщо у відхилюваного pending-покупця вже є push-підписка, <code>DELETE FROM ga_users</code> впав би з помилкою FK. Додано явне видалення <code>ga_push_subscriptions</code> перед видаленням юзера. Також додано захист: перед видаленням перевіряється, що у покупця немає жодного <code>ga_tasks</code> (там CASCADE — тихо знесло б завдання, якби адмін помилково встиг призначити завдання ще pending-юзеру, бо <code>ga-admin-tasks</code>\' <code>Check Refs</code> перевіряє лише <code>role=\'shopper\'</code>, не <code>status</code>).<span class="entry-tag">audit finding — FK constraint</span>'
+  },
+  e_p4_6: {
+    ru: '<b>Все 5 эндпоинтов протестированы end-to-end в Postman на реальных данных</b> (supervisor <code>olena_super</code>, id=3, привязан к <code>object_id=1</code> через <code>ga_supervisor_objects</code>): список показал 3 перевірки (<code>submission_id=1,3</code> — pending с флагами, <code>submission_id=2</code>/<code>task_id=3</code> — новый, ещё не проанализированный AI, статус <code>grey</code>); детальный перегляд по <code>submission_id=1</code> совпал построчно с <code>ga_criteria</code>/<code>ga_ai_results</code>; decision(approve) корректно записал <code>reviewed_by</code>/<code>reviewed_at</code> и резолвнул оба флага; verify(approve) перевёл тестового pending-юзера в <code>active</code>, verify(reject) реально удалил юзера из БД.<span class="entry-tag">verified end-to-end — real data</span>',
+    uk: '<b>Усі 5 ендпоінтів протестовано end-to-end у Postman на реальних даних</b> (supervisor <code>olena_super</code>, id=3, прив\'язаний до <code>object_id=1</code> через <code>ga_supervisor_objects</code>): список показав 3 перевірки (<code>submission_id=1,3</code> — pending з флагами, <code>submission_id=2</code>/<code>task_id=3</code> — новий, ще не проаналізований AI, статус <code>grey</code>); детальний перегляд по <code>submission_id=1</code> збігся порядково з <code>ga_criteria</code>/<code>ga_ai_results</code>; decision(approve) коректно записав <code>reviewed_by</code>/<code>reviewed_at</code> і резолвнув обидва флаги; verify(approve) перевів тестового pending-юзера в <code>active</code>, verify(reject) реально видалив юзера з БД.<span class="entry-tag">verified end-to-end — real data</span>'
+  },
+  e_p4_7: {
+    ru: '<b>Backend Фазы 4 закрыт и протестирован.</b> Осталось: фронтенд (3 экрана 1:1 по мокапам ТЗ — список перевірок, детальний перегляд з клікабельною цитатою за патерном <code>ghost-audit.html</code>, верифікація покупців), подключение к 5 готовым эндпоинтам. Открытые TODO вне рамок Фазы 4: колонка под <code>ai_summary</code> текст (см. запись выше), механизм повторной сдачи задания при <code>needs_revision</code>, ручной прогон <code>ga-ai-check</code> для <code>task_id=3</code> (submission без AI-анализа).<span class="entry-tag">backend done — frontend next</span>',
+    uk: '<b>Backend Фази 4 закрито і протестовано.</b> Залишилось: фронтенд (3 екрани 1:1 за мокапами ТЗ — список перевірок, детальний перегляд з клікабельною цитатою за патерном <code>ghost-audit.html</code>, верифікація покупців), підключення до 5 готових ендпоінтів. Відкриті TODO поза межами Фази 4: колонка під <code>ai_summary</code> текст (див. запис вище), механізм повторної здачі завдання при <code>needs_revision</code>, ручний прогін <code>ga-ai-check</code> для <code>task_id=3</code> (submission без AI-аналізу).<span class="entry-tag">backend done — frontend next</span>'
+  },
+  e_p4_8: {
+    ru: '<b>Первая версия фронтенда была собственной интерпретацией, а не копией мокапа</b> — при прямом требовании 1:1 это неверно. Найдены и названы отклонения: одноколоночная раскладка вместо двухколоночной из ТЗ, диалог как модальное окно вместо встроенной панели справа, select вместо кнопки «Фільтр», лишняя панель токена. Исправлено: построчно извлечены точные HTML-блоки мокапов ТЗ (детальный экран — строки 1329–1448, список — 1643–1805, верифікація — 1808–1897) и вёрстка переписана на их основе буквально, с реальными данными вместо демо-текста.<span class="entry-tag">mistake found by user — corrected</span>',
+    uk: '<b>Перша версія фронтенду була власною інтерпретацією, а не копією мокапу</b> — при прямій вимозі 1:1 це неправильно. Знайдено і названо відхилення: одноколонкова розкладка замість двоколонкової з ТЗ, діалог як модальне вікно замість вбудованої панелі справа, select замість кнопки «Фільтр», зайва панель токена. Виправлено: побудовно витягнуто точні HTML-блоки мокапів ТЗ (детальний екран — рядки 1329–1448, список — 1643–1805, верифікація — 1808–1897) і вёрстку переписано на їх основі буквально, з реальними даними замість демо-тексту.<span class="entry-tag">mistake found by user — corrected</span>'
+  },
+  e_p4_9: {
+    ru: 'Тема по умолчанию была тёмной, хотя реальный скриншот ТЗ у пользователя открывается в светлой. Переключено на точные <code>[data-theme="light"]</code> hex-значения из CSS самого ТЗ (не приближённые).<span class="entry-tag">fixed</span>',
+    uk: 'Тема за замовчуванням була темною, хоча реальний скриншот ТЗ у користувача відкривається у світлій. Перемкнено на точні <code>[data-theme="light"]</code> hex-значення з CSS самого ТЗ (не наближені).<span class="entry-tag">fixed</span>'
+  },
+  e_p4_10: {
+    ru: 'По прямому запросу подключён реальный вход через настоящий <code>login.html</code> (получен от пользователя, POST <code>/ga/auth/login</code> → <code>{token, user}</code> в <code>localStorage</code>): добавлена ветка редиректа <code>role===\'supervisor\'</code> → <code>supervisor.html</code> (раньше для всех ролей кроме admin просто показывалась заглушка «кабінет в розробці», никуда не вело). Собственная форма логина внутри <code>supervisor.html</code> убрана полностью — экран читает сессию из <code>localStorage</code>, куда её кладёт реальный <code>login.html</code>, при отсутствии/чужой роли показывает честное «не увійшли» со ссылкой назад.<span class="entry-tag">real integration</span>',
+    uk: 'На прямий запит підключено реальний вхід через справжній <code>login.html</code> (отримано від користувача, POST <code>/ga/auth/login</code> → <code>{token, user}</code> у <code>localStorage</code>): додано гілку редиректу <code>role===\'supervisor\'</code> → <code>supervisor.html</code> (раніше для всіх ролей крім admin просто показувалась заглушка «кабінет в розробці», нікуди не вело). Власну форму логіну всередині <code>supervisor.html</code> прибрано повністю — екран читає сесію з <code>localStorage</code>, куди її кладе справжній <code>login.html</code>, за відсутності/чужої ролі показує чесне «не увійшли» з посиланням назад.<span class="entry-tag">real integration</span>'
+  },
+  e_p4_11: {
+    ru: '<b>Реальный вход не проходил</b> — тестовый пароль, записанный вручную через bcrypt-хеш с префиксом <code>$2b$</code>, не проходил проверку через <code>crypt()</code> в Postgres. Диагностировано без гаданий — прямым SQL-тестом <code>crypt(pass, hash) = hash</code> → <code>false</code>, до похода в браузер. Заменено на хеш с префиксом <code>$2a$</code> (тот же blowfish, другая версия-метка) → тест дал <code>true</code> → вход подтверждён на реальном проде (<code>wizoria.onrender.com</code>) скриншотом.<span class="entry-tag">bugfix — verified before retry</span>',
+    uk: '<b>Реальний вхід не проходив</b> — тестовий пароль, записаний вручну через bcrypt-хеш з префіксом <code>$2b$</code>, не проходив перевірку через <code>crypt()</code> у Postgres. Діагностовано без гадань — прямим SQL-тестом <code>crypt(pass, hash) = hash</code> → <code>false</code>, до походу в браузер. Замінено на хеш з префіксом <code>$2a$</code> (той самий blowfish, інша версія-мітка) → тест дав <code>true</code> → вхід підтверджено на реальному проді (<code>wizoria.onrender.com</code>) скриншотом.<span class="entry-tag">bugfix — verified before retry</span>'
+  },
+  e_p4_12: {
+    ru: 'Мокап ТЗ рисует фото-докази статичной иконкой-плейсхолдером без клика. Добавлен лайтбокс (полноразмерное фото + опис/коментар из <code>ga_submission_photos</code>) — без этого функция проверки фото нерабочая в реальном продукте, хотя в самом рисунке ТЗ клик не предусмотрен.<span class="entry-tag">necessary deviation from mockup</span>',
+    uk: 'Мокап ТЗ малює фото-докази статичною іконкою-плейсхолдером без кліку. Додано лайтбокс (повнорозмірне фото + опис/коментар з <code>ga_submission_photos</code>) — без цього функція перегляду фото нероб очна в реальному продукті, хоча в самому малюнку ТЗ клік не передбачений.<span class="entry-tag">necessary deviation from mockup</span>'
+  },
+  e_p4_13: {
+    ru: '<b>Концептуальная ошибка панели «Діалог», найденная пользователем:</b> когда реальной диаризации (<code>ga_submission_audio.dialogue</code>) нет, первая версия молча подставляла склеенные <code>ai_quote</code> по критериям и называла это «діалогом» — это не диалог, а вырванные из разговорного контекста оценочные цитаты. Убрано полностью. Новый честный приоритет: реальная диаризация по ролям → иначе плоский <code>transcript</code> (STT, явно помечен как «без розділення на репліки») → иначе прямое «діалог відсутній» — без подмены выдуманным текстом.<span class="entry-tag">honesty fix</span>',
+    uk: '<b>Концептуальна помилка панелі «Діалог», знайдена користувачем:</b> коли реальної діаризації (<code>ga_submission_audio.dialogue</code>) немає, перша версія мовчки підставляла склеєні <code>ai_quote</code> по критеріях і називала це «діалогом» — це не діалог, а вирвані з розмовного контексту оцінювальні цитати. Прибрано повністю. Новий чесний пріоритет: реальна діаризація по ролях → інакше плаский <code>transcript</code> (STT, явно позначений як «без розділення на репліки») → інакше пряме «діалог відсутній» — без підміни вигаданим текстом.<span class="entry-tag">honesty fix</span>'
+  },
+  e_p4_14: {
+    ru: 'Добавлена полная синхронизация аудио↔діалог (в ТЗ не описана, но без неё функция непроверяема): клик по цитате или по любой реплике перематывает и запускает основной плеер на этом таймкоде и подсвечивает реплику; во время воспроизведения активная реплика подсвечивается сама и скроллится в видимую область (<code>timeupdate</code>).<span class="entry-tag">added — not in ТЗ</span>',
+    uk: 'Додано повну синхронізацію аудіо↔діалог (в ТЗ не описано, але без неї функція неперевірювана): клік по цитаті чи по будь-якій репліці перемотує і запускає основний плеєр на цьому таймкоді й підсвічує репліку; під час відтворення активна репліка підсвічується сама і скролиться у видиму область (<code>timeupdate</code>).<span class="entry-tag">added — not in ТЗ</span>'
+  },
+  e_p4_15: {
+    ru: '<b>Инцидент с фейковыми тестовыми данными:</b> для проверки самой механики синхронизации в <code>ga_submission_audio.dialogue</code> был вручную вставлен придуманный JSON диалога (и текст, и таймкоды выдуманы, реальная запись не расшифровывалась — инструмента распознавания речи нет). Пользователь верно указал: этим нельзя проверить соответствие реальной записи — эталона для сравнения нет. Данные откачены (<code>dialogue = NULL</code>). Зафиксирован реальный пробел: <code>ga-ai-check</code> (Фаза 3, помечена закрытой) не сохраняет ни диаризацию, ни transcript, ни <code>ai_summary</code> в БД — использует внутри и не персистит. Запрошен JSON <code>ga-ai-check</code> для правки; без него закрытая фаза не трогается.<span class="entry-tag">honesty incident — reverted</span>',
+    uk: '<b>Інцидент з фейковими тестовими даними:</b> для перевірки самої механіки синхронізації в <code>ga_submission_audio.dialogue</code> вручну вставлено вигаданий JSON діалогу (і текст, і таймкоди вигадані, реальний запис не розшифровувався — інструменту розпізнавання мови немає). Користувач правильно вказав: цим не можна перевірити відповідність реальному запису — еталону для порівняння немає. Дані відкатано (<code>dialogue = NULL</code>). Зафіксовано реальну прогалину: <code>ga-ai-check</code> (Фаза 3, позначена закритою) не зберігає ні діаризацію, ні transcript, ні <code>ai_summary</code> в БД — використовує всередині і не персистить. Запрошено JSON <code>ga-ai-check</code> для правки; без нього закриту фазу не займаємо.<span class="entry-tag">honesty incident — reverted</span>'
+  },
+  e_p4_16: {
+    ru: '<b>За прямым требованием — повторный аудит ВСЕГО ТЗ</b> по слову «Supervisor»/«Завдання» (40+ упоминаний) + сверка с хронологией. Подтверждено дословно: Admin создаёт задания («Створює завдання: обирає об\'єкт, покупця, дедлайн...»), Supervisor явно не создаёт («Він не створює завдання і не виконує перевірки»). Найдено реальное внутреннее противоречие ТЗ: сводная таблица ролей заявляет supervisor-у доступ «Завдання, звіти, покупці», но ни в одном месте документа (включая собственный Dashboard-мокап Admin, Часть 9) не нарисован ни один экран под список заданий — только форма создания (Admin). В хронологии прежних решений по этому вопросу тоже не найдено — это не пропущенное решение, а первый раз, когда всплыло.<span class="entry-tag">full ТЗ re-audit — inconsistency found</span>',
+    uk: '<b>За прямою вимогою — повторний аудит УСЬОГО ТЗ</b> за словом «Supervisor»/«Завдання» (40+ згадок) + звірка з хронологією. Підтверджено дослівно: Admin створює завдання («Створює завдання: обирає об\'єкт, покупця, дедлайн...»), Supervisor явно не створює («Він не створює завдання і не виконує перевірки»). Знайдено реальну внутрішню суперечність ТЗ: зведена таблиця ролей заявляє supervisor-у доступ «Завдання, звіти, покупці», але в жодному місці документа (включно з власним Dashboard-мокапом Admin, Частина 9) не намальовано жодного екрану під список завдань — лише форма створення (Admin). У хронології попередніх рішень з цього питання теж не знайдено — це не пропущене рішення, а перший раз, коли це спливло.<span class="entry-tag">full ТЗ re-audit — inconsistency found</span>'
+  },
+  e_p4_17: {
+    ru: 'По решению пользователя (несмотря на отсутствие мокапа) собран <b>ga-supervisor-tasks.json</b> — GET /ga/supervisor/tasks, read-only, только объекты этого supervisor\'а через <code>ga_supervisor_objects</code>, без единой возможности создавать/редактировать. Добавлен рабочий экран «Завдання» во все 3 сайдбара (кросс-навигация), со ссылкой «Переглянути звіт» на уже сданные задания.<span class="entry-tag">built by explicit decision — beyond ТЗ</span>',
+    uk: 'За рішенням користувача (попри відсутність мокапу) зібрано <b>ga-supervisor-tasks.json</b> — GET /ga/supervisor/tasks, read-only, лише об\'єкти цього supervisor\'а через <code>ga_supervisor_objects</code>, без жодної можливості створювати/редагувати. Додано робочий екран «Завдання» в усі 3 сайдбари (крос-навігація), з посиланням «Переглянути звіт» на вже здані завдання.<span class="entry-tag">built by explicit decision — beyond ТЗ</span>'
+  },
+
+  p4_desc: { ru: 'Список проверок «по принципу исключения» (только красные/жёлтые строки), верификация новых покупателей. UI-паттерн карточек критериев + аудио + диалог по клику на цитату — переносим из <code>ghost-audit.html</code>.',
+             uk: 'Список перевірок «за принципом виключення» (тільки червоні/жовті рядки), верифікація нових покупців. UI-патерн карток критеріїв + аудіо + діалог по кліку на цитату — переносимо з <code>ghost-audit.html</code>.' },
+
+  p5_title: { ru: 'Отчётность', uk: 'Звітність' },
+  p5_desc: { ru: 'Dashboard Admin (средний скор, % авто-одобрения, аномалии, рейтинг секций), генерация PDF-отчёта с AI Executive Summary.',
+             uk: 'Dashboard Admin (середній скор, % авто-схвалення, аномалії, рейтинг секцій), генерація PDF-звіту з AI Executive Summary.' },
+
+  p6_title: { ru: 'Стабилизация', uk: 'Стабілізація' },
+  p6_desc: { ru: 'Сквозной прогон реального флоу от регистрации до PDF, проверка гео/офлайн/Wake Lock на реальных телефонах (iOS Safari — самое узкое место).',
+             uk: 'Наскрізний прогін реального флоу від реєстрації до PDF, перевірка гео/офлайн/Wake Lock на реальних телефонах (iOS Safari — найвужче місце).' }
+};
+
+function setLang(lang) {
+  document.documentElement.setAttribute('lang', lang);
+  document.getElementById('lang-ru').classList.toggle('active', lang === 'ru');
+  document.getElementById('lang-uk').classList.toggle('active', lang === 'uk');
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (I18N[key]) el.innerHTML = I18N[key][lang];
+  });
+  localStorage.setItem('ga_lang', lang);
+}
+function showPhase(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+  el.classList.add('active');
+}
+function toggleTheme() {
+  const html = document.documentElement;
+  const dark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', dark ? 'light' : 'dark');
+  document.getElementById('i-sun').style.display = dark ? 'block' : 'none';
+  document.getElementById('i-moon').style.display = dark ? 'none' : 'block';
+}
+setLang('ru');
+</script>
+</body>
+</html>

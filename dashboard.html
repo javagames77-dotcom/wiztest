@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizoria — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+:root{
+  --accent:#8C64C9; --accent-hover:#a07ed8; --accent-light:rgba(140,100,201,.13); --accent-border:rgba(140,100,201,.3);
+  --bg:#f4f4f7; --bg2:#ffffff; --bg3:#f0f0f4; --border:#e0e0e8; --border2:#ccccda;
+  --text:#1a1a20; --muted:#6b6b80; --muted2:#aaaabc; --black:#0a0a12;
+  --success:#16a34a; --success-bg:#f0fff4; --success-border:#bbf7d0;
+  --danger:#c0392b; --danger-bg:#fff0f0; --danger-border:#ffd0d0;
+  --warn-text:#92400e; --warn-bg:#fffbeb; --warn-border:#fde68a;
+  --card-shadow:0 1px 3px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-size:13px}
+
+.top-bar{position:sticky;top:0;height:52px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;z-index:60;backdrop-filter:blur(16px);gap:14px}
+.wizoria-logo{height:19px;width:auto;flex-shrink:0}
+.brand-sub{font-size:13px;color:var(--muted);white-space:nowrap;font-weight:500}
+.nav-sep{flex:1}
+
+.layout{display:flex;min-height:calc(100vh - 52px)}
+
+/* --- Сайдбар «МЕНЮ» — 1:1 з мокапу ТЗ (Dashboard Admin — зведена статистика) --- */
+.sidebar{width:190px;min-width:190px;background:var(--bg3);border-right:1px solid var(--border);padding:14px 0;flex-shrink:0}
+.sb-label{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);padding:0 14px;margin-bottom:8px}
+.sb-item{padding:9px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:9px;text-decoration:none;cursor:pointer}
+.sb-item i{font-size:15px}
+.sb-item:hover{color:var(--text)}
+.sb-item.active{color:var(--accent);background:var(--accent-light);border-left:2px solid var(--accent);padding-left:12px}
+
+.main{flex:1;min-width:0;padding:24px 28px 60px}
+
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:600;color:var(--black);letter-spacing:-.01em}
+.page-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-ghost{border:1px solid var(--border);border-radius:8px;height:32px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);background:var(--bg2);cursor:pointer;white-space:nowrap}
+.btn-primary{background:var(--accent);border:none;border-radius:8px;height:32px;padding:0 14px;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.stat-card{background:var(--bg3);border-radius:8px;padding:11px 13px}
+.stat-value{font-size:20px;font-weight:600;margin-bottom:2px;line-height:1.1;color:var(--accent)}
+.stat-value.success{color:var(--success)}
+.stat-value.warn{color:var(--warn-text)}
+.stat-value.danger{color:var(--danger)}
+.stat-value.neutral{color:var(--muted)}
+.stat-label{font-size:10px;color:var(--muted)}
+
+.section-label{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:22px}
+
+/* --- Рейтинг об'єктів: таблиця (десктоп) --- */
+.ranking-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.ranking-table th{text-align:left;padding:8px;font-weight:500;font-size:10px;color:var(--muted2);border-bottom:1px solid var(--border)}
+.ranking-table th.center{text-align:center}
+.ranking-table td{padding:9px 8px;border-bottom:1px solid var(--border)}
+.ranking-table tr:last-child td{border-bottom:none}
+.obj-name{font-weight:500;color:var(--black)}
+.score-badge{display:inline-block;border-radius:5px;padding:2px 9px;font-size:13px;font-weight:500}
+.score-badge.good{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-border)}
+.score-badge.warn{background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-border)}
+.score-badge.bad{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+.trend-cell{display:flex;align-items:center;gap:7px;min-width:100px}
+.trend-bar-bg{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.trend-bar-fill{height:100%;border-radius:3px;background:var(--accent)}
+.trend-bar-fill.warn{background:var(--warn-text)}
+.trend-val{font-size:10px;white-space:nowrap;min-width:24px;text-align:right}
+.trend-val.up{color:var(--success)}
+.trend-val.down{color:var(--danger)}
+.trend-val.flat{color:var(--muted)}
+.checks-cell{text-align:center;color:var(--muted)}
+.report-link{border:1px solid var(--border);border-radius:5px;height:22px;padding:0 8px;display:inline-flex;align-items:center;font-size:10px;color:var(--muted);white-space:nowrap}
+
+/* --- Рейтинг об'єктів: картки (мобайл) --- */
+.ranking-cards{display:none}
+.ranking-card{padding:12px 14px;border-bottom:1px solid var(--border)}
+.ranking-card:last-child{border-bottom:none}
+.ranking-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.ranking-card-meta{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted)}
+
+.sections-grid{display:flex;gap:8px;flex-wrap:wrap;padding:14px}
+.section-tile{flex:1;min-width:90px;border-radius:7px;padding:8px 10px}
+.section-tile.t-danger{background:var(--danger-bg);border:1px solid var(--danger-border)}
+.section-tile.t-warn{background:var(--warn-bg);border:1px solid var(--warn-border)}
+.section-tile.t-neutral{background:var(--bg3);border:1px solid var(--border)}
+.section-tile.t-success{background:var(--success-bg);border:1px solid var(--success-border)}
+.section-name{font-size:12px;font-weight:500;margin-bottom:2px}
+.section-tile.t-danger .section-name, .section-tile.t-danger .section-score{color:var(--danger)}
+.section-tile.t-warn .section-name, .section-tile.t-warn .section-score{color:var(--warn-text)}
+.section-tile.t-neutral .section-name, .section-tile.t-neutral .section-score{color:var(--text)}
+.section-tile.t-success .section-name, .section-tile.t-success .section-score{color:var(--success)}
+.section-score{font-size:20px;font-weight:500}
+.section-caption{font-size:10px;opacity:.75;margin-top:1px}
+.section-tile.t-neutral .section-caption{color:var(--muted);opacity:1}
+
+.empty-state{padding:32px 18px;text-align:center;color:var(--muted);font-size:12px}
+.empty-state i{font-size:24px;display:block;margin-bottom:9px;opacity:.4}
+
+.auth-gate{max-width:420px;margin:80px auto;text-align:center;padding:0 20px}
+.auth-gate p{color:var(--muted);font-size:13px;margin:10px 0 18px;line-height:1.6}
+.auth-gate a{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:600}
+
+/* --- Мобайл: сайдбар стає горизонтальною смугою зверху --- */
+@media (max-width: 720px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;min-width:0;display:flex;align-items:center;padding:8px 6px;overflow-x:auto;gap:2px;border-right:none;border-bottom:1px solid var(--border)}
+  .sb-label{display:none}
+  .sb-item{white-space:nowrap;border-left:none !important;border-radius:7px;padding:7px 11px !important}
+  .sb-item.active{border-left:none}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .ranking-table{display:none}
+  .ranking-cards{display:block}
+  .main{padding:16px 14px 40px}
+}
+@media (max-width: 460px){
+  .sections-grid{flex-direction:column}
+  .section-tile{min-width:0}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <svg class="wizoria-logo" viewBox="0 0 3418 1015" xmlns="http://www.w3.org/2000/svg"><g fill="var(--black)"><path d="M709.68,159.25 L774.19,159.25 C781.22,159.25 786.75,164.79 786.75,171.82 L786.75,574.86 C786.75,581.88 781.22,587.42 774.19,587.42 L709.68,587.42 C702.66,587.42 697.12,581.88 697.12,574.86 L697.12,171.82 C697.12,164.79 702.66,159.25 709.68,159.25 Z"/><path d="M888.32,237.82 L888.32,173.1 C888.32,166.07 894.06,160.53 901.09,160.53 L1283.27,160.53 C1290.29,160.53 1296.04,166.07 1296.04,173.1 L1296.04,236.12 L1296.04,250.39 C1295.82,254.85 1294.34,258.05 1291.57,260.39 L1010.31,497.15 L901.51,586.78 L888.95,572.73 L888.73,493.75 C888.73,489.06 891.29,486.72 893.84,483.95 L1173.39,250.17 L901.08,250.17 C894.05,250.17 888.31,244.63 888.31,237.82 L888.32,237.82 Z"/><path d="M888.95,575.07 L888.95,510.35 C888.95,503.54 894.49,497.79 901.52,497.79 L1282.43,497.79 C1289.24,497.79 1294.99,503.54 1294.99,510.35 L1294.99,575.07 C1294.99,581.89 1289.24,587.64 1282.43,587.64 L901.52,587.64 C894.49,587.64 888.95,581.89 888.95,575.07 Z"/><path d="M2252.68,159.89 L2459.42,159.89 C2491.99,159.89 2548.83,162.87 2596.1,228.02 C2619.74,260.6 2622.51,312.56 2622.08,320.64 C2616.75,366.84 2597.38,407.51 2557.57,440.31 L2614.84,571.88 C2616.33,575.28 2616.12,579.54 2614.2,582.52 C2612.08,586.14 2608.24,588.27 2605.48,588.27 L2533.1,588.27 C2530.54,588.27 2527.77,588.48 2525.01,587.41 C2521.39,586.13 2517.77,583.15 2516.7,580.17 L2471.35,467.33 L2291.65,467.33 L2291.65,575.7 C2291.65,582.52 2285.91,588.27 2279.09,588.27 L2214.36,588.27 C2207.55,588.27 2201.8,582.52 2201.8,575.7 L2201.8,172.45 C2201.8,165.63 2207.55,159.89 2214.36,159.89 L2252.68,159.89 Z M2291.64,377.49 L2474.75,377.49 C2484.75,376.85 2501.15,372.38 2508.82,365.35 C2554.8,323.62 2530.11,248.46 2459.42,249.74 L2291.64,249.74 L2291.64,377.49 Z"/><path d="M2752.81,159.25 L2817.53,159.25 C2824.35,159.25 2830.1,165 2830.1,171.82 L2830.1,575.07 C2830.1,581.89 2824.35,587.64 2817.53,587.64 L2752.81,587.64 C2745.99,587.64 2740.25,581.89 2740.25,575.07 L2740.25,171.82 C2740.25,165 2745.99,159.25 2752.81,159.25 Z"/><path d="M3176.72,266.99 L3105.39,422.84 L3248.05,422.84 L3176.72,266.99 Z M3064.52,512.47 L3032.79,581.46 C3030.02,587.84 3022.99,588.28 3016.18,588.28 L2946.99,588.06 C2943.58,588.06 2939.75,585.72 2937.83,582.52 C2935.7,579.12 2935.7,574.64 2937.19,571.45 L3122.43,169.48 C3124.77,164.37 3130.51,160.11 3137.75,160.11 L3212.28,160.11 C3220.58,160.11 3227.61,161.81 3231.44,170.12 L3416.26,571.45 C3419.88,578.9 3414.34,588.06 3407.1,588.06 L3337.47,588.28 C3330.45,588.28 3323.42,587.85 3320.65,581.46 L3289.14,512.47 L3064.51,512.47 L3064.52,512.47 Z"/><path d="M609.4,160.1 L543.61,160.1 C536.58,160.1 529.98,163.08 528.06,169.9 L443.33,500.56 L366.68,172.03 C364.98,164.15 357.53,159.25 350.72,159.25 L274.28,159.25 C269.81,159.25 264.7,161.6 261.3,165.86 C259.59,168.2 258.53,170.96 257.67,174.38 L170.38,501.2 L88.62,169.91 C86.92,163.09 79.89,160.11 72.87,160.11 L10.7,160.11 C3.68,160.11 -1.22,168.63 0.27,175.44 L94.59,577.41 C96.08,583.38 101.62,587.42 107.58,587.21 L228.94,587.43 C237.25,587.43 241.93,580.19 244.06,572.1 L311.56,322.57 L370.74,572.52 C372.87,580.83 380.33,587 387.35,587.21 L496.36,587.43 C503.39,587.43 510.83,582.96 513.6,572.52 L619,175.45 C620.7,168.63 616.44,160.12 609.41,160.12 L609.4,160.1 Z"/></g><path fill="#8C64C9" d="M1736.99,649.38 C1813.22,649.38 1882.2,618.51 1932.23,568.47 C1982.27,518.65 2013.14,449.67 2013.14,373.45 C2013.14,297.22 1982.27,228.24 1932.23,178.2 C1882.2,128.38 1813.21,97.51 1736.99,97.51 C1660.98,97.51 1591.79,128.38 1541.96,178.2 C1491.93,228.24 1461.05,297.23 1461.05,373.45 C1461.05,449.67 1491.93,518.64 1541.96,568.47 C1591.78,618.51 1660.98,649.38 1736.99,649.38 Z M2001.22,637.46 C1933.51,704.95 1840.25,746.9 1736.99,746.9 C1633.94,746.9 1540.69,704.96 1472.99,637.46 C1405.49,569.97 1363.76,476.5 1363.76,373.45 C1363.76,270.41 1405.49,176.93 1472.99,109.44 C1540.69,41.73 1633.94,5.68434189e-14 1736.99,5.68434189e-14 C1840.25,5.68434189e-14 1933.51,41.73 2001.22,109.44 C2068.71,176.93 2110.44,270.41 2110.44,373.45 C2110.44,476.5 2068.71,569.97 2001.22,637.46 Z"/></svg>
+  <span class="brand-sub">— Dashboard</span>
+  <div class="nav-sep"></div>
+  <div id="logout-btn" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;padding:6px 10px;border-radius:6px" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'"><i class="ti ti-logout" style="font-size:15px"></i>Вийти</div>
+</div>
+
+<div id="auth-gate" class="auth-gate" style="display:none">
+  <div style="font-size:32px;margin-bottom:6px">🔒</div>
+  <div style="font-size:16px;font-weight:600;color:var(--black)">Потрібен вхід</div>
+  <p>Dashboard доступний лише авторизованим Admin. Увійдіть, щоб побачити дані.</p>
+  <a href="login.html">Перейти до входу</a>
+</div>
+
+<div id="page-body" class="layout" style="display:none">
+  <!-- САЙДБАР — 1:1 з мокапу ТЗ (5 пунктів, Dashboard активний) -->
+  <div class="sidebar">
+    <div class="sb-label">Меню</div>
+    <a class="sb-item active" href="dashboard.html"><i class="ti ti-layout-dashboard"></i>Dashboard</a>
+    <a class="sb-item" href="tasks.html"><i class="ti ti-clipboard-list"></i>Завдання</a>
+    <a class="sb-item" href="questionnaires.html"><i class="ti ti-list-check"></i>Анкети</a>
+    <a class="sb-item" href="shoppers.html"><i class="ti ti-users"></i>Покупці</a>
+    <a class="sb-item" href="objects.html"><i class="ti ti-building"></i>Об'єкти</a>
+    <a class="sb-item" href="ai-settings.html"><i class="ti ti-robot"></i>AI-налаштування</a>
+    <a class="sb-item" href="reports.html"><i class="ti ti-chart-bar"></i>Звіти</a>
+  </div>
+
+  <div class="main">
+    <div class="page-head">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub" id="page-sub">Всі об'єкти · <span id="period-text"></span></div>
+      </div>
+      <div class="head-actions">
+        <div class="btn-ghost"><i class="ti ti-calendar"></i><span id="period-label"></span></div>
+        <button class="btn-primary" id="pdf-btn" disabled title="Генерація PDF — Фаза 5, ще не реалізовано"><i class="ti ti-file-export"></i>Звіт PDF</button>
+      </div>
+    </div>
+
+    <div class="stat-grid" id="stat-grid">
+      <div class="stat-card"><div class="stat-value" id="stat-checks">—</div><div class="stat-label">Перевірок виконано</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-score">—</div><div class="stat-label">Середній скор</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-auto">—</div><div class="stat-label">Авто-схвалено</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-anomalies">—</div><div class="stat-label">Аномалій</div></div>
+    </div>
+
+    <div class="section-label">Рейтинг об'єктів</div>
+    <div class="card">
+      <table class="ranking-table">
+        <thead>
+          <tr>
+            <th style="width:28%">Об'єкт</th>
+            <th class="center" style="width:14%">Скор</th>
+            <th style="width:30%">Динаміка</th>
+            <th class="center" style="width:12%">Перев.</th>
+            <th style="width:16%"></th>
+          </tr>
+        </thead>
+        <tbody id="ranking-tbody"></tbody>
+      </table>
+      <div class="ranking-cards" id="ranking-cards"></div>
+      <div class="empty-state" id="ranking-empty" style="display:none">
+        <i class="ti ti-clipboard-off"></i>Ще немає жодної перевірки по цій мережі
+      </div>
+    </div>
+
+    <div class="section-label">Найслабші зони по мережі</div>
+    <div class="card">
+      <div class="sections-grid" id="sections-grid"></div>
+      <div class="empty-state" id="sections-empty" style="display:none">
+        <i class="ti ti-chart-bar-off"></i>Даних по секціях поки немає — з'являться після перших AI-перевірок
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://primary-production-3872.up.railway.app/webhook';
+
+const UA_MONTHS = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
+function currentPeriodLabel() {
+  const now = new Date();
+  return `${UA_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+}
+
+// Рейтинг об'єктів — поріг підтверджено прикладами з ТЗ (87, 81 → фіолетовий; 74 → жовтий)
+function rankBadgeClass(score) {
+  if (score === null || score === undefined) return 'good';
+  if (score >= 80) return 'good';
+  if (score >= 60) return 'warn';
+  return 'bad';
+}
+
+// Найслабші зони — 4 рівні кольору, підтверджено прикладами з ТЗ (68 червоний, 72 жовтий, 78 нейтральний, 89 зелений)
+function zoneTileClass(score) {
+  if (score === null || score === undefined) return 't-neutral';
+  if (score < 70) return 't-danger';
+  if (score < 75) return 't-warn';
+  if (score < 85) return 't-neutral';
+  return 't-success';
+}
+
+// Верхні stat-картки «Середній скор» / «Авто-схвалено» — у мокапі ТЗ вони ЗЕЛЕНІ, коли все добре
+// (на відміну від бейджа в рейтингу об'єктів, де для гарного скору — фіолетовий). Порогів у ТЗ
+// на "поганий" стан не показано (приклад лише позитивний) — тому нижні пороги я задав сам:
+function statScoreClass(score) {
+  if (score === null || score === undefined) return 'neutral';
+  if (score >= 80) return 'success';
+  if (score >= 60) return 'warn';
+  return 'danger';
+}
+function statAutoClass(pct) {
+  if (pct === null || pct === undefined) return 'neutral';
+  if (pct >= 70) return 'success';
+  if (pct >= 40) return 'warn';
+  return 'danger';
+}
+
+async function loadDashboard() {
+  const token = localStorage.getItem('ga_token');
+  if (!token) {
+    document.getElementById('auth-gate').style.display = 'block';
+    return;
+  }
+
+  let data;
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/dashboard`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.status === 403) {
+      document.getElementById('auth-gate').style.display = 'block';
+      return;
+    }
+    data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Помилка завантаження');
+  } catch (err) {
+    document.getElementById('auth-gate').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('page-body').style.display = 'flex';
+
+  const period = currentPeriodLabel();
+  document.getElementById('period-text').textContent = period;
+  document.getElementById('period-label').textContent = period;
+
+  document.getElementById('stat-checks').textContent = data.checks_completed ?? 0;
+
+  const scoreEl = document.getElementById('stat-score');
+  scoreEl.textContent = data.avg_score !== null ? data.avg_score : '—';
+  scoreEl.className = 'stat-value ' + statScoreClass(data.avg_score);
+
+  const autoEl = document.getElementById('stat-auto');
+  autoEl.textContent = data.auto_approved_pct !== null ? data.auto_approved_pct + '%' : '—';
+  autoEl.className = 'stat-value ' + statAutoClass(data.auto_approved_pct);
+
+  const anomEl = document.getElementById('stat-anomalies');
+  anomEl.textContent = data.anomalies_count ?? 0;
+  anomEl.className = 'stat-value ' + (data.anomalies_count > 0 ? 'danger' : 'neutral');
+
+  // --- Рейтинг об'єктів ---
+  const tbody = document.getElementById('ranking-tbody');
+  const cardsWrap = document.getElementById('ranking-cards');
+  const rankEmpty = document.getElementById('ranking-empty');
+  tbody.innerHTML = '';
+  cardsWrap.innerHTML = '';
+
+  if (!data.object_ranking || data.object_ranking.length === 0) {
+    rankEmpty.style.display = 'block';
+  } else {
+    rankEmpty.style.display = 'none';
+    data.object_ranking.forEach(o => {
+      const score = o.avg_score;
+      const bClass = rankBadgeClass(score);
+      const trend = o.trend;
+      const trendVal = trend === null || trend === undefined ? '' : (trend > 0 ? '+' + trend : String(trend));
+      const trendClass = trend === null || trend === undefined ? 'flat' : (trend > 0 ? 'up' : (trend < 0 ? 'down' : 'flat'));
+      const barWidth = score !== null ? Math.max(0, Math.min(100, score)) : 0;
+      const barClass = (bClass === 'bad' || bClass === 'warn') ? 'warn' : '';
+
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr>
+          <td class="obj-name">${o.object_name}</td>
+          <td class="center"><span class="score-badge ${bClass}">${score !== null ? score : '—'}</span></td>
+          <td>
+            <div class="trend-cell">
+              <div class="trend-bar-bg"><div class="trend-bar-fill ${barClass}" style="width:${barWidth}%"></div></div>
+              <span class="trend-val ${trendClass}">${trendVal}</span>
+            </div>
+          </td>
+          <td class="checks-cell">${o.checks_count}</td>
+          <td style="text-align:right"><a class="report-link" href="reports.html?object_id=${o.object_id}" style="text-decoration:none">Звіт</a></td>
+        </tr>
+      `);
+
+      cardsWrap.insertAdjacentHTML('beforeend', `
+        <div class="ranking-card">
+          <div class="ranking-card-top">
+            <span class="obj-name">${o.object_name}</span>
+            <span class="score-badge ${bClass}">${score !== null ? score : '—'}</span>
+          </div>
+          <div class="ranking-card-meta">
+            <span>${o.checks_count} перевірок</span>
+            <span class="trend-val ${trendClass}">${trendVal}</span>
+          </div>
+        </div>
+      `);
+    });
+  }
+
+  // --- Найслабші зони ---
+  const sectionsGrid = document.getElementById('sections-grid');
+  const sectionsEmpty = document.getElementById('sections-empty');
+  sectionsGrid.innerHTML = '';
+
+  const sectionNames = { kasa: 'Каса', bar: 'Бар', vhid: 'Вхід', vyhid: 'Вихід', zal: 'Зал', tualet: 'Туалет',
+    vhid_ccv: 'Вхід ССВ', vhid_cck: 'Вхід ССК', kasa_cck: 'Каса ССК', kasa_ccv: 'Каса ССВ',
+    kinobar: 'Кіномаркет', cinema_hall: 'Кінозал', wc: 'Вбиральня', bar_cocktail: 'Коктейль Бар ССВ', online_bar: 'Онлайн Бар' };
+
+  if (!data.weakest_sections || data.weakest_sections.length === 0) {
+    sectionsEmpty.style.display = 'block';
+  } else {
+    sectionsEmpty.style.display = 'none';
+    data.weakest_sections.forEach(s => {
+      const cls = zoneTileClass(s.avg_score);
+      sectionsGrid.insertAdjacentHTML('beforeend', `
+        <div class="section-tile ${cls}">
+          <div class="section-name">${sectionNames[s.section_key] || s.section_key}</div>
+          <div class="section-score">${s.avg_score !== null ? s.avg_score : '—'}</div>
+          <div class="section-caption">avg по мережі</div>
+        </div>
+      `);
+    });
+  }
+}
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+  localStorage.removeItem('ga_token');
+  window.location.href = 'login.html';
+});
+
+loadDashboard();
+</script>
+</body>
+</html>

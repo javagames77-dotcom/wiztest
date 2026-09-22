@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<!-- ВЕРСІЯ ФАЙЛУ: 2026-08-30 14:20 — п.21: бейдж + причина здачі неповним завданням -->
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizoria — Supervisor</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* Кольорові токени -- скопійовано 1:1 з ТЗ. За замовчуванням СВІТЛА тема
+   (так у вас відкривається сам файл ТЗ), тому тут беремо саме
+   [data-theme="light"] значення з Wizoria___Технічне_завдання_Mystery_Shopper.html */
+:root{
+  --accent:#8C64C9;--accent-hover:#a07ed8;--accent-light:rgba(140,100,201,.13);--accent-border:rgba(140,100,201,.3);
+  --bg:#f4f4f7;--bg2:#ffffff;--bg3:#f0f0f4;--bg4:#e8e8ef;
+  --text:#1a1a20;--muted:#6b6b80;--muted2:#aaaabc;--black:#0a0a12;
+  --border:#e0e0e8;--border2:#ccccda;
+  --success:#16a34a;--success-bg:#f0fff4;--success-border:#bbf7d0;
+  --danger:#c0392b;--danger-bg:#fff0f0;--danger-border:#ffd0d0;
+  --warn-text:#92400e;--warn-bg:#fffbeb;--warn-border:#fde68a;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:13px;-webkit-font-smoothing:antialiased}
+
+/* панель токена -- НЕ з ТЗ, технічна заглушка тестування (немає екрана логіну в цій фазі) */
+.token-bar{background:var(--bg3);border-bottom:1px solid var(--border2);padding:8px 16px;display:flex;gap:8px;align-items:center;font-size:11px;color:var(--muted)}
+.token-bar input{flex:1;max-width:380px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:5px 8px;font-size:11px;font-family:monospace}
+.token-bar button{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer}
+
+.view{display:none}
+.view.active{display:block}
+
+.card-plain{margin-bottom:8px}
+.spec-list{list-style:none;padding:0;margin:0}
+.spec-item{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--text);line-height:1.6;margin-bottom:8px}
+.spec-check{width:17px;height:17px;border-radius:5px;background:var(--accent-light);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.spec-check svg{width:9px;height:9px;stroke:var(--accent);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+.quote-btn{background:none;border:none;color:inherit;font:inherit;cursor:pointer;padding:0;text-align:left;text-decoration:underline;text-underline-offset:2px}
+.eye-btn{border:0.5px solid var(--border);border-radius:5px;height:26px;padding:0 8px;display:inline-flex;align-items:center;font-size:11px;color:var(--muted);gap:4px;cursor:pointer;background:none}
+
+.empty-state{padding:24px;text-align:center;color:var(--muted);font-size:12px}
+.loading{padding:20px;text-align:center;color:var(--muted);font-size:12px}
+td[tabindex]{cursor:cell}
+td[tabindex]:focus{box-shadow:inset 0 0 0 2px var(--accent);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     ЕКРАН ВХОДУ (1:1 з реального login-4.html, тільки перевірка
+     ролі === 'supervisor' після успіху)
+════════════════════════════════════════════════ -->
+<!-- Стрічка "залогинені як..." + вихід -- сесія бере токен з localStorage,
+     куди його кладе справжня login.html (ga_token / ga_user) -->
+<div class="token-bar" id="sessionBar" style="display:none">
+  <span id="sessionLabel"></span>
+  <button onclick="doLogout()" style="margin-left:auto">Вийти</button>
+</div>
+
+<div id="geoModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,10,18,.5);z-index:2000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg2);border-radius:14px;max-width:480px;width:100%;padding:18px;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;color:var(--black)"><i class="ti ti-map-pin" style="font-size:14px;color:var(--accent)"></i> Місцезнаходження (довідково)</div>
+      <span onclick="closeGeoModal()" style="cursor:pointer;color:var(--muted);display:flex;padding:2px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
+    </div>
+    <div id="geoModalInfo" style="font-size:12px;color:var(--text);margin-bottom:10px"></div>
+    <div id="geoInfoMap" style="height:260px;border-radius:8px;border:0.5px solid var(--border)"></div>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px">Не є умовою для здачі — лише довідкова інформація для Supervisor'а.</div>
+    <div style="font-size:9px;color:var(--muted2);margin-top:4px;font-family:monospace">версія модалки: 2026-08-30-08:47</div>
+  </div>
+</div>
+
+<div class="empty-state" id="notAuthedState" style="display:none;padding:60px 20px">
+  <div style="margin-bottom:10px">Ви не увійшли в систему, або сесія закінчилась.</div>
+  <a href="login.html" style="color:var(--accent);font-weight:600;text-decoration:none">← Перейти на сторінку входу</a>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ЕКРАН «ЗАВДАННЯ» -- НЕ з ТЗ (там для Supervisor нема жодного намальованого
+     екрану під це, лише неактивний пункт у сайдбарі скрізь). Read-only список,
+     за прямим запитом користувача, бо це формально заявлено в таблиці ролей ТЗ
+     ("Завдання, звіти, покупці"), хоча детально ніде не розписано.
+════════════════════════════════════════════════ -->
+<div class="view" id="view-tasks" style="padding:16px">
+      <div style="display:flex">
+      <div style="width:190px;min-width:190px;border-right:0.5px solid var(--border);padding:12px 0;background:var(--bg3)">
+        <div style="padding:8px 14px 12px;border-bottom:0.5px solid var(--border);margin-bottom:8px">
+          <div style="font-size:9px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2)">Supervisor</div>
+        </div>
+        <div style="padding:7px 14px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:7px;background:var(--accent-light);border-left:2px solid var(--accent)"><i class="ti ti-clipboard-list" style="font-size:14px"></i> Завдання</div>
+        <div style="padding:7px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer" onclick="showView('reviews')"><i class="ti ti-file-search" style="font-size:14px"></i> Перевірки</div>
+        <div style="padding:7px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer" onclick="showView('shoppers')"><i class="ti ti-user-check" style="font-size:14px"></i> Покупці</div>
+      </div>
+      <div style="flex:1;padding:16px;min-width:0">
+        <div style="font-size:14px;font-weight:500;color:var(--black);margin-bottom:2px">Завдання</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Усі поставлені завдання незалежно від статусу. Тільки перегляд — завдання створює Admin. Ті, що вже здані й потребують вашої оцінки — у розділі «Перевірки»</div>
+        <div id="tasksWrap"><div class="loading">Завантаження…</div></div>
+      </div>
+    </div>
+  
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ЕКРАН 1: СПИСОК ПЕРЕВІРОК (1:1 з ТЗ, section-label
+     "Веб-інтерфейс Supervisor — список перевірок", рядки 1643-1805)
+════════════════════════════════════════════════ -->
+<div class="view" id="view-reviews" style="padding:16px">
+
+
+      <div style="display:flex">
+      <!-- Sidebar (1:1) -->
+      <div style="width:190px;min-width:190px;border-right:0.5px solid var(--border);padding:12px 0;background:var(--bg3)">
+        <div style="padding:8px 14px 12px;border-bottom:0.5px solid var(--border);margin-bottom:8px">
+          <div style="font-size:9px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);margin-bottom:4px">Supervisor</div>
+        </div>
+        <div style="padding:7px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer" onclick="showView('tasks')"><i class="ti ti-clipboard-list" style="font-size:14px"></i> Завдання</div>
+        <div style="padding:7px 14px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:7px;background:var(--accent-light);border-left:2px solid var(--accent)"><i class="ti ti-file-search" style="font-size:14px"></i> Перевірки</div>
+        <div style="padding:7px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer" onclick="showView('shoppers')"><i class="ti ti-user-check" style="font-size:14px"></i> Покупці <span id="pendingBadge" style="margin-left:auto;background:var(--warn-bg);color:var(--warn-text);font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;border:0.5px solid var(--warn-border);display:none">0</span></div>
+      </div>
+      <!-- Main -->
+      <div style="flex:1;padding:16px;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div>
+            <div style="font-size:14px;font-weight:500;color:var(--black)">Перевірки</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Здані завдання, що потребують вашої оцінки (AI-аналіз + рішення)</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px" id="reviewsDate">—</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="position:relative;width:200px">
+              <i class="ti ti-search" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted2)"></i>
+              <input type="text" id="reviewsSearch" placeholder="Пошук: покупець, об'єкт" style="width:100%;height:28px;border:0.5px solid var(--border);border-radius:5px;background:var(--bg2);padding:0 8px 0 28px;font-size:11px;font-family:inherit;color:var(--text);outline:none">
+            </div>
+            <div style="display:flex;gap:10px;font-size:11px;color:var(--muted);align-items:center">
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--danger);display:inline-block;flex-shrink:0"></span>Розбіжність AI</span>
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--warn-text);display:inline-block;flex-shrink:0"></span>Мінуси</span>
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;flex-shrink:0"></span>Авто-схвалено</span>
+            </div>
+            <div style="border:0.5px solid var(--border);border-radius:5px;height:28px;padding:0 10px;display:flex;align-items:center;font-size:11px;color:var(--muted);gap:5px;cursor:pointer;position:relative" onclick="toggleFilterPopup()">
+              <i class="ti ti-filter" style="font-size:13px"></i> Фільтр
+              <div id="filterPopup" style="display:none;position:absolute;top:32px;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px;z-index:10;min-width:140px">
+                <div class="filter-opt" data-v="" style="padding:6px 8px;font-size:11px;color:var(--text);cursor:pointer;border-radius:5px">Усі рішення</div>
+                <div class="filter-opt" data-v="pending" style="padding:6px 8px;font-size:11px;color:var(--text);cursor:pointer;border-radius:5px">Очікують</div>
+                <div class="filter-opt" data-v="approved" style="padding:6px 8px;font-size:11px;color:var(--text);cursor:pointer;border-radius:5px">Схвалено</div>
+                <div class="filter-opt" data-v="rejected" style="padding:6px 8px;font-size:11px;color:var(--text);cursor:pointer;border-radius:5px">Відхилено</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="reviewsTableWrap"><div class="loading">Завантаження…</div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:11px;color:var(--muted);padding:0 4px" id="reviewsSummary"></div>
+      </div>
+    </div>
+  
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ЕКРАН 2: ДЕТАЛЬНИЙ ПЕРЕГЛЯД ЗВІТУ (1:1 з ТЗ, section-label
+     "Веб-інтерфейс Supervisor — перегляд звіту", рядки 1329-1448)
+════════════════════════════════════════════════ -->
+<div class="view" id="view-detail" style="padding:16px">
+      <div style="display:flex">
+      <!-- Sidebar (1:1, включно з "← Всі звіти" -- саме так підписано в цьому екрані ТЗ) -->
+      <div style="width:190px;min-width:190px;border-right:0.5px solid var(--border);padding:12px 0;background:var(--bg3)">
+        <div style="padding:8px 14px 12px;border-bottom:0.5px solid var(--border);margin-bottom:8px">
+          <div style="font-size:10px;font-weight:500;color:var(--accent);margin-bottom:4px;cursor:pointer" onclick="showView('reviews')">← Всі звіти</div>
+        </div>
+        <div style="font-size:9px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);padding:0 14px;margin-bottom:4px">Supervisor</div>
+        <div style="padding:7px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer" onclick="showView('tasks')"><i class="ti ti-clipboard-list" style="font-size:14px"></i> Завдання</div>
+        <div style="padding:7px 14px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:7px;background:var(--accent-light);border-left:2px solid var(--accent)"><i class="ti ti-file-search" style="font-size:14px"></i> Звіти</div>
+        <div style="padding:7px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer" onclick="showView('shoppers')"><i class="ti ti-user-check" style="font-size:14px"></i> Покупці</div>
+      </div>
+      <!-- Main -->
+      <div style="flex:1;padding:16px" id="detailContent"><div class="loading">Завантаження…</div></div>
+    </div>
+  
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ЕКРАН 3: ВЕРИФІКАЦІЯ ПОКУПЦІВ (1:1 з ТЗ, section-label
+     "Верифікація нових покупців", рядки 1808-1897)
+════════════════════════════════════════════════ -->
+<div class="view" id="view-shoppers" style="padding:16px">
+      <div style="display:flex">
+      <div style="width:190px;min-width:190px;border-right:0.5px solid var(--border);padding:12px 0;background:var(--bg3)">
+        <div style="padding:7px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer" onclick="showView('tasks')"><i class="ti ti-clipboard-list" style="font-size:14px"></i> Завдання</div>
+        <div style="padding:7px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer" onclick="showView('reviews')"><i class="ti ti-file-search" style="font-size:14px"></i> Перевірки</div>
+        <div style="padding:7px 14px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:7px;background:var(--accent-light);border-left:2px solid var(--accent)">
+          <i class="ti ti-user-check" style="font-size:14px"></i> Покупці
+          <span id="pendingBadge2" style="margin-left:auto;background:var(--warn-bg);color:var(--warn-text);font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;border:0.5px solid var(--warn-border);display:none">0</span>
+        </div>
+      </div>
+      <div style="flex:1;padding:16px;min-width:0">
+        <div style="font-size:14px;font-weight:500;color:var(--black);margin-bottom:14px">Нові заявки на верифікацію</div>
+        <div id="shoppersWrap"><div class="loading">Завантаження…</div></div>
+      </div>
+    </div>
+  
+</div>
+
+<!-- Лайтбокс фото -- НЕ з ТЗ (мокап малює лише статичний плейсхолдер), додано щоб
+     "Підтвердити"/перегляд фото реально працював -->
+<div id="photoLightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this) closePhotoLightbox()">
+  <div style="max-width:800px;max-height:90vh;display:flex;flex-direction:column;align-items:center">
+    <img id="lightboxImg" style="max-width:100%;max-height:75vh;border-radius:8px;object-fit:contain">
+    <div style="background:var(--bg2);border-radius:0 0 8px 8px;padding:12px 16px;max-width:100%;width:100%">
+      <div id="lightboxTitle" style="font-size:13px;font-weight:600;color:var(--black);margin-bottom:4px"></div>
+      <div id="lightboxCaption" style="font-size:12px;color:var(--muted)"></div>
+      <div id="lightboxAnalysis" style="display:none;margin-top:8px;padding:8px 10px;background:var(--danger-bg);border:0.5px solid var(--danger-border);border-radius:6px;font-size:11px;color:var(--danger);line-height:1.4"></div>
+    </div>
+    <button onclick="closePhotoLightbox()" style="margin-top:10px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-size:12px;color:var(--text);cursor:pointer">Закрити</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Auth -- справжній екран входу, 1:1 з реального login-4.html (POST /ga/auth/login)
+// ============================================================
+let BASE_URL = 'https://primary-production-3872.up.railway.app/webhook';
+let TOKEN = '';
+let currentUser = null;
+
+// Сесія береться з localStorage -- саме туди справжня login.html кладе
+// ga_token / ga_user одразу після POST /ga/auth/login. Свого логіну тут більше немає.
+function initSession(){
+  let token, user;
+  try{
+    token = localStorage.getItem('ga_token');
+    user = JSON.parse(localStorage.getItem('ga_user') || 'null');
+  } catch(e){ token = null; user = null; }
+
+  if(!token || !user || user.role !== 'supervisor'){
+    document.getElementById('notAuthedState').style.display = 'block';
+    return;
+  }
+
+  TOKEN = token;
+  currentUser = user;
+  document.getElementById('sessionLabel').textContent = 'Увійшли як ' + ((currentUser.first_name||'') + ' ' + (currentUser.last_name||'')).trim();
+  document.getElementById('sessionBar').style.display = 'flex';
+  showView('reviews');
+  loadReviews();
+  loadShoppers();
+  loadTasks();
+}
+
+function doLogout(){
+  try{ localStorage.removeItem('ga_token'); localStorage.removeItem('ga_user'); }catch(e){}
+  window.location.href = 'login.html';
+}
+
+async function api(path, opts){
+  opts = opts || {};
+  const headers = Object.assign({'Content-Type':'application/json'}, opts.headers||{}, {'Authorization':'Bearer '+TOKEN});
+  const res = await fetch(BASE_URL + path, Object.assign({}, opts, {headers}));
+  let data;
+  try{ data = await res.json(); }catch(e){ data = {success:false, error:'Невалідна відповідь сервера'}; }
+  return {ok: res.ok, status: res.status, data};
+}
+
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+}
+
+function openPhotoLightbox(idx){
+  const p = (currentDetail.photos||[])[idx];
+  if(!p) return;
+  document.getElementById('lightboxImg').src = p.file_url;
+  document.getElementById('lightboxTitle').textContent = p.title || '';
+  document.getElementById('lightboxCaption').textContent = [p.description, p.comment].filter(Boolean).join(' — ') || 'Без коментаря';
+
+  const hasIssue = p.ai_analysis && /не відповіда/i.test(p.ai_analysis);
+  const analysisEl = document.getElementById('lightboxAnalysis');
+  if(p.ai_analysis){
+    analysisEl.style.display = 'block';
+    analysisEl.style.background = hasIssue ? 'var(--danger-bg)' : 'var(--accent-light)';
+    analysisEl.style.borderColor = hasIssue ? 'var(--danger-border)' : 'var(--accent-border)';
+    analysisEl.style.color = hasIssue ? 'var(--danger)' : 'var(--text)';
+    analysisEl.innerHTML = (hasIssue ? '<i class="ti ti-alert-triangle"></i> ' : '<i class="ti ti-sparkles"></i> ') + 'AI: ' + escapeHtml(p.ai_analysis);
+  } else {
+    analysisEl.style.display = 'none';
+  }
+
+  document.getElementById('photoLightbox').style.display = 'flex';
+}
+function closePhotoLightbox(){
+  document.getElementById('photoLightbox').style.display = 'none';
+}
+
+function escapeHtml(s){ if(s===null||s===undefined) return ''; return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function truncate(s, n){ s = String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
+
+// ============================================================
+// ЕКРАН 1: Перевірки (1:1 розмітка рядків з ТЗ)
+// ============================================================
+let allSubmissions = [];
+let activeFilter = '';
+let reviewsSearchTerm = '';
+
+document.getElementById('reviewsSearch').addEventListener('input', (e) => {
+  reviewsSearchTerm = e.target.value.trim().toLowerCase();
+  renderReviews();
+});
+
+document.getElementById('reviewsTableWrap').addEventListener('keydown', (e) => {
+  if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+  const cell = e.target.closest('td[tabindex]');
+  if (!cell) return;
+  const row = cell.parentElement;
+  const tbody = row.parentElement;
+  const cellIndex = cell.cellIndex;
+  const rowIndex = Array.prototype.indexOf.call(tbody.rows, row);
+  let target = null;
+  if (e.key === 'ArrowDown') target = tbody.rows[rowIndex + 1]?.cells[cellIndex];
+  if (e.key === 'ArrowUp') target = tbody.rows[rowIndex - 1]?.cells[cellIndex];
+  if (e.key === 'ArrowRight') target = row.cells[cellIndex + 1];
+  if (e.key === 'ArrowLeft') target = row.cells[cellIndex - 1];
+  if (target && target.hasAttribute('tabindex')) { e.preventDefault(); target.focus(); }
+});
+
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#filterPopup') && !e.target.closest('[onclick="toggleFilterPopup()"]')){
+    document.getElementById('filterPopup').style.display = 'none';
+  }
+});
+function toggleFilterPopup(){
+  const p = document.getElementById('filterPopup');
+  p.style.display = p.style.display==='block' ? 'none' : 'block';
+}
+document.querySelectorAll('.filter-opt').forEach(el=>{
+  el.addEventListener('click', ()=>{ activeFilter = el.dataset.v; document.getElementById('filterPopup').style.display='none'; renderReviews(); });
+  el.addEventListener('mouseenter', ()=>el.style.background='var(--bg3)');
+  el.addEventListener('mouseleave', ()=>el.style.background='transparent');
+});
+
+async function loadReviews(){
+  document.getElementById('reviewsTableWrap').innerHTML = '<div class="loading">Завантаження…</div>';
+  const r = await api('/ga/supervisor/submissions');
+  if(!r.data.success){
+    document.getElementById('reviewsTableWrap').innerHTML = '<div class="empty-state">Помилка: '+escapeHtml(r.data.error||'невідома')+'. Перевірте токен вгорі.</div>';
+    return;
+  }
+  allSubmissions = r.data.submissions;
+  document.getElementById('reviewsDate').textContent = new Date().toLocaleDateString('uk-UA',{day:'numeric',month:'long',year:'numeric'});
+  renderReviews();
+}
+
+// Рядок таблиці -- 1:1 з розміткою кожного з 3 кольорових варіантів у ТЗ (danger-bg / warn-bg / без фону)
+function reviewRow(s){
+  const time = s.submitted_at ? new Date(s.submitted_at).toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}) : '—';
+
+  let rowBg = ''; // green / not-yet-analyzed -- без фону, як у ТЗ
+  if(s.color === 'red') rowBg = 'background:var(--danger-bg)';
+  if(s.color === 'yellow') rowBg = 'background:var(--warn-bg)';
+
+  const scoreColor = s.color==='red' ? 'var(--danger)' : (s.color==='yellow' ? 'var(--warn-text)' : (s.color==='green' ? 'var(--success)' : 'var(--muted)'));
+  const scoreTxt = s.ai_score === null ? '—' : s.ai_score;
+
+  // Флаги -- один чіп-лейбл + один чіп-приклад деталі на тип, 1:1 стиль з ТЗ (кольори danger/warn)
+  let flagsCell = '';
+  if(s.flags && s.flags.length){
+    const byType = {};
+    s.flags.forEach(f=>{ (byType[f.flag_type]=byType[f.flag_type]||[]).push(f); });
+    const meta = {
+      ai_mismatch: {label:'Розбіжність AI', icon:'ti-alert-triangle', bg:'var(--danger-bg)', fg:'var(--danger)', bd:'var(--danger-border)'},
+      anomaly: {label:'Аномалія', icon:'ti-alert-triangle', bg:'var(--danger-bg)', fg:'var(--danger)', bd:'var(--danger-border)'},
+      negative_answers: {label:'мінус(и) в анкеті', icon:'ti-minus', bg:'var(--warn-bg)', fg:'var(--warn-text)', bd:'var(--warn-border)'}
+    };
+    flagsCell = '<div style="display:flex;gap:5px;flex-wrap:wrap">';
+    Object.keys(byType).forEach(type=>{
+      const m = meta[type] || {label:type, icon:'ti-flag', bg:'var(--bg3)', fg:'var(--muted)', bd:'var(--border)'};
+      const list = byType[type];
+      const label = type==='negative_answers' ? (list.length+' '+m.label) : m.label;
+      flagsCell += `<span style="display:inline-flex;align-items:center;gap:3px;background:${m.bg};color:${m.fg};border:0.5px solid ${m.bd};border-radius:4px;padding:2px 6px;font-size:10px;font-weight:500"><i class="ti ${m.icon}" style="font-size:11px"></i> ${escapeHtml(label)}</span>`;
+      flagsCell += `<span style="background:${m.bg};color:${m.fg};border:0.5px solid ${m.bd};border-radius:4px;padding:2px 6px;font-size:10px">${escapeHtml(truncate(list[0].details||'',40))}</span>`;
+    });
+    flagsCell += '</div>';
+  } else if(s.color==='green'){
+    flagsCell = `<span style="display:inline-flex;align-items:center;gap:3px;background:var(--success-bg);color:var(--success);border:0.5px solid var(--success-border);border-radius:4px;padding:2px 6px;font-size:10px;font-weight:500"><i class="ti ti-circle-check" style="font-size:11px"></i> Авто-схвалено</span>`;
+  } else if(s.ai_score === null){
+    // AI-перевірка справді ще не прогонялась для цього submission -- випадок, якого немає в мокапі ТЗ
+    flagsCell = `<span style="color:var(--muted);font-size:11px">AI ще не перевіряв</span>`;
+  } else {
+    // AI вже прогнав аналіз (є скор/summary), явних флагів немає, але скор нижче порогу авто-схвалення
+    flagsCell = `<span style="color:var(--muted);font-size:11px">Без зауважень, скор нижче порогу авто-схвалення</span>`;
+  }
+
+  let actionCell;
+  if(s.decision==='approved' || s.decision==='rejected'){
+    const lbl = s.decision==='approved' ? 'Схвалено' : 'Відхилено';
+    actionCell = `<div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+      <span style="font-size:11px;color:var(--muted)">${lbl}</span>
+      <div class="eye-btn" onclick="openDetail(${s.submission_id})"><i class="ti ti-eye" style="font-size:12px"></i> Переглянути</div>
+    </div>`;
+  } else {
+    const borderCol = s.color==='red' ? 'var(--danger-border)' : (s.color==='yellow' ? 'var(--warn-border)' : 'var(--border)');
+    const textCol = s.color==='red' ? 'var(--danger)' : (s.color==='yellow' ? 'var(--warn-text)' : 'var(--muted)');
+    actionCell = `<div style="display:flex;align-items:center;justify-content:flex-end">
+      <div class="eye-btn" style="border-color:${borderCol};color:${textCol}" onclick="openDetail(${s.submission_id})"><i class="ti ti-eye" style="font-size:12px"></i> Переглянути</div>
+    </div>`;
+  }
+
+  return `<tr style="border-bottom:0.5px solid var(--border);${rowBg}">
+    <td tabindex="0" style="padding:10px 10px;outline:none"><div style="font-weight:500;color:var(--black)">${escapeHtml(s.object_name)}${s.submitted_incomplete ? ' <span title="Здано неповним" style="color:var(--danger)">&#9888;</span>' : ''}</div><div style="font-size:10px;color:var(--muted)">${escapeHtml(s.section_title||'—')}</div></td>
+    <td tabindex="0" style="padding:10px 10px;color:var(--muted);outline:none">${escapeHtml(s.shopper_name)}</td>
+    <td tabindex="0" style="padding:10px 10px;color:var(--muted);outline:none">${time}</td>
+    <td tabindex="0" style="padding:10px 10px;text-align:center;font-weight:500;color:${scoreColor};outline:none">${scoreTxt}</td>
+    <td tabindex="0" style="padding:10px 10px;outline:none">${flagsCell}</td>
+    <td style="padding:10px 10px;text-align:right">${actionCell}</td>
+  </tr>`;
+}
+
+function renderReviews(){
+  let rows = allSubmissions;
+  if(activeFilter) rows = rows.filter(s => (s.decision||'pending') === activeFilter);
+  if(reviewsSearchTerm) rows = rows.filter(s =>
+    (s.shopper_name||'').toLowerCase().includes(reviewsSearchTerm) ||
+    (s.object_name||'').toLowerCase().includes(reviewsSearchTerm)
+  );
+
+  const needAttention = allSubmissions.filter(s=>s.color==='red'||s.color==='yellow').length;
+  const autoApproved = allSubmissions.filter(s=>s.color==='green').length;
+  document.getElementById('reviewsSummary').innerHTML =
+    `<span>${needAttention} потребують уваги · ${autoApproved} авто-схвалено</span><span>Всього: ${allSubmissions.length} перевірок</span>`;
+
+  if(!rows.length){
+    document.getElementById('reviewsTableWrap').innerHTML = '<div class="empty-state">Немає перевірок за цим фільтром.</div>';
+    return;
+  }
+
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed"><thead>
+    <tr style="border-bottom:1px solid var(--border)">
+      <th style="text-align:left;padding:8px 10px;font-weight:500;font-size:10px;color:var(--muted2);width:22%">Об'єкт / секція</th>
+      <th style="text-align:left;padding:8px 10px;font-weight:500;font-size:10px;color:var(--muted2);width:13%">Покупець</th>
+      <th style="text-align:left;padding:8px 10px;font-weight:500;font-size:10px;color:var(--muted2);width:8%">Час</th>
+      <th style="text-align:center;padding:8px 10px;font-weight:500;font-size:10px;color:var(--muted2);width:8%">AI скор</th>
+      <th style="text-align:left;padding:8px 10px;font-weight:500;font-size:10px;color:var(--muted2);width:33%">Флаги</th>
+      <th style="text-align:right;padding:8px 10px;font-weight:500;font-size:10px;color:var(--muted2);width:16%">Дія</th>
+    </tr></thead><tbody>`;
+  rows.forEach(s=>{ html += reviewRow(s); });
+  html += '</tbody></table>';
+  document.getElementById('reviewsTableWrap').innerHTML = html;
+}
+
+// ============================================================
+// ЕКРАН 2: Детальний перегляд (1:1 двоколонкова розмітка з ТЗ)
+// ============================================================
+let currentDetail = null;
+
+async function openDetail(submissionId){
+  showView('detail');
+  document.getElementById('detailContent').innerHTML = '<div class="loading">Завантаження…</div>';
+  const r = await api('/ga/supervisor/submission-detail?submission_id='+submissionId);
+  if(!r.data.success){
+    document.getElementById('detailContent').innerHTML = '<div class="empty-state">Помилка: '+escapeHtml(r.data.error||'невідома')+'</div>';
+    return;
+  }
+  currentDetail = r.data;
+  renderDetail();
+}
+
+// Групує критерії та аудіо по зоні (section_key). Якщо анкета підключена лише до
+// однієї зони (як зараз -- "бар"), а аудіо є і для іншої (напр. "каса") без анкети --
+// та зона всерівно з'являється окремою вкладкою, просто з порожнім списком критеріїв.
+function buildZones(d){
+  const zonesMap = {};
+  (d.criteria||[]).forEach(c=>{
+    const key = c.section_key || '_unknown';
+    if(!zonesMap[key]) zonesMap[key] = { key, title: c.section_title || key, criteria: [], audio: null, audioIdx: -1 };
+    zonesMap[key].criteria.push(c);
+  });
+  (d.audio||[]).forEach((a, idx)=>{
+    const key = a.section_key || '_unknown';
+    if(!zonesMap[key]) zonesMap[key] = { key, title: (a.title||key).replace(/^Аудіо\s+/i,'').trim(), criteria: [], audio: a, audioIdx: idx };
+    else { zonesMap[key].audio = a; zonesMap[key].audioIdx = idx; }
+  });
+  return Object.values(zonesMap);
+}
+
+let activeZoneKey = null;
+
+function renderDetail(){
+  const d = currentDetail;
+  const s = d.submission;
+  const zones = buildZones(d);
+  if(!activeZoneKey || !zones.find(z=>z.key===activeZoneKey)){
+    activeZoneKey = zones.length ? zones[0].key : null;
+  }
+
+  let photosHtml = '';
+  (d.photos||[]).forEach((p, idx)=>{
+    const extra = [p.description, p.comment].filter(Boolean).join(' — ');
+    const caption = [p.title, extra].filter(Boolean).join(': ');
+    const hasIssue = p.ai_analysis && /не відповіда/i.test(p.ai_analysis);
+    const badge = hasIssue ? `<div style="position:absolute;top:4px;right:4px;background:var(--danger);color:#fff;border-radius:4px;padding:1px 5px;font-size:9px;font-weight:600;display:flex;align-items:center;gap:2px"><i class="ti ti-alert-triangle" style="font-size:10px"></i></div>` : '';
+    photosHtml += `<div style="flex:1;min-width:0;max-width:150px">
+      <div style="position:relative;border-radius:7px;overflow:hidden;border:0.5px solid ${hasIssue ? 'var(--danger-border)' : 'var(--accent-border)'};cursor:pointer" onclick="openPhotoLightbox(${idx})">
+        <img src="${escapeHtml(p.file_url)}" style="width:100%;height:64px;object-fit:cover;display:block">
+        ${badge}
+      </div>
+      <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.3">${escapeHtml(truncate(caption,60))}</div>
+    </div>`;
+  });
+  if(!photosHtml){
+    photosHtml = `<div style="flex:1;height:64px;border-radius:7px;background:var(--accent-light);border:0.5px solid var(--accent-border);display:flex;align-items:center;justify-content:center"><i class="ti ti-photo-off" style="font-size:22px;color:var(--accent)"></i></div>`;
+  }
+
+  // Кнопки рішення -- рівно 2, як намальовано в ТЗ (Схвалити / Відхилити)
+  let actionButtons;
+  if(s.decision === 'approved'){
+    actionButtons = `<div style="height:28px;background:var(--success-bg);border:0.5px solid var(--success-border);border-radius:5px;padding:0 10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--success)"><i class="ti ti-check" style="font-size:13px"></i> Схвалено</div>`;
+  } else if(s.decision === 'rejected'){
+    actionButtons = `<div style="height:28px;background:var(--danger-bg);border:0.5px solid var(--danger-border);border-radius:5px;padding:0 10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--danger)"><i class="ti ti-x" style="font-size:13px"></i> Відхилено</div>`;
+  } else {
+    actionButtons = `
+      <div style="height:28px;background:var(--success-bg);border:0.5px solid var(--success-border);border-radius:5px;padding:0 10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--success);cursor:pointer" onclick="submitDecision('approved')"><i class="ti ti-check" style="font-size:13px"></i> Схвалити</div>
+      <div style="height:28px;background:var(--danger-bg);border:0.5px solid var(--danger-border);border-radius:5px;padding:0 10px;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--danger);cursor:pointer" onclick="submitDecision('rejected')"><i class="ti ti-x" style="font-size:13px"></i> Відхилити</div>`;
+  }
+
+  const aiSummaryText = s.ai_summary
+    ? escapeHtml(s.ai_summary)
+    : '<span style="color:var(--muted)">Текстовий AI-висновок по цій секції ще не зберігається в базі окремо (є лише числовий скор і цитати по кожному критерію в таблиці нижче).</span>';
+
+  const tabsHtml = zones.map(z => `
+    <div onclick="switchZoneTab('${z.key}')" style="padding:6px 14px;font-size:11px;font-weight:500;cursor:pointer;border-radius:6px 6px 0 0;border:0.5px solid var(--border);border-bottom:${z.key===activeZoneKey?'1px solid var(--bg2)':'0.5px solid var(--border)'};background:${z.key===activeZoneKey?'var(--bg2)':'var(--bg3)'};color:${z.key===activeZoneKey?'var(--accent)':'var(--muted)'};margin-right:2px;margin-bottom:-1px;position:relative;z-index:${z.key===activeZoneKey?2:1}">${escapeHtml(z.title)}</div>
+  `).join('');
+
+  document.getElementById('detailContent').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+      <div>
+        <div style="font-size:14px;font-weight:500;color:var(--black)">${escapeHtml(s.object_name)} — ${escapeHtml(s.section_title||'—')}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:6px">
+          ${escapeHtml(s.shopper_name)} · ${s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('uk-UA') : '—'} · ${s.submitted_at ? new Date(s.submitted_at).toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}) : '—'}
+          ${s.geo_lat !== null && s.geo_lat !== undefined
+            ? `<span onclick="openGeoModal()" style="display:flex;align-items:center;gap:4px;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 21c-4.5-4.5-7-8.4-7-12a7 7 0 0 1 14 0c0 3.6-2.5 7.5-7 12z"/><circle cx="12" cy="9" r="2.3"/></svg> Геопозиція${(s.distance_to_object_m !== null && s.distance_to_object_m !== undefined && s.geo_radius_m !== null && s.distance_to_object_m > s.geo_radius_m) ? ' <span style="color:var(--danger);font-weight:700" title="Поза радіусом геолокації об\'єкту">&#33;</span>' : ''}</span>`
+            : `<span style="display:flex;align-items:center;gap:3px;color:var(--muted)"><i class="ti ti-map-pin-off" style="font-size:12px"></i> немає даних</span>`}
+        </div>
+        ${s.submitted_incomplete ? `<div style="margin-top:6px;font-size:11px;color:var(--danger);background:var(--danger-bg);border:0.5px solid var(--danger-border);border-radius:6px;padding:6px 10px;display:flex;align-items:center;gap:6px">
+          <i class="ti ti-alert-triangle" style="font-size:13px;flex-shrink:0"></i>
+          <span>Гість здав завдання неповним ${buildMissingText(s.missing_items)}</span>
+        </div>` : ''}
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:inline-flex;align-items:baseline;gap:3px;padding:4px 10px;border-radius:6px;background:var(--accent-light);border:0.5px solid var(--accent-border)">
+          <span style="font-size:18px;font-weight:500;color:var(--accent)">${s.ai_score===null?'—':s.ai_score}</span>
+          <span style="font-size:11px;color:var(--muted)">/100 AI</span>
+        </div>
+        ${actionButtons}
+      </div>
+    </div>
+
+    <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px">AI висновок (загальний по здачі)</div>
+    <div style="background:var(--accent-light);border:0.5px solid var(--accent-border);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--text);line-height:1.6;margin-bottom:16px">${aiSummaryText}</div>
+
+    <div style="display:flex;margin-bottom:0">${tabsHtml}</div>
+    <div id="zoneContent" style="border:0.5px solid var(--border);border-radius:0 8px 8px 8px;padding:14px;display:flex;gap:16px;position:relative;z-index:0;background:var(--bg2)"></div>
+
+    <div style="margin-top:16px">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px">Фото-докази (спільні для здачі)</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${photosHtml}</div>
+    </div>
+  `;
+  renderZoneContent();
+}
+
+function buildMissingText(missingItems) {
+  if (!missingItems) return '';
+  const parts = [];
+  const photos = missingItems.photos || [];
+  const audio = missingItems.audio || [];
+  const criteria = missingItems.criteria || [];
+  if (photos.length) parts.push(`фото (${photos.length})`);
+  if (audio.length) parts.push(`аудіо (${audio.length})`);
+  if (criteria.length) parts.push(`анкета (${criteria.length} питань)`);
+  return parts.length ? `— бракує: ${parts.join(', ')}` : '';
+}
+
+function switchZoneTab(key){
+  activeZoneKey = key;
+  renderDetail();
+}
+
+let geoInfoMapInstance = null;
+function openGeoModal() {
+  const s = currentDetail.submission;
+  if (s.geo_lat === null || s.geo_lat === undefined) return;
+  const distTxt = s.distance_to_object_m === null || s.distance_to_object_m === undefined ? '—' : `~${s.distance_to_object_m} м від об'єкту`;
+  const radiusTxt = s.geo_radius_m !== null && s.geo_radius_m !== undefined ? ` (радіус геолокації: ${s.geo_radius_m} м)` : '';
+  const outOfRadius = s.distance_to_object_m !== null && s.distance_to_object_m !== undefined
+    && s.geo_radius_m !== null && s.geo_radius_m !== undefined
+    && s.distance_to_object_m > s.geo_radius_m;
+  document.getElementById('geoModalInfo').innerHTML = distTxt + radiusTxt
+    + (outOfRadius ? ' <span style="color:var(--danger);font-weight:600">— поза радіусом &#33;</span>' : '');
+  document.getElementById('geoModalOverlay').style.display = 'flex';
+
+  if (typeof L === 'undefined') return;
+  if (geoInfoMapInstance) { geoInfoMapInstance.remove(); geoInfoMapInstance = null; }
+  geoInfoMapInstance = L.map('geoInfoMap', { zoomControl: false, attributionControl: false }).setView([s.geo_lat, s.geo_lng], 16);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(geoInfoMapInstance);
+  L.marker([s.geo_lat, s.geo_lng]).addTo(geoInfoMapInstance);
+  setTimeout(() => geoInfoMapInstance && geoInfoMapInstance.invalidateSize(), 100);
+}
+function closeGeoModal() {
+  document.getElementById('geoModalOverlay').style.display = 'none';
+}
+
+function renderZoneContent(){
+  const d = currentDetail;
+  const zones = buildZones(d);
+  const zone = zones.find(z=>z.key===activeZoneKey) || zones[0];
+  const container = document.getElementById('zoneContent');
+  if(!zone){ container.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:10px">Немає даних по зонах.</div>'; return; }
+
+  let criteriaBlock;
+  if(zone.criteria.length){
+    let rows = '';
+    zone.criteria.forEach(c=>{
+      let badge;
+      if(c.ai_result === 'yes'){
+        badge = `<span style="font-size:10px;background:var(--success-bg);color:var(--success);padding:2px 6px;border-radius:4px;font-weight:500;display:inline-flex;align-items:center;gap:3px"><i class="ti ti-check" style="font-size:11px"></i> Так</span>`;
+      } else if(c.ai_result === 'no'){
+        badge = `<span style="font-size:10px;background:var(--danger-bg);color:var(--danger);padding:2px 6px;border-radius:4px;font-weight:500;display:inline-flex;align-items:center;gap:3px"><i class="ti ti-x" style="font-size:11px"></i> Ні</span>`;
+      } else {
+        badge = `<span style="font-size:10px;color:var(--muted)">—</span>`;
+      }
+      // Відповідь покупця (answer_value) -- окрема колонка, паралельно з AI-перевіркою,
+      // щоб не виглядало ніби щось "не зафіксовано", коли насправді просто AI не може
+      // підтвердити це по аудіо (два різні поля: що наклацав покупець і що почула AI).
+      let shopperBadge;
+      if (c.answer_value === null || c.answer_value === undefined || c.answer_value === '') {
+        shopperBadge = `<span style="font-size:10px;color:var(--muted)">—</span>`;
+      } else if (c.answer_value === 'yes') {
+        shopperBadge = `<span style="font-size:10px;background:var(--success-bg);color:var(--success);padding:2px 6px;border-radius:4px;font-weight:500">Так</span>`;
+      } else if (c.answer_value === 'no') {
+        shopperBadge = `<span style="font-size:10px;background:var(--danger-bg);color:var(--danger);padding:2px 6px;border-radius:4px;font-weight:500">Ні</span>`;
+      } else {
+        shopperBadge = `<span style="font-size:10px;color:var(--text)">${escapeHtml(String(c.answer_value))}</span>`;
+      }
+      const quote = c.ai_quote && c.ai_quote.trim()
+        ? `<button class="quote-btn" onclick='openQuote(${JSON.stringify(c).replace(/'/g,"&#39;")})' style="color:var(--muted)">${escapeHtml(c.ai_quote)}</button>`
+        : `<span style="font-style:italic;color:var(--muted)">— не зафіксовано</span>`;
+      rows += `<tr>
+        <td style="padding:8px 10px;font-size:12px;border-bottom:0.5px solid var(--border);color:var(--text)">${escapeHtml(c.question_text)}${c.mismatch?' <i class=\"ti ti-alert-triangle\" style=\"color:var(--danger);font-size:11px\" title=\"Розбіжність з відповіддю покупця\"></i>':''}</td>
+        <td style="padding:8px 10px;font-size:12px;border-bottom:0.5px solid var(--border)">${shopperBadge}</td>
+        <td style="padding:8px 10px;font-size:12px;border-bottom:0.5px solid var(--border)">${badge}</td>
+        <td style="padding:8px 10px;font-size:11px;border-bottom:0.5px solid var(--border);color:var(--muted)">${quote}</td>
+      </tr>`;
+    });
+    criteriaBlock = `<table style="width:100%;border-collapse:collapse;table-layout:fixed">
+      <thead><tr>
+        <th style="font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);width:38%">Критерій</th>
+        <th style="font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);width:13%">Відповідь покупця</th>
+        <th style="font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);width:13%">AI-перевірка</th>
+        <th style="font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);width:36%">Цитата з аудіо</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  } else {
+    criteriaBlock = `<div style="color:var(--muted);font-size:11px;padding:10px 0">Анкету для цієї секції не підключено до завдання — критеріїв оцінювання немає, є лише аудіозапис.</div>`;
+  }
+
+  const audioBlock = zone.audio
+    ? `<div style="height:38px;border:0.5px solid var(--border);border-radius:7px;background:var(--bg3);display:flex;align-items:center;gap:10px;padding:0 12px;margin-bottom:8px">
+         <audio id="audio_${zone.audioIdx}" controls style="width:100%;height:32px" src="${escapeHtml(zone.audio.file_url)}"></audio>
+       </div>
+       <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-bottom:4px">Діалог (при кліку на цитату)</div>
+       <div id="dialogPanel_${zone.audioIdx}" style="border:0.5px solid var(--border);border-radius:8px;overflow:hidden;max-height:280px;overflow-y:auto"></div>`
+    : `<div style="color:var(--muted);font-size:11px">Аудіозапис для цієї секції відсутній.</div>`;
+
+  container.innerHTML = `
+    <div style="flex:1.6">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px">Критерії оцінювання</div>
+      ${criteriaBlock}
+    </div>
+    <div style="flex:1">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px">Аудіозапис</div>
+      ${audioBlock}
+    </div>
+  `;
+
+  if(zone.audio && zone.audioIdx >= 0){
+    renderDialoguePanel(zone.audioIdx, null);
+    const el = document.getElementById('audio_'+zone.audioIdx);
+    if(el) el.addEventListener('timeupdate', ()=>onAudioTimeUpdate(zone.audioIdx));
+  }
+}
+
+async function submitDecision(decision){
+  const r = await api('/ga/supervisor/decision', {method:'POST', body: JSON.stringify({
+    submission_id: currentDetail.submission.submission_id, decision
+  })});
+  if(!r.data.success){ alert('Помилка: '+(r.data.error||'невідома')); return; }
+  await loadReviews();
+  openDetail(currentDetail.submission.submission_id);
+}
+
+
+// Будує панель "Діалог" для КОНКРЕТНОГО аудіо (idx) -- ЗАВЖДИ повний текст по ролях.
+// highlightCriterion, якщо переданий (клік по цитаті), підсвічує репліку з найближчим таймкодом.
+let currentDialogueLines = {}; // { [audioIdx]: масив {speaker,text,start,end} }
+
+function renderDialoguePanel(idx, highlightCriterion){
+  const audio = (currentDetail.audio||[])[idx];
+  const panelEl = document.getElementById('dialogPanel_'+idx);
+  if(!panelEl) return;
+  let body = '';
+
+  let dlg = audio ? audio.dialogue : null;
+  if(typeof dlg === 'string'){ try{ dlg = JSON.parse(dlg); }catch(e){ dlg = null; } }
+  const lines = (Array.isArray(dlg) && dlg.length) ? dlg : null;
+  currentDialogueLines[idx] = lines;
+
+  body += `<div style="padding:10px 12px;display:flex;flex-direction:column;gap:8px">`;
+  if(lines){
+    lines.forEach((line, i)=>{
+      const isClient = /клієнт|client/i.test(line.speaker||'');
+      const hasTime = line.start !== undefined && line.start !== null;
+      const clickable = hasTime ? `onclick="seekAndPlay(${idx}, ${i})" style="cursor:pointer"` : '';
+      if(isClient){
+        body += `<div id="dlgLine${idx}_${i}" style="display:flex;flex-direction:column;align-items:flex-end">
+          <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px">${escapeHtml(line.speaker||'Клієнт')}${hasTime?' · '+formatTime(line.start):''}</div>
+          <div ${clickable} class="dlg-bubble" style="max-width:78%;background:var(--accent);padding:6px 9px;border-radius:7px 0 7px 7px;font-size:11px;line-height:1.5;color:#fff;transition:box-shadow .15s">${escapeHtml(line.text||'')}</div>
+        </div>`;
+      } else {
+        body += `<div id="dlgLine${idx}_${i}">
+          <div style="font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:3px">${escapeHtml(line.speaker||'Персонал')}${hasTime?' · '+formatTime(line.start):''}</div>
+          <div ${clickable} class="dlg-bubble" style="max-width:78%;background:var(--bg3);padding:6px 9px;border-radius:0 7px 7px 7px;font-size:11px;line-height:1.5;color:var(--text);transition:box-shadow .15s">${escapeHtml(line.text||'')}</div>
+        </div>`;
+      }
+    });
+  } else if(audio && audio.transcript && audio.transcript.trim()){
+    // dialogue (діаризація по ролях) немає, але є плоский transcript STT -- показуємо
+    // його як є, ЧЕСНО позначивши що це не розділено по ролях, а не видаємо за діалог
+    body += `<div style="font-size:11px;line-height:1.6;color:var(--text)">${escapeHtml(audio.transcript)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:8px;font-style:italic">Це суцільний транскрипт (STT), без розділення на репліки персонал/клієнт -- діаризація (<code>ga_submission_audio.dialogue</code>) для цього запису ще не збережена.</div>`;
+  } else {
+    body += `<div style="color:var(--muted);font-size:11px;text-align:center;padding:10px 0">Діалог для цього запису відсутній -- ані діаризація, ані транскрипт ще не збережені в базі.</div>`;
+  }
+  body += `</div>`;
+
+  panelEl.innerHTML = body;
+
+  if(highlightCriterion) highlightByCriterion(idx, highlightCriterion);
+}
+
+function formatTime(sec){
+  sec = Math.round(Number(sec));
+  return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
+}
+
+// Клік по репліці/цитаті -- перемотує ВІДПОВІДНИЙ аудіоплеєр на її таймкод і вмикає відтворення
+function seekAndPlay(idx, lineIdx){
+  const lines = currentDialogueLines[idx];
+  const line = lines && lines[lineIdx];
+  const audioEl = document.getElementById('audio_'+idx);
+  if(!line || !audioEl || line.start===undefined || line.start===null) return;
+  audioEl.currentTime = Number(line.start);
+  audioEl.play();
+  setActiveLine(idx, lineIdx);
+}
+
+function setActiveLine(idx, lineIdx){
+  const panel = document.getElementById('dialogPanel_'+idx);
+  if(!panel) return;
+  panel.querySelectorAll('.dlg-bubble').forEach(el=>{ el.style.boxShadow = 'none'; });
+  const line = document.getElementById('dlgLine'+idx+'_'+lineIdx);
+  if(line){
+    const bubble = line.querySelector('.dlg-bubble');
+    if(bubble) bubble.style.boxShadow = '0 0 0 2px var(--accent)';
+    line.scrollIntoView({block:'nearest'});
+  }
+}
+
+// Клік по цитаті в таблиці критеріїв -- шукає найближчу репліку за таймкодом у ВІДПОВІДНОМУ аудіо
+function highlightByCriterion(idx, criterion){
+  const lines = currentDialogueLines[idx];
+  if(!lines || criterion.timestamp_start===null || criterion.timestamp_start===undefined) return;
+  let bestIdx = -1, bestDiff = Infinity;
+  lines.forEach((line, i)=>{
+    if(line.start===undefined || line.start===null) return;
+    const diff = Math.abs(Number(line.start) - Number(criterion.timestamp_start));
+    if(diff < bestDiff){ bestDiff = diff; bestIdx = i; }
+  });
+  if(bestIdx >= 0) setActiveLine(idx, bestIdx);
+}
+
+let lastActiveLineByAudio = {};
+function onAudioTimeUpdate(idx){
+  const lines = currentDialogueLines[idx];
+  if(!lines) return;
+  const audioEl = document.getElementById('audio_'+idx);
+  if(!audioEl) return;
+  const t = audioEl.currentTime;
+  let found = -1;
+  lines.forEach((line, i)=>{
+    if(line.start !== undefined && line.start !== null && Number(line.start) <= t) found = i;
+  });
+  if(found !== -1 && found !== lastActiveLineByAudio[idx]){
+    lastActiveLineByAudio[idx] = found;
+    setActiveLine(idx, found);
+  }
+}
+
+// Клік по цитаті в критеріях -- шукає аудіо ТІЄЇ Ж ЗОНИ по section_key критерія,
+// а не завжди перше/головне аудіо (критерій і аудіо тепер точно зв'язані по section_key)
+function openQuote(criterion){
+  const audioList = currentDetail.audio || [];
+  let idx = audioList.findIndex(a => a.section_key && criterion.section_key && a.section_key === criterion.section_key);
+  if(idx < 0) idx = 0;
+  renderDialoguePanel(idx, criterion);
+  const audioEl = document.getElementById('audio_'+idx);
+  if(audioEl && criterion.timestamp_start!==null && criterion.timestamp_start!==undefined){
+    audioEl.currentTime = Number(criterion.timestamp_start);
+    audioEl.play();
+  }
+}
+
+// ============================================================
+// ЕКРАН 3: Покупці (1:1 картки з ТЗ)
+// ============================================================
+// ============================================================
+// ЕКРАН «ЗАВДАННЯ» -- read-only
+// ============================================================
+async function loadTasks(){
+  const wrap = document.getElementById('tasksWrap');
+  wrap.innerHTML = '<div class="loading">Завантаження…</div>';
+  const r = await api('/ga/supervisor/tasks');
+  if(!r.data.success){
+    wrap.innerHTML = '<div class="empty-state">Помилка: '+escapeHtml(r.data.error||'невідома')+'</div>';
+    return;
+  }
+  const tasks = r.data.tasks;
+  if(!tasks.length){
+    wrap.innerHTML = '<div class="empty-state">Завдань по ваших об\'єктах немає.</div>';
+    return;
+  }
+  const statusLabel = {assigned:'Призначено', in_progress:'Виконується', submitted:'Здано'};
+  const statusColor = {assigned:'var(--muted)', in_progress:'var(--warn-text)', submitted:'var(--success)'};
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:1px solid var(--border)">
+    <th style="text-align:left;padding:8px 10px;font-weight:500;font-size:10px;color:var(--muted2)">Об'єкт</th>
+    <th style="text-align:left;padding:8px 10px;font-weight:500;font-size:10px;color:var(--muted2)">Покупець</th>
+    <th style="text-align:left;padding:8px 10px;font-weight:500;font-size:10px;color:var(--muted2)">Дедлайн</th>
+    <th style="text-align:left;padding:8px 10px;font-weight:500;font-size:10px;color:var(--muted2)">Статус</th>
+    <th style="text-align:right;padding:8px 10px;font-weight:500;font-size:10px;color:var(--muted2)">Дія</th>
+  </tr></thead><tbody>`;
+  tasks.forEach(t=>{
+    const action = t.submission_id
+      ? `<div class="eye-btn" onclick="openDetail(${t.submission_id})"><i class="ti ti-eye" style="font-size:12px"></i> Переглянути звіт</div>`
+      : `<span style="color:var(--muted);font-size:11px">Ще не здано</span>`;
+    html += `<tr style="border-bottom:0.5px solid var(--border)">
+      <td style="padding:8px 10px;font-weight:500;color:var(--black)">${escapeHtml(t.object_name)}</td>
+      <td style="padding:8px 10px;color:var(--muted)">${escapeHtml(t.shopper_name)}</td>
+      <td style="padding:8px 10px;color:var(--muted)">${t.deadline ? new Date(t.deadline).toLocaleDateString('uk-UA') : '—'}</td>
+      <td style="padding:8px 10px;color:${statusColor[t.status]||'var(--muted)'}">${statusLabel[t.status]||t.status}</td>
+      <td style="padding:8px 10px;text-align:right">${action}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+async function loadShoppers(){
+  document.getElementById('shoppersWrap').innerHTML = '<div class="loading">Завантаження…</div>';
+  const r = await api('/ga/supervisor/shoppers/pending');
+  if(!r.data.success){
+    document.getElementById('shoppersWrap').innerHTML = '<div class="empty-state">Помилка: '+escapeHtml(r.data.error||'невідома')+'</div>';
+    return;
+  }
+  const list = r.data.shoppers;
+  [document.getElementById('pendingBadge'), document.getElementById('pendingBadge2')].forEach(b=>{
+    if(list.length){ b.style.display='inline'; b.textContent = list.length; } else { b.style.display='none'; }
+  });
+
+  if(!list.length){
+    document.getElementById('shoppersWrap').innerHTML = '<div class="empty-state">Нових заявок на верифікацію немає.</div>';
+    return;
+  }
+
+  let html = '<div style="display:flex;gap:14px;flex-wrap:wrap">';
+  list.forEach(u=>{
+    const genderTxt = u.gender === 'male' ? 'Чоловіча' : (u.gender === 'female' ? 'Жіноча' : (u.gender || ''));
+    const metaParts = [u.city, genderTxt, u.age ? u.age+' р.' : ''].filter(Boolean).join(' · ');
+    // ТЗ малює просто іконку-плейсхолдер "Фото для верифікації" -- показуємо реальне фото
+    // заявника, коли воно є (інакше та сама іконка), бо інакше кнопка "Підтвердити"
+    // не має сенсу для реальної верифікації особи
+    const photoBlock = u.photo_url
+      ? `<img src="${escapeHtml(u.photo_url)}" style="width:80px;height:80px;border-radius:8px;object-fit:cover;border:0.5px solid var(--border);display:block">`
+      : `<div style="width:80px;height:80px;border-radius:8px;background:var(--bg3);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center"><i class="ti ti-photo" style="font-size:28px;color:var(--muted)"></i></div>`;
+
+    html += `<div style="flex:1;min-width:220px;border:0.5px solid var(--border);border-radius:10px;overflow:hidden">
+      <div style="background:var(--warn-bg);padding:6px 12px;border-bottom:0.5px solid var(--warn-border);display:flex;align-items:center;gap:6px">
+        <i class="ti ti-clock" style="font-size:13px;color:var(--warn-text)"></i>
+        <span style="font-size:11px;color:var(--warn-text);font-weight:500">Очікує верифікації</span>
+      </div>
+      <div style="padding:14px">
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px">
+          <div style="width:52px;height:52px;border-radius:8px;background:var(--accent-light);border:0.5px solid var(--accent-border);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="ti ti-user" style="font-size:24px;color:var(--accent)"></i>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--black);margin-bottom:3px">${escapeHtml(u.first_name)} ${escapeHtml(u.last_name)}</div>
+            <div style="font-size:11px;color:var(--muted)">${escapeHtml(metaParts)}</div>
+            <div style="font-size:11px;color:var(--muted)">${escapeHtml(u.email)}</div>
+          </div>
+        </div>
+        <div style="border-top:0.5px solid var(--border);padding-top:10px;margin-bottom:12px">
+          <div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px">Фото для верифікації</div>
+          ${photoBlock}
+        </div>
+        <div style="display:flex;gap:8px">
+          <div style="flex:1;height:30px;background:var(--success-bg);border:0.5px solid var(--success-border);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:500;color:var(--success);cursor:pointer" onclick="verifyShopper(${u.id},'approve')"><i class="ti ti-check" style="font-size:13px"></i> Підтвердити</div>
+          <div style="flex:1;height:30px;background:var(--danger-bg);border:0.5px solid var(--danger-border);border-radius:6px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:500;color:var(--danger);cursor:pointer" onclick="verifyShopper(${u.id},'reject')"><i class="ti ti-x" style="font-size:13px"></i> Відхилити</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('shoppersWrap').innerHTML = html;
+}
+
+async function verifyShopper(userId, action){
+  if(action==='reject' && !confirm('Відхилити заявку? Запис буде видалено, повторна реєстрація тим самим email залишиться можливою.')) return;
+  const r = await api('/ga/supervisor/shoppers/verify', {method:'POST', body: JSON.stringify({user_id:userId, action})});
+  if(!r.data.success){ alert('Помилка: '+(r.data.error||'невідома')); return; }
+  loadShoppers();
+}
+
+initSession();
+</script>
+</body>
+</html>

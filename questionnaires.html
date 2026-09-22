@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<!-- ВЕРСІЯ ФАЙЛУ: 2026-09-13-v2 — справжня причина: порядок ключів у SECTION_NAMES не відповідав реальному маршруту (був kasa,bar,tualet,zal,vhid,vyhid замість vhid,kasa,bar,zal,tualet,vyhid) -->
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizoria — Конструктор анкет</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+:root{
+  --accent:#8C64C9; --accent-hover:#a07ed8; --accent-light:rgba(140,100,201,.13); --accent-border:rgba(140,100,201,.3);
+  --bg:#f4f4f7; --bg2:#ffffff; --bg3:#f0f0f4; --border:#e0e0e8; --border2:#ccccda;
+  --text:#1a1a20; --muted:#6b6b80; --muted2:#aaaabc; --black:#0a0a12;
+  --success:#16a34a; --success-bg:#f0fff4; --success-border:#bbf7d0;
+  --danger:#c0392b; --danger-bg:#fff0f0; --danger-border:#ffd0d0;
+  --warn-text:#92400e; --warn-bg:#fffbeb; --warn-border:#fde68a;
+  --card-shadow:0 1px 3px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-size:13px}
+
+.top-bar{position:sticky;top:0;height:52px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;z-index:60;backdrop-filter:blur(16px);gap:14px}
+.wizoria-logo{height:19px;width:auto;flex-shrink:0}
+.brand-sub{font-size:13px;color:var(--muted);white-space:nowrap;font-weight:500}
+.back-link{font-size:12px;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:4px;cursor:pointer}
+.nav-sep{flex:1}
+
+.layout{display:flex;min-height:calc(100vh - 52px)}
+
+/* --- Контекстний сайдбар конструктора: 1:1 з мокапу ТЗ --- */
+.sidebar{width:190px;min-width:190px;background:var(--bg3);border-right:1px solid var(--border);padding:12px 0;flex-shrink:0}
+.sb-current{padding:8px 14px 12px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.sb-current-label{font-size:9px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);margin-bottom:5px}
+.sb-current-title{font-size:12px;font-weight:500;color:var(--black)}
+.sb-current-obj{font-size:10px;color:var(--muted);margin-top:1px}
+.sb-label{font-size:9px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);padding:0 14px;margin-bottom:4px}
+.sb-item{padding:9px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:9px;text-decoration:none;cursor:pointer}
+.sb-item i{font-size:15px}
+.sb-item:hover{color:var(--text)}
+.sb-item.active{color:var(--accent);background:var(--accent-light);border-left:2px solid var(--accent);padding-left:12px}
+.sb-section{padding:7px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer}
+.sb-section i{font-size:14px}
+.sb-section:hover{color:var(--text)}
+.sb-section.active{color:var(--accent);background:var(--accent-light);border-left:2px solid var(--accent);padding-left:12px}
+.sb-new-section{margin:8px 14px 0;height:26px;border:1px dashed var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer}
+.sb-new-section span{font-size:10px;color:var(--accent)}
+.sb-new-section i{font-size:13px;color:var(--accent)}
+
+.main{flex:1;min-width:0;padding:16px 20px 60px}
+.main-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.main-title{font-size:14px;font-weight:500;color:var(--black)}
+.main-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.head-actions{display:flex;gap:8px}
+.btn-outline{border:1px solid var(--border);border-radius:5px;height:28px;padding:0 10px;display:inline-flex;align-items:center;font-size:11px;color:var(--muted);gap:5px;cursor:pointer;background:var(--bg2)}
+.btn-outline:hover{background:var(--bg3)}
+.btn-primary{background:var(--accent);border:none;border-radius:5px;height:28px;padding:0 12px;display:inline-flex;align-items:center;font-size:11px;font-weight:500;color:#fff;gap:5px;cursor:pointer}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:disabled{opacity:.5;cursor:default}
+
+/* --- Рядки питань --- */
+.q-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:7px;margin-bottom:6px;background:var(--bg2)}
+.q-row.has-child{border-color:var(--accent);background:var(--accent-light)}
+.q-row.dragging{opacity:.4}
+.q-row.drag-over{border-color:var(--accent);border-style:dashed}
+.q-grip{font-size:14px;color:var(--muted);cursor:grab;flex-shrink:0}
+.q-num{font-size:10px;font-weight:500;color:var(--muted);min-width:14px;flex-shrink:0}
+.q-text{flex:1;font-size:12px;color:var(--text);min-width:0}
+.q-text.is-child{color:var(--accent)}
+.q-cond-note{font-size:10px;color:var(--muted)}
+.q-badge{font-size:10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.q-badge.cond{background:var(--accent-light);color:var(--accent);border-color:var(--accent-border)}
+.q-badge.required{background:var(--success-bg);color:var(--success);border:none}
+.q-icon-btn{font-size:14px;color:var(--muted);cursor:pointer;flex-shrink:0}
+.q-icon-btn:hover{color:var(--text)}
+.q-icon-btn.danger:hover{color:var(--danger)}
+
+.add-q-btn{height:34px;border:1px dashed var(--border);border-radius:7px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;margin-top:4px;background:transparent}
+.add-q-btn span{font-size:11px;color:var(--accent)}
+.add-q-btn i{font-size:15px;color:var(--accent)}
+.add-q-btn:hover{background:var(--accent-light)}
+
+.empty-state{padding:32px 18px;text-align:center;color:var(--muted);font-size:12px}
+.empty-state i{font-size:24px;display:block;margin-bottom:9px;opacity:.4}
+
+/* --- Форма питання/секції --- */
+.mini-form{border:1px solid var(--accent-border);border-radius:9px;padding:14px;margin-bottom:10px;background:var(--accent-light)}
+.mini-form-title{font-size:11px;font-weight:600;color:var(--accent);margin-bottom:10px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:9px}
+.form-field label{font-size:10px;color:var(--muted);display:block;margin-bottom:4px}
+.form-field select,.form-field input{width:100%;height:30px;border:1px solid var(--accent);border-radius:6px;background:var(--bg2);padding:0 9px;font-size:12px;font-family:inherit;color:var(--text);outline:none}
+.mini-form-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:4px}
+.btn-small{height:26px;padding:0 10px;font-size:11px;border-radius:5px;cursor:pointer}
+.chk-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);margin-bottom:9px}
+
+.auth-gate{max-width:420px;margin:80px auto;text-align:center;padding:0 20px}
+.auth-gate p{color:var(--muted);font-size:13px;margin:10px 0 18px;line-height:1.6}
+.auth-gate a{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:600}
+
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,18,.45);z-index:1000;align-items:center;justify-content:center;padding:20px}
+#modal-box{background:var(--bg2);border-radius:14px;box-shadow:var(--card-shadow);max-width:380px;width:100%;padding:22px}
+
+@media (max-width: 720px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;min-width:0;display:flex;align-items:center;padding:8px 6px;overflow-x:auto;gap:2px;border-right:none;border-bottom:1px solid var(--border)}
+  .sb-label{display:none}
+  .sb-item{white-space:nowrap;border-left:none !important;border-radius:7px;padding:7px 11px !important}
+  .main{padding:14px 12px 40px}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <svg class="wizoria-logo" viewBox="0 0 3418 1015" xmlns="http://www.w3.org/2000/svg"><g fill="var(--black)"><path d="M709.68,159.25 L774.19,159.25 C781.22,159.25 786.75,164.79 786.75,171.82 L786.75,574.86 C786.75,581.88 781.22,587.42 774.19,587.42 L709.68,587.42 C702.66,587.42 697.12,581.88 697.12,574.86 L697.12,171.82 C697.12,164.79 702.66,159.25 709.68,159.25 Z"/><path d="M888.32,237.82 L888.32,173.1 C888.32,166.07 894.06,160.53 901.09,160.53 L1283.27,160.53 C1290.29,160.53 1296.04,166.07 1296.04,173.1 L1296.04,236.12 L1296.04,250.39 C1295.82,254.85 1294.34,258.05 1291.57,260.39 L1010.31,497.15 L901.51,586.78 L888.95,572.73 L888.73,493.75 C888.73,489.06 891.29,486.72 893.84,483.95 L1173.39,250.17 L901.08,250.17 C894.05,250.17 888.31,244.63 888.31,237.82 L888.32,237.82 Z"/><path d="M888.95,575.07 L888.95,510.35 C888.95,503.54 894.49,497.79 901.52,497.79 L1282.43,497.79 C1289.24,497.79 1294.99,503.54 1294.99,510.35 L1294.99,575.07 C1294.99,581.89 1289.24,587.64 1282.43,587.64 L901.52,587.64 C894.49,587.64 888.95,581.89 888.95,575.07 Z"/><path d="M2252.68,159.89 L2459.42,159.89 C2491.99,159.89 2548.83,162.87 2596.1,228.02 C2619.74,260.6 2622.51,312.56 2622.08,320.64 C2616.75,366.84 2597.38,407.51 2557.57,440.31 L2614.84,571.88 C2616.33,575.28 2616.12,579.54 2614.2,582.52 C2612.08,586.14 2608.24,588.27 2605.48,588.27 L2533.1,588.27 C2530.54,588.27 2527.77,588.48 2525.01,587.41 C2521.39,586.13 2517.77,583.15 2516.7,580.17 L2471.35,467.33 L2291.65,467.33 L2291.65,575.7 C2291.65,582.52 2285.91,588.27 2279.09,588.27 L2214.36,588.27 C2207.55,588.27 2201.8,582.52 2201.8,575.7 L2201.8,172.45 C2201.8,165.63 2207.55,159.89 2214.36,159.89 L2252.68,159.89 Z M2291.64,377.49 L2474.75,377.49 C2484.75,376.85 2501.15,372.38 2508.82,365.35 C2554.8,323.62 2530.11,248.46 2459.42,249.74 L2291.64,249.74 L2291.64,377.49 Z"/><path d="M2752.81,159.25 L2817.53,159.25 C2824.35,159.25 2830.1,165 2830.1,171.82 L2830.1,575.07 C2830.1,581.89 2824.35,587.64 2817.53,587.64 L2752.81,587.64 C2745.99,587.64 2740.25,581.89 2740.25,575.07 L2740.25,171.82 C2740.25,165 2745.99,159.25 2752.81,159.25 Z"/><path d="M3176.72,266.99 L3105.39,422.84 L3248.05,422.84 L3176.72,266.99 Z M3064.52,512.47 L3032.79,581.46 C3030.02,587.84 3022.99,588.28 3016.18,588.28 L2946.99,588.06 C2943.58,588.06 2939.75,585.72 2937.83,582.52 C2935.7,579.12 2935.7,574.64 2937.19,571.45 L3122.43,169.48 C3124.77,164.37 3130.51,160.11 3137.75,160.11 L3212.28,160.11 C3220.58,160.11 3227.61,161.81 3231.44,170.12 L3416.26,571.45 C3419.88,578.9 3414.34,588.06 3407.1,588.06 L3337.47,588.28 C3330.45,588.28 3323.42,587.85 3320.65,581.46 L3289.14,512.47 L3064.51,512.47 L3064.52,512.47 Z"/><path d="M609.4,160.1 L543.61,160.1 C536.58,160.1 529.98,163.08 528.06,169.9 L443.33,500.56 L366.68,172.03 C364.98,164.15 357.53,159.25 350.72,159.25 L274.28,159.25 C269.81,159.25 264.7,161.6 261.3,165.86 C259.59,168.2 258.53,170.96 257.67,174.38 L170.38,501.2 L88.62,169.91 C86.92,163.09 79.89,160.11 72.87,160.11 L10.7,160.11 C3.68,160.11 -1.22,168.63 0.27,175.44 L94.59,577.41 C96.08,583.38 101.62,587.42 107.58,587.21 L228.94,587.43 C237.25,587.43 241.93,580.19 244.06,572.1 L311.56,322.57 L370.74,572.52 C372.87,580.83 380.33,587 387.35,587.21 L496.36,587.43 C503.39,587.43 510.83,582.96 513.6,572.52 L619,175.45 C620.7,168.63 616.44,160.12 609.41,160.12 L609.4,160.1 Z"/></g><path fill="#8C64C9" d="M1736.99,649.38 C1813.22,649.38 1882.2,618.51 1932.23,568.47 C1982.27,518.65 2013.14,449.67 2013.14,373.45 C2013.14,297.22 1982.27,228.24 1932.23,178.2 C1882.2,128.38 1813.21,97.51 1736.99,97.51 C1660.98,97.51 1591.79,128.38 1541.96,178.2 C1491.93,228.24 1461.05,297.23 1461.05,373.45 C1461.05,449.67 1491.93,518.64 1541.96,568.47 C1591.78,618.51 1660.98,649.38 1736.99,649.38 Z M2001.22,637.46 C1933.51,704.95 1840.25,746.9 1736.99,746.9 C1633.94,746.9 1540.69,704.96 1472.99,637.46 C1405.49,569.97 1363.76,476.5 1363.76,373.45 C1363.76,270.41 1405.49,176.93 1472.99,109.44 C1540.69,41.73 1633.94,5.68434189e-14 1736.99,5.68434189e-14 C1840.25,5.68434189e-14 1933.51,41.73 2001.22,109.44 C2068.71,176.93 2110.44,270.41 2110.44,373.45 C2110.44,476.5 2068.71,569.97 2001.22,637.46 Z"/></svg>
+  <span class="brand-sub">— Анкети</span>
+  <div class="nav-sep"></div>
+  <div id="logout-btn" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;padding:6px 10px;border-radius:6px" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='transparent'"><i class="ti ti-logout" style="font-size:15px"></i>Вийти</div>
+</div>
+
+<div id="auth-gate" class="auth-gate" style="display:none">
+  <div style="font-size:32px;margin-bottom:6px">🔒</div>
+  <div style="font-size:16px;font-weight:600;color:var(--black)">Потрібен вхід</div>
+  <p>Розділ доступний лише авторизованим Admin.</p>
+  <a href="login.html">Перейти до входу</a>
+</div>
+
+<div id="page-body" class="layout" style="display:none">
+  <div class="sidebar">
+    <div class="sb-label">Меню</div>
+    <a class="sb-item" href="dashboard.html"><i class="ti ti-layout-dashboard"></i>Dashboard</a>
+    <a class="sb-item" href="tasks.html"><i class="ti ti-clipboard-list"></i>Завдання</a>
+    <a class="sb-item active" href="questionnaires.html"><i class="ti ti-list-check"></i>Анкети</a>
+    <a class="sb-item" href="shoppers.html"><i class="ti ti-users"></i>Покупці</a>
+    <a class="sb-item" href="objects.html"><i class="ti ti-building"></i>Об'єкти</a>
+    <a class="sb-item" href="ai-settings.html"><i class="ti ti-robot"></i>AI-налаштування</a>
+    <a class="sb-item" href="reports.html"><i class="ti ti-chart-bar"></i>Звіти</a>
+  </div>
+
+  <div class="main">
+    <div class="main-head" style="margin-bottom:12px">
+      <div>
+        <div class="main-title" style="font-size:16px">Анкети</div>
+        <div class="main-sub">Загальна база — підключаються до будь-якого завдання</div>
+      </div>
+    </div>
+
+    <div class="sb-label" style="margin-bottom:6px">Усі анкети</div>
+    <div id="section-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"></div>
+    <div class="sb-new-section" id="new-section-btn" style="margin:0 0 16px;width:150px"><i class="ti ti-plus"></i><span>Нова анкета</span></div>
+
+    <div class="main-head">
+      <div>
+        <div class="main-title" id="main-title">Секція</div>
+        <div class="main-sub">Перетягніть питання для зміни порядку</div>
+      </div>
+      <div class="head-actions">
+        <div class="btn-outline" id="edit-questionnaire-btn"><i class="ti ti-pencil"></i>Редагувати анкету</div>
+        <div class="btn-outline" id="copy-questionnaire-btn"><i class="ti ti-copy"></i>Копіювати</div>
+        <div class="btn-primary" id="save-order-btn"><i class="ti ti-device-floppy"></i>Зберегти порядок</div>
+      </div>
+    </div>
+
+    <div id="q-list"></div>
+    <div class="empty-state" id="q-empty" style="display:none">
+      <i class="ti ti-list-details"></i>У цій секції ще немає питань
+    </div>
+
+    <div id="q-mini-form-slot"></div>
+    <div class="add-q-btn" id="add-question-btn"><i class="ti ti-plus"></i><span>Додати питання</span></div>
+  </div>
+</div>
+
+<div id="modal-overlay">
+  <div id="modal-box">
+    <div id="modal-icon" style="font-size:28px;margin-bottom:10px"></div>
+    <div id="modal-title" style="font-size:15px;font-weight:600;color:var(--black);margin-bottom:6px"></div>
+    <div id="modal-message" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px;white-space:pre-line"></div>
+    <div id="modal-actions" style="display:flex;justify-content:flex-end;gap:8px"></div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://primary-production-3872.up.railway.app/webhook';
+let token = null;
+function authHeaders() { return { 'Authorization': 'Bearer ' + token }; }
+
+function showModal({ icon = 'ℹ️', title, message, buttons }) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('modal-overlay');
+    document.getElementById('modal-icon').textContent = icon;
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-message').textContent = message;
+    const actions = document.getElementById('modal-actions');
+    actions.innerHTML = '';
+    buttons.forEach(b => {
+      const btn = document.createElement('button');
+      btn.textContent = b.label;
+      btn.className = b.variant === 'outline' ? 'btn-outline' : 'btn-primary';
+      if (b.variant === 'danger') btn.style.background = 'var(--danger)';
+      btn.addEventListener('click', () => { overlay.style.display = 'none'; resolve(b.value); });
+      actions.appendChild(btn);
+    });
+    overlay.style.display = 'flex';
+  });
+}
+function showAlertDialog(message, title = 'Повідомлення') {
+  return showModal({ icon: 'ℹ️', title, message, buttons: [{ label: 'Гаразд', value: true }] });
+}
+
+// Іконки секцій — 4 підтверджені точно в ТЗ, 2 (вхід/вихід) обрані самостійно (в ТЗ не вказані)
+const SECTION_ICONS = { kasa: 'ti-building-bank', bar: 'ti-glass', tualet: 'ti-door', zal: 'ti-movie', vhid: 'ti-login', vyhid: 'ti-logout' };
+// ВИПРАВЛЕНО: порядок ключів у цьому об'єкті раніше не відповідав реальному
+// маршруту (був kasa,bar,tualet,zal,vhid,vyhid — довільний порядок визначення,
+// не пов'язаний з фізичним маршрутом). Через це "Бар" (ранг 1) сортувався
+// РАНІШЕ "Зал"/"Кінозал" (ранг 3) — це і була справжня причина A1, а не
+// відсутність сорту після створення анкети (те виправлення теж лишається,
+// не шкодить, але коренева причина була саме тут).
+const SECTION_NAMES = { vhid: 'Вхід', kasa: 'Каса', bar: 'Бар', zal: 'Зал', tualet: 'Туалет', vyhid: 'Вихід' };
+const ANSWER_TYPE_LABELS = { yes_no: 'Так / Ні', scale_1_5: 'Шкала 1–5', text: 'Текст' };
+
+// Той самий маршрут, що вже застосовано в Завданнях (Вхід→Каса→Бар→Зал→Туалет→Вихід) —
+// раніше список анкет взагалі не сортувався (йшов у порядку id), клієнт окремо
+// звернув на це увагу. Аліас лише для порядку сортування, не для приховування анкет.
+const SECTION_ORDER = Object.keys(SECTION_NAMES);
+const SECTION_ALIASES = { cinema_hall: 'zal' };
+function sectionRank(key) {
+  const normalized = SECTION_ALIASES[key] || key;
+  const i = SECTION_ORDER.indexOf(normalized);
+  return i === -1 ? SECTION_ORDER.length : i;
+}
+
+let questionnaires = [];
+let activeQuestionnaireId = null;
+let criteria = [];
+let dragSrcId = null;
+
+async function loadObjectAndQuestionnaires() {
+  await loadQuestionnaires();
+}
+
+async function loadQuestionnaires() {
+  const qRes = await fetch(`${API_BASE}/ga/admin/questionnaires`, { headers: authHeaders() });
+  const qData = await qRes.json();
+  questionnaires = (qData.questionnaires || []).slice().sort((a, b) => sectionRank(a.section_key) - sectionRank(b.section_key));
+
+  document.getElementById('q-mini-form-slot').innerHTML = '';
+  renderSectionTabs();
+
+  if (questionnaires.length > 0) {
+    const keepId = questionnaires.some(q => q.id === activeQuestionnaireId) ? activeQuestionnaireId : questionnaires[0].id;
+    await selectQuestionnaire(keepId);
+  } else {
+    activeQuestionnaireId = null;
+    document.getElementById('main-title').textContent = 'Ще немає жодної анкети в базі';
+    document.getElementById('q-empty').style.display = 'block';
+    document.getElementById('q-list').innerHTML = '';
+  }
+}
+
+function renderSectionTabs() {
+  const wrap = document.getElementById('section-tabs');
+  wrap.innerHTML = '';
+  questionnaires.forEach(q => {
+    const icon = SECTION_ICONS[q.section_key] || 'ti-file-text';
+    const el = document.createElement('div');
+    el.className = 'sb-item' + (q.id === activeQuestionnaireId ? ' active' : '');
+    el.style.cssText = 'display:inline-flex;border-radius:6px;padding:6px 12px;cursor:pointer;background:var(--bg3)';
+    if (q.id === activeQuestionnaireId) el.style.background = '';
+    el.innerHTML = `<i class="ti ${icon}"></i> ${q.title} <span style="opacity:.6;font-size:10px">(${SECTION_NAMES[q.section_key] || q.section_key})</span>`;
+    el.addEventListener('click', () => selectQuestionnaire(q.id));
+    wrap.appendChild(el);
+  });
+}
+
+async function selectQuestionnaire(qId) {
+  activeQuestionnaireId = qId;
+  const q = questionnaires.find(x => x.id === qId);
+  renderSectionTabs();
+  document.getElementById('main-title').textContent = `Секція: ${q.title}`;
+  document.getElementById('q-mini-form-slot').innerHTML = '';
+  await loadCriteria();
+}
+
+async function loadCriteria() {
+  const res = await fetch(`${API_BASE}/ga/admin/criteria?questionnaire_id=${activeQuestionnaireId}`, { headers: authHeaders() });
+  const data = await res.json();
+  criteria = (data.criteria || []).sort((a, b) => a.order_index - b.order_index);
+  renderCriteria();
+}
+
+function renderCriteria() {
+  const list = document.getElementById('q-list');
+  const empty = document.getElementById('q-empty');
+  list.innerHTML = '';
+
+  if (criteria.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  const hasChildMap = {};
+  criteria.forEach(c => { if (c.parent_criterion_id) hasChildMap[c.parent_criterion_id] = true; });
+
+  criteria.forEach((c, idx) => {
+    const isChild = !!c.parent_criterion_id;
+    const hasChild = !!hasChildMap[c.id];
+    const row = document.createElement('div');
+    row.className = 'q-row' + (hasChild ? ' has-child' : '');
+    row.draggable = true;
+    row.dataset.id = c.id;
+
+    const parent = isChild ? criteria.find(p => p.id === c.parent_criterion_id) : null;
+    const condNote = isChild && parent ? `<span class="q-cond-note">[якщо п.${criteria.indexOf(parent) + 1} = ${c.condition_value === 'yes' ? 'Так' : (c.condition_value === 'no' ? 'Ні' : c.condition_value)}]</span>` : '';
+
+    row.innerHTML = `
+      <i class="ti ti-grip-vertical q-grip"></i>
+      <span class="q-num">${idx + 1}</span>
+      <span class="q-text${isChild ? ' is-child' : ''}">${isChild ? '↳ ' : ''}${c.question_text} ${condNote}</span>
+      <span class="q-badge">${ANSWER_TYPE_LABELS[c.answer_type] || c.answer_type}</span>
+      ${hasChild ? '<span class="q-badge cond">Умовна гілка</span>' : ''}
+      ${c.is_critical ? '<span class="q-badge required">Обов\'язкове</span>' : ''}
+      ${c.is_skippable ? '<span class="q-badge" style="background:var(--bg3);color:var(--muted)">Можна пропустити</span>' : ''}
+      <i class="ti ti-pencil q-icon-btn" data-action="edit" data-id="${c.id}"></i>
+      <i class="ti ti-trash q-icon-btn danger" data-action="delete" data-id="${c.id}"></i>
+    `;
+
+    row.addEventListener('dragstart', () => { dragSrcId = c.id; row.classList.add('dragging'); });
+    row.addEventListener('dragend', () => row.classList.remove('dragging'));
+    row.addEventListener('dragover', (e) => { e.preventDefault(); row.classList.add('drag-over'); });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      if (dragSrcId === null || dragSrcId === c.id) return;
+      reorderLocally(dragSrcId, c.id);
+    });
+
+    list.appendChild(row);
+  });
+
+  list.querySelectorAll('[data-action="delete"]').forEach(el => {
+    el.addEventListener('click', () => deleteCriterion(Number(el.dataset.id)));
+  });
+  list.querySelectorAll('[data-action="edit"]').forEach(el => {
+    el.addEventListener('click', () => editCriterion(Number(el.dataset.id)));
+  });
+}
+
+function editCriterion(id) {
+  const c = criteria.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('q-mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="mini-form-title">Редагування питання</div>
+      <div class="form-field" style="margin-bottom:9px"><label>Текст питання</label><input type="text" id="ef-text" value="${c.question_text.replace(/"/g, '&quot;')}"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Тип відповіді</label>
+          <select id="ef-type">
+            <option value="yes_no" ${c.answer_type === 'yes_no' ? 'selected' : ''}>Так / Ні</option>
+            <option value="scale_1_5" ${c.answer_type === 'scale_1_5' ? 'selected' : ''}>Шкала 1–5</option>
+            <option value="text" ${c.answer_type === 'text' ? 'selected' : ''}>Текст</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Вага (0–100)</label><input type="number" id="ef-weight" value="${c.weight}" min="0" max="100"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:9px">Зміна типу заблокована, якщо на це питання вже є відповіді покупців або AI-результати.</div>
+      <div class="chk-row"><input type="checkbox" id="ef-critical" ${c.is_critical ? 'checked' : ''}><label for="ef-critical">Обов'язкове (критичний критерій)</label></div>
+      <div class="chk-row"><input type="checkbox" id="ef-skippable" ${c.is_skippable ? 'checked' : ''}><label for="ef-skippable">Можна пропустити (гість може не відповідати)</label></div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="ef-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="ef-save">Зберегти</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('ef-cancel').addEventListener('click', () => { document.getElementById('q-mini-form-slot').innerHTML = ''; });
+  document.getElementById('ef-save').addEventListener('click', async () => {
+    const text = document.getElementById('ef-text').value.trim();
+    if (!text) return;
+    const btn = document.getElementById('ef-save');
+    btn.disabled = true; btn.textContent = 'Зберігаємо…';
+    try {
+      const res = await fetch(`${API_BASE}/ga/admin/criteria/update`, {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          criterion_id: id,
+          question_text: text,
+          weight: Number(document.getElementById('ef-weight').value) || c.weight,
+          is_critical: document.getElementById('ef-critical').checked,
+          is_skippable: document.getElementById('ef-skippable').checked,
+          answer_type: document.getElementById('ef-type').value
+        })
+      });
+      const data = await res.json();
+      if (!data.success) { await showAlertDialog(data.error || 'Помилка', 'Помилка'); return; }
+      Object.assign(c, data.criterion);
+      document.getElementById('q-mini-form-slot').innerHTML = '';
+      renderCriteria();
+    } catch (err) {
+      await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Зберегти';
+    }
+  });
+}
+
+function reorderLocally(srcId, targetId) {
+  const srcIdx = criteria.findIndex(c => c.id === srcId);
+  const targetIdx = criteria.findIndex(c => c.id === targetId);
+  const [moved] = criteria.splice(srcIdx, 1);
+  criteria.splice(targetIdx, 0, moved);
+  renderCriteria();
+}
+
+document.getElementById('save-order-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('save-order-btn');
+  btn.classList.add('disabled'); btn.style.pointerEvents = 'none';
+  const order = criteria.map((c, idx) => ({ id: c.id, order_index: idx + 1 }));
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/criteria/reorder`, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questionnaire_id: activeQuestionnaireId, order })
+    });
+    const data = await res.json();
+    if (!data.success) { await showAlertDialog(data.error || 'Помилка збереження порядку', 'Помилка'); return; }
+    await loadCriteria();
+    await showAlertDialog('Порядок питань збережено.', 'Готово');
+  } catch (err) {
+    await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+  } finally {
+    btn.style.pointerEvents = 'auto';
+  }
+});
+
+async function deleteCriterion(id) {
+  const c = criteria.find(x => x.id === id);
+  if (!c) return;
+  if (!confirm(`Видалити питання «${c.question_text}»? Цю дію не можна скасувати.`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/ga/admin/criteria/delete`, {
+      method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ criterion_id: id })
+    });
+    const data = await res.json();
+    if (!data.success) { await showAlertDialog(data.error || 'Помилка', data.blocked ? "Не можна видалити" : 'Помилка'); return; }
+    criteria = criteria.filter(x => x.id !== id);
+    renderCriteria();
+  } catch (err) {
+    await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+  }
+}
+
+document.getElementById('edit-questionnaire-btn').addEventListener('click', () => {
+  const q = questionnaires.find(x => x.id === activeQuestionnaireId);
+  if (!q) return;
+  document.getElementById('q-mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="mini-form-title">Редагування анкети</div>
+      <div class="form-row">
+        <div class="form-field"><label>Назва анкети</label><input type="text" id="eq-title" value="${q.title.replace(/"/g, '&quot;')}"></div>
+        <div class="form-field"><label>Секція (транслітерація для AI)</label><input type="text" id="eq-section" value="${q.section_key}" pattern="[a-z][a-z0-9_]{1,29}"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:9px">Зміна секції не ламає нічого напряму, але аудіо/фото, записані під старою назвою зони, більше не будуть автоматично зіставлятися з новою.</div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="eq-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="eq-save">Зберегти</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('eq-cancel').addEventListener('click', () => { document.getElementById('q-mini-form-slot').innerHTML = ''; });
+  document.getElementById('eq-save').addEventListener('click', async () => {
+    const title = document.getElementById('eq-title').value.trim();
+    const sectionKey = document.getElementById('eq-section').value.trim();
+    if (!title || !sectionKey) return;
+    const btn = document.getElementById('eq-save');
+    btn.disabled = true; btn.textContent = 'Зберігаємо…';
+    try {
+      const res = await fetch(`${API_BASE}/ga/admin/questionnaires/update`, {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionnaire_id: activeQuestionnaireId,
+          title, section_key: sectionKey,
+          auto_approve_threshold: q.auto_approve_threshold,
+          min_audio_duration_sec: q.min_audio_duration_sec,
+          max_fill_time_sec: q.max_fill_time_sec
+        })
+      });
+      const data = await res.json();
+      if (!data.success) { await showAlertDialog(data.error || 'Помилка', 'Помилка'); return; }
+      await loadQuestionnaires();
+    } catch (err) {
+      await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Зберегти';
+    }
+  });
+});
+
+document.getElementById('copy-questionnaire-btn').addEventListener('click', () => {
+  const q = questionnaires.find(x => x.id === activeQuestionnaireId);
+  if (!q) return;
+  document.getElementById('q-mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="mini-form-title">Копіювати анкету «${q.title}» (з усіма питаннями)</div>
+      <div class="form-row">
+        <div class="form-field"><label>Назва копії</label><input type="text" id="cq-title" value="${q.title} (копія)"></div>
+        <div class="form-field"><label>Секція копії</label><input type="text" id="cq-section" value="${q.section_key}_copy" pattern="[a-z][a-z0-9_]{1,29}"></div>
+      </div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="cq-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="cq-save">Копіювати</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('cq-cancel').addEventListener('click', () => { document.getElementById('q-mini-form-slot').innerHTML = ''; });
+  document.getElementById('cq-save').addEventListener('click', async () => {
+    const title = document.getElementById('cq-title').value.trim();
+    const sectionKey = document.getElementById('cq-section').value.trim();
+    if (!title || !sectionKey) return;
+    const btn = document.getElementById('cq-save');
+    btn.disabled = true; btn.textContent = 'Копіюємо…';
+    try {
+      const res = await fetch(`${API_BASE}/ga/admin/questionnaires/copy`, {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questionnaire_id: activeQuestionnaireId, title, section_key: sectionKey })
+      });
+      const data = await res.json();
+      if (!data.success) { await showAlertDialog(data.error || 'Помилка', 'Помилка'); return; }
+      activeQuestionnaireId = data.new_questionnaire_id;
+      await loadQuestionnaires();
+    } catch (err) {
+      await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Копіювати';
+    }
+  });
+});
+
+document.getElementById('add-question-btn').addEventListener('click', () => {
+  const parentOptions = criteria.map((c, idx) => `<option value="${c.id}">${idx + 1}. ${c.question_text}</option>`).join('');
+  document.getElementById('q-mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="mini-form-title">Нове питання</div>
+      <div class="form-field" style="margin-bottom:9px"><label>Текст питання</label><input type="text" id="qf-text" placeholder="Касир привітався при підході?"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Тип відповіді</label>
+          <select id="qf-type">
+            <option value="yes_no">Так / Ні</option>
+            <option value="scale_1_5">Шкала 1–5</option>
+            <option value="text">Текст</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Вага (0–100)</label><input type="number" id="qf-weight" value="10" min="0" max="100"></div>
+      </div>
+      <div class="chk-row"><input type="checkbox" id="qf-critical"><label for="qf-critical">Обов'язкове (критичний критерій)</label></div>
+      <div class="chk-row"><input type="checkbox" id="qf-skippable"><label for="qf-skippable">Можна пропустити (гість може не відповідати)</label></div>
+      <div class="form-row">
+        <div class="form-field"><label>Умовна гілка: залежить від</label>
+          <select id="qf-parent" ${criteria.length === 0 ? 'disabled' : ''}>
+            <option value="">${criteria.length === 0 ? '— Немає інших питань у цій секції —' : '— Немає (звичайне питання) —'}</option>${parentOptions}
+          </select>
+        </div>
+        <div class="form-field"><label>Якщо відповідь =</label>
+          <select id="qf-condition" ${criteria.length === 0 ? 'disabled' : ''}><option value="yes">Так</option><option value="no">Ні</option></select>
+        </div>
+      </div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="qf-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="qf-add">Додати питання</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('qf-cancel').addEventListener('click', () => { document.getElementById('q-mini-form-slot').innerHTML = ''; });
+  document.getElementById('qf-add').addEventListener('click', async () => {
+    const text = document.getElementById('qf-text').value.trim();
+    if (!text) return;
+    const parentSelect = document.getElementById('qf-parent');
+    const parentId = parentSelect && parentSelect.value ? Number(parentSelect.value) : null;
+    const conditionSelect = document.getElementById('qf-condition');
+
+    const btn = document.getElementById('qf-add');
+    btn.disabled = true; btn.textContent = 'Додаємо…';
+    try {
+      const res = await fetch(`${API_BASE}/ga/admin/criteria`, {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionnaire_id: activeQuestionnaireId,
+          question_text: text,
+          answer_type: document.getElementById('qf-type').value,
+          weight: Number(document.getElementById('qf-weight').value) || 10,
+          is_critical: document.getElementById('qf-critical').checked,
+          is_skippable: document.getElementById('qf-skippable').checked,
+          parent_criterion_id: parentId,
+          condition_value: parentId ? conditionSelect.value : null
+        })
+      });
+      const data = await res.json();
+      if (!data.success) { await showAlertDialog(data.error || 'Помилка', 'Помилка'); return; }
+      document.getElementById('q-mini-form-slot').innerHTML = '';
+      // РАНІШЕ: await loadCriteria() -- повний перезапит з сервера тихо стирав
+      // ще не збережене перетягування (save-order-btn натиснути забули), і виглядало,
+      // ніби порядок "збився". Тепер просто дописуємо нове питання в кінець локального
+      // масиву -- без перезапиту, без втрати несхваленого порядку.
+      criteria.push(data.criterion);
+      renderCriteria();
+    } catch (err) {
+      await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Додати питання';
+    }
+  });
+});
+
+document.getElementById('new-section-btn').addEventListener('click', () => {
+  const options = Object.keys(SECTION_NAMES).map(k => `<option value="${k}">${SECTION_NAMES[k]}</option>`).join('');
+  document.getElementById('q-mini-form-slot').innerHTML = `
+    <div class="mini-form">
+      <div class="mini-form-title">Нова анкета</div>
+      <div class="form-row">
+        <div class="form-field"><label>Секція (для AI-аналізу)</label><input type="text" id="sf-key" list="sf-key-suggestions" placeholder="напр. online_purchase" pattern="[a-z][a-z0-9_]{1,29}" title="латиницею, малими літерами, 2-30 символів"><datalist id="sf-key-suggestions">${options}</datalist></div>
+        <div class="form-field"><label>Назва анкети</label><input type="text" id="sf-title" placeholder="Каса — стандарт"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Можна вибрати існуючу секцію зі списку або вписати нову (латиницею, напр. <code>online_purchase</code>)</div>
+      <div class="mini-form-actions">
+        <button class="btn-outline btn-small" id="sf-cancel">Скасувати</button>
+        <button class="btn-primary btn-small" id="sf-add">Створити</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('sf-cancel').addEventListener('click', () => { document.getElementById('q-mini-form-slot').innerHTML = ''; });
+  document.getElementById('sf-add').addEventListener('click', async () => {
+    const title = document.getElementById('sf-title').value.trim();
+    if (!title) return;
+    try {
+      const res = await fetch(`${API_BASE}/ga/admin/questionnaires`, {
+        method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section_key: document.getElementById('sf-key').value, title })
+      });
+      const data = await res.json();
+      if (!data.success) { await showAlertDialog(data.error || 'Помилка', 'Помилка'); return; }
+      document.getElementById('q-mini-form-slot').innerHTML = '';
+      const qRes = await fetch(`${API_BASE}/ga/admin/questionnaires`, { headers: authHeaders() });
+      const qData = await qRes.json();
+      // Той самий сорт, що і при першому завантаженні (loadQuestionnaires) — тут
+      // раніше забули його застосувати, тому порядок ламався одразу після
+      // створення нової анкети (саме це й спричинило A1).
+      questionnaires = (qData.questionnaires || []).slice().sort((a, b) => sectionRank(a.section_key) - sectionRank(b.section_key));
+      await selectQuestionnaire(data.questionnaire.id);
+    } catch (err) {
+      await showAlertDialog("Немає з'єднання з сервером", 'Помилка');
+    }
+  });
+});
+
+async function init() {
+  token = localStorage.getItem('ga_token');
+  if (!token) { document.getElementById('auth-gate').style.display = 'block'; return; }
+  try {
+    await loadObjectAndQuestionnaires();
+    document.getElementById('page-body').style.display = 'flex';
+  } catch (err) {
+    console.error(err);
+    document.getElementById('auth-gate').style.display = 'block';
+  }
+}
+document.getElementById('logout-btn').addEventListener('click', () => {
+  localStorage.removeItem('ga_token');
+  window.location.href = 'login.html';
+});
+
+init();
+</script>
+<div style="position:fixed;bottom:6px;right:10px;font-size:10px;color:var(--muted2);z-index:9999;pointer-events:none">v2026-09-13-v2-questionnaires-sort-fix</div>
+</body>
+</html>

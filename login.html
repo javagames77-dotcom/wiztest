@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizoria — Вхід до системи</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --accent:#8C64C9; --accent-hover:#a07ed8; --accent-light:rgba(140,100,201,.13); --accent-border:rgba(140,100,201,.3);
+  --bg:#f4f4f7; --bg2:#ffffff; --bg3:#f0f0f4; --border:#e0e0e8; --border2:#ccccda;
+  --text:#1a1a20; --muted:#6b6b80; --muted2:#aaaabc; --black:#0a0a12; --input-bg:#f8f8fb;
+  --success:#16a34a; --success-bg:#f0fff4; --success-border:#bbf7d0;
+  --danger:#c0392b; --danger-bg:#fff0f0; --danger-border:#ffd0d0;
+  --warn-text:#92400e; --warn-bg:#fffbeb; --warn-border:#fde68a;
+  --card-shadow:0 1px 3px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.07);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+
+.wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px}
+.panel{width:100%;max-width:380px}
+.form-box{width:100%}
+
+.nav{display:flex;align-items:center;justify-content:center;margin-bottom:28px}
+.nav svg{height:22px;width:auto}
+
+.fm-title{font-size:22px;font-weight:700;color:var(--black);text-align:center;margin-bottom:4px;letter-spacing:-.02em}
+.fm-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px}
+
+.fm-label{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px;display:block;margin-top:16px}
+.fm-label:first-of-type{margin-top:0}
+
+.fm-input-wrap{position:relative}
+.fm-input{width:100%;height:46px;border:1px solid var(--border);border-radius:9px;background:var(--input-bg);padding:0 14px;font-size:15px;font-family:inherit;color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s}
+.fm-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);background:#fff}
+.fm-input.is-err{border-color:var(--danger)}
+
+.pw-toggle{position:absolute;right:6px;top:6px;height:34px;padding:0 10px;background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;font-family:inherit}
+.pw-toggle:hover{color:var(--accent)}
+
+.fm-btn{width:100%;height:46px;background:var(--accent);border:none;border-radius:9px;font-size:14px;font-weight:600;color:#fff;margin-top:22px;cursor:pointer;transition:background .15s;font-family:inherit}
+.fm-btn:hover{background:var(--accent-hover)}
+.fm-btn:disabled{opacity:.55;cursor:default}
+
+.fm-alert{padding:10px 13px;border-radius:8px;font-size:13px;line-height:1.5;margin-top:16px;display:none;align-items:flex-start;gap:7px}
+.fm-alert.show{display:flex}
+.fm-alert.err{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border)}
+.fm-alert.ok{background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.fm-alert.warn{background:var(--warn-bg);color:var(--warn-text);border:1px solid var(--warn-border)}
+
+.fm-link{text-align:center;font-size:13px;color:var(--muted);margin-top:24px}
+.fm-link a{color:var(--accent);font-weight:600;text-decoration:none}
+.fm-link a:hover{text-decoration:underline}
+
+@media (min-width:560px){
+  .form-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;box-shadow:var(--card-shadow);padding:40px 36px}
+}
+a:focus-visible, button:focus-visible, input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="panel">
+    <div class="form-box">
+      <div class="nav">
+        <svg viewBox="0 0 3418 1015" xmlns="http://www.w3.org/2000/svg"><g fill="var(--black)"><path d="M709.68,159.25 L774.19,159.25 C781.22,159.25 786.75,164.79 786.75,171.82 L786.75,574.86 C786.75,581.88 781.22,587.42 774.19,587.42 L709.68,587.42 C702.66,587.42 697.12,581.88 697.12,574.86 L697.12,171.82 C697.12,164.79 702.66,159.25 709.68,159.25 Z"/><path d="M888.32,237.82 L888.32,173.1 C888.32,166.07 894.06,160.53 901.09,160.53 L1283.27,160.53 C1290.29,160.53 1296.04,166.07 1296.04,173.1 L1296.04,236.12 L1296.04,250.39 C1295.82,254.85 1294.34,258.05 1291.57,260.39 L1010.31,497.15 L901.51,586.78 L888.95,572.73 L888.73,493.75 C888.73,489.06 891.29,486.72 893.84,483.95 L1173.39,250.17 L901.08,250.17 C894.05,250.17 888.31,244.63 888.31,237.82 L888.32,237.82 Z"/><path d="M888.95,575.07 L888.95,510.35 C888.95,503.54 894.49,497.79 901.52,497.79 L1282.43,497.79 C1289.24,497.79 1294.99,503.54 1294.99,510.35 L1294.99,575.07 C1294.99,581.89 1289.24,587.64 1282.43,587.64 L901.52,587.64 C894.49,587.64 888.95,581.89 888.95,575.07 Z"/><path d="M2252.68,159.89 L2459.42,159.89 C2491.99,159.89 2548.83,162.87 2596.1,228.02 C2619.74,260.6 2622.51,312.56 2622.08,320.64 C2616.75,366.84 2597.38,407.51 2557.57,440.31 L2614.84,571.88 C2616.33,575.28 2616.12,579.54 2614.2,582.52 C2612.08,586.14 2608.24,588.27 2605.48,588.27 L2533.1,588.27 C2530.54,588.27 2527.77,588.48 2525.01,587.41 C2521.39,586.13 2517.77,583.15 2516.7,580.17 L2471.35,467.33 L2291.65,467.33 L2291.65,575.7 C2291.65,582.52 2285.91,588.27 2279.09,588.27 L2214.36,588.27 C2207.55,588.27 2201.8,582.52 2201.8,575.7 L2201.8,172.45 C2201.8,165.63 2207.55,159.89 2214.36,159.89 L2252.68,159.89 Z M2291.64,377.49 L2474.75,377.49 C2484.75,376.85 2501.15,372.38 2508.82,365.35 C2554.8,323.62 2530.11,248.46 2459.42,249.74 L2291.64,249.74 L2291.64,377.49 Z"/><path d="M2752.81,159.25 L2817.53,159.25 C2824.35,159.25 2830.1,165 2830.1,171.82 L2830.1,575.07 C2830.1,581.89 2824.35,587.64 2817.53,587.64 L2752.81,587.64 C2745.99,587.64 2740.25,581.89 2740.25,575.07 L2740.25,171.82 C2740.25,165 2745.99,159.25 2752.81,159.25 Z"/><path d="M3176.72,266.99 L3105.39,422.84 L3248.05,422.84 L3176.72,266.99 Z M3064.52,512.47 L3032.79,581.46 C3030.02,587.84 3022.99,588.28 3016.18,588.28 L2946.99,588.06 C2943.58,588.06 2939.75,585.72 2937.83,582.52 C2935.7,579.12 2935.7,574.64 2937.19,571.45 L3122.43,169.48 C3124.77,164.37 3130.51,160.11 3137.75,160.11 L3212.28,160.11 C3220.58,160.11 3227.61,161.81 3231.44,170.12 L3416.26,571.45 C3419.88,578.9 3414.34,588.06 3407.1,588.06 L3337.47,588.28 C3330.45,588.28 3323.42,587.85 3320.65,581.46 L3289.14,512.47 L3064.51,512.47 L3064.52,512.47 Z"/><path d="M609.4,160.1 L543.61,160.1 C536.58,160.1 529.98,163.08 528.06,169.9 L443.33,500.56 L366.68,172.03 C364.98,164.15 357.53,159.25 350.72,159.25 L274.28,159.25 C269.81,159.25 264.7,161.6 261.3,165.86 C259.59,168.2 258.53,170.96 257.67,174.38 L170.38,501.2 L88.62,169.91 C86.92,163.09 79.89,160.11 72.87,160.11 L10.7,160.11 C3.68,160.11 -1.22,168.63 0.27,175.44 L94.59,577.41 C96.08,583.38 101.62,587.42 107.58,587.21 L228.94,587.43 C237.25,587.43 241.93,580.19 244.06,572.1 L311.56,322.57 L370.74,572.52 C372.87,580.83 380.33,587 387.35,587.21 L496.36,587.43 C503.39,587.43 510.83,582.96 513.6,572.52 L619,175.45 C620.7,168.63 616.44,160.12 609.41,160.12 L609.4,160.1 Z"/></g><path fill="#8C64C9" d="M1736.99,649.38 C1813.22,649.38 1882.2,618.51 1932.23,568.47 C1982.27,518.65 2013.14,449.67 2013.14,373.45 C2013.14,297.22 1982.27,228.24 1932.23,178.2 C1882.2,128.38 1813.21,97.51 1736.99,97.51 C1660.98,97.51 1591.79,128.38 1541.96,178.2 C1491.93,228.24 1461.05,297.23 1461.05,373.45 C1461.05,449.67 1491.93,518.64 1541.96,568.47 C1591.78,618.51 1660.98,649.38 1736.99,649.38 Z M2001.22,637.46 C1933.51,704.95 1840.25,746.9 1736.99,746.9 C1633.94,746.9 1540.69,704.96 1472.99,637.46 C1405.49,569.97 1363.76,476.5 1363.76,373.45 C1363.76,270.41 1405.49,176.93 1472.99,109.44 C1540.69,41.73 1633.94,5.68434189e-14 1736.99,5.68434189e-14 C1840.25,5.68434189e-14 1933.51,41.73 2001.22,109.44 C2068.71,176.93 2110.44,270.41 2110.44,373.45 C2110.44,476.5 2068.71,569.97 2001.22,637.46 Z"/></svg>
+      </div>
+
+      <div class="fm-title">Вхід до системи</div>
+      <div class="fm-sub">Введіть email або логін</div>
+
+      <form id="login-form" novalidate>
+        <label class="fm-label" for="login">Email або логін</label>
+        <input class="fm-input" type="text" id="login" autocomplete="username" required>
+
+        <label class="fm-label" for="password">Пароль</label>
+        <div class="fm-input-wrap">
+          <input class="fm-input" type="password" id="password" autocomplete="current-password" style="padding-right:70px" required>
+          <button type="button" class="pw-toggle" id="pw-toggle">Показати</button>
+        </div>
+
+        <button type="submit" class="fm-btn" id="submit-btn">Увійти</button>
+        <div class="fm-alert" id="alert"></div>
+      </form>
+
+      <div class="fm-link">Ще немає акаунту? <a href="register.html">Зареєструватись</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://primary-production-3872.up.railway.app/webhook';
+
+document.getElementById('pw-toggle').addEventListener('click', () => {
+  const input = document.getElementById('password');
+  const btn = document.getElementById('pw-toggle');
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.textContent = show ? 'Сховати' : 'Показати';
+});
+
+function showAlert(msg, type) {
+  const el = document.getElementById('alert');
+  el.className = 'fm-alert show ' + type;
+  el.textContent = msg;
+}
+function hideAlert() {
+  document.getElementById('alert').className = 'fm-alert';
+}
+
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  const login = document.getElementById('login').value.trim();
+  const password = document.getElementById('password').value;
+  hideAlert();
+
+  if (!login || !password) {
+    showAlert('Заповніть обидва поля', 'err');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Входимо…';
+
+  try {
+    const res = await fetch(`${API_BASE}/ga/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login, password })
+    });
+    const data = await res.json();
+
+    if (res.status === 200 && data.success) {
+      localStorage.setItem('ga_token', data.token);
+      localStorage.setItem('ga_user', JSON.stringify(data.user));
+      if (data.user.role === 'admin') {
+        showAlert('✓ Успішний вхід. Перехід до Dashboard…', 'ok');
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 400);
+      } else if (data.user.role === 'supervisor') {
+        showAlert('✓ Успішний вхід. Перехід до кабінету Supervisor…', 'ok');
+        setTimeout(() => { window.location.href = 'supervisor.html'; }, 400);
+      } else if (data.user.role === 'shopper') {
+        showAlert('✓ Успішний вхід. Перехід до застосунку…', 'ok');
+        setTimeout(() => { window.location.href = 'shopper-pwa/index.html'; }, 400);
+      } else {
+        showAlert(`✓ Успішний вхід (${data.user.role}). Кабінет для цієї ролі ще в розробці.`, 'ok');
+      }
+    } else if (res.status === 403 && data.pending) {
+      showAlert('⏳ ' + data.error, 'warn');
+    } else if (res.status === 403) {
+      showAlert(data.error || 'Акаунт заблоковано', 'warn');
+    } else if (res.status === 401) {
+      showAlert(data.error, 'err');
+    } else {
+      showAlert(data.error || 'Сталася помилка', 'err');
+    }
+  } catch (err) {
+    showAlert("Немає з'єднання з сервером", 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Увійти';
+  }
+});
+</script>
+</body>
+</html>
